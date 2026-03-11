@@ -12,6 +12,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
@@ -46,12 +47,15 @@
 
         <div class="max-w-7xl mx-auto relative">
 
-            <!-- Lang toggle top-right -->
-            <div class="flex justify-end mb-8">
+            <!-- Lang toggle + theme toggle top-right -->
+            <div class="flex justify-end items-center gap-2 mb-8">
                 <div class="flex items-center gap-1 bg-gray-200 rounded-full p-1">
                     <button id="lang-en" class="px-3 py-1 rounded-full text-xs font-semibold transition-colors bg-white text-gray-900 shadow-sm">EN</button>
                     <button id="lang-ms" class="px-3 py-1 rounded-full text-xs font-semibold transition-colors text-gray-500 hover:text-gray-900">BM</button>
                 </div>
+                <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z" clip-rule="evenodd"/></svg>
+                </button>
             </div>
 
             <!-- Hero content -->

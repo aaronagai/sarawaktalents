@@ -342,3 +342,288 @@ input[type="search"]::-webkit-search-results-decoration {
     text-align: right;
 }
 
+/* ── Theme Toggle Button ─────────────────────────────── */
+.theme-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background-color: #e5e7eb;
+    color: #111827;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    flex-shrink: 0;
+}
+
+.theme-toggle-btn:hover {
+    background-color: #d1d5db;
+}
+
+/* ── Dark Mode ──────────────────────────────────────── */
+
+/* Base */
+html.dark body {
+    background-color: #111827;
+    color: #f9fafb;
+}
+
+/* Announcement bar - keep dark */
+html.dark .bg-gray-900 {
+    background-color: #030712;
+}
+
+/* Header */
+html.dark header {
+    background-color: #1f2937;
+    border-color: #374151;
+}
+
+html.dark header h1 {
+    color: #f9fafb;
+}
+
+html.dark header p.text-gray-500,
+html.dark header p.text-gray-400 {
+    color: #9ca3af;
+}
+
+/* Lang toggle container */
+html.dark header .bg-gray-200 {
+    background-color: #374151;
+}
+
+html.dark #lang-en,
+html.dark #lang-ms {
+    color: rgba(255, 255, 255, 0.55);
+}
+
+html.dark #lang-en.bg-white,
+html.dark #lang-ms.bg-white {
+    background-color: #ffffff;
+    color: #111827;
+}
+
+/* Theme toggle in dark mode */
+html.dark .theme-toggle-btn {
+    background-color: #374151;
+    color: #f9fafb;
+}
+
+html.dark .theme-toggle-btn:hover {
+    background-color: #4b5563;
+}
+
+/* Swipe section */
+html.dark section.py-12 {
+    background-color: #1f2937;
+    border-color: #374151;
+}
+
+html.dark section.py-12 h2,
+html.dark section.py-12 p {
+    color: #d1d5db;
+}
+
+html.dark #stack-indicator {
+    color: #9ca3af;
+}
+
+html.dark .stack-nav-btn {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #9ca3af;
+}
+
+html.dark .stack-nav-btn:hover {
+    background-color: #374151;
+    border-color: #60a5fa;
+    color: #60a5fa;
+}
+
+/* Sticky search bar */
+html.dark .sticky {
+    background-color: rgba(17, 24, 39, 0.92) !important;
+    border-color: #374151;
+}
+
+html.dark #search-input {
+    background-color: #1f2937;
+    border-color: #4b5563;
+    color: #f9fafb;
+}
+
+html.dark #search-input::placeholder {
+    color: #6b7280;
+}
+
+html.dark #search-input:focus {
+    border-color: #14b8a6;
+    background-color: #1f2937;
+}
+
+/* Filter & sort icon buttons */
+html.dark #filter-toggle,
+html.dark #sort-toggle {
+    background-color: #1f2937;
+    border-color: #4b5563;
+    color: #9ca3af;
+}
+
+html.dark #filter-toggle:hover,
+html.dark #sort-toggle:hover {
+    border-color: #14b8a6;
+    color: #14b8a6;
+}
+
+/* Filter panel dropdowns */
+html.dark #party-filter-btn,
+html.dark #race-filter-btn,
+html.dark #parliament-filter-btn,
+html.dark #status-filter-btn {
+    background-color: #1f2937;
+    border-color: #4b5563;
+    color: #9ca3af;
+}
+
+html.dark #party-filter-btn:hover,
+html.dark #race-filter-btn:hover,
+html.dark #parliament-filter-btn:hover,
+html.dark #status-filter-btn:hover {
+    border-color: #14b8a6;
+}
+
+html.dark #party-dropdown,
+html.dark #race-dropdown,
+html.dark #parliament-dropdown,
+html.dark #status-dropdown,
+html.dark #sort-dropdown {
+    background-color: #1f2937;
+    border-color: #374151;
+}
+
+html.dark #party-options label,
+html.dark #race-options label,
+html.dark #parliament-options label,
+html.dark #status-options label {
+    color: #d1d5db;
+}
+
+html.dark #party-options label:hover,
+html.dark #race-options label:hover,
+html.dark #parliament-options label:hover,
+html.dark #status-options label:hover {
+    background-color: #374151;
+}
+
+html.dark .sort-option {
+    color: #d1d5db;
+}
+
+html.dark .sort-option:hover {
+    background-color: #374151;
+}
+
+html.dark #clear-filters-panel {
+    color: #6b7280;
+}
+
+html.dark #clear-filters-panel:hover {
+    color: #14b8a6;
+}
+
+/* Main area */
+html.dark main {
+    background-color: #111827;
+}
+
+html.dark #rosterTitle,
+html.dark [data-i18n="rosterTitle"] {
+    color: #d1d5db;
+}
+
+html.dark #result-count {
+    background-color: #1f2937;
+    color: #9ca3af;
+}
+
+/* Candidate cards */
+html.dark [data-id] {
+    background-color: #1f2937;
+    border-color: #374151;
+}
+
+html.dark [data-id] .text-gray-900 {
+    color: #f9fafb;
+}
+
+html.dark [data-id] .text-gray-400 {
+    color: #9ca3af;
+}
+
+/* Empty state */
+html.dark #empty-state h3 {
+    color: #f9fafb;
+}
+
+html.dark #empty-state p {
+    color: #9ca3af;
+}
+
+html.dark #clear-filters {
+    background-color: #134e4a;
+    color: #5eead4;
+}
+
+/* Footer */
+html.dark footer {
+    background-color: #1f2937;
+    border-color: #374151;
+}
+
+html.dark footer a {
+    color: #6b7280;
+}
+
+html.dark footer a:hover {
+    color: #d1d5db;
+}
+
+/* Modal */
+html.dark .modal-card {
+    background-color: #1f2937;
+}
+
+html.dark .modal-close {
+    background-color: #374151;
+    color: #d1d5db;
+}
+
+html.dark .modal-close:hover {
+    background-color: #4b5563;
+    color: #f9fafb;
+}
+
+html.dark .modal-detail-row {
+    border-color: #374151;
+}
+
+html.dark .modal-detail-value {
+    color: #f9fafb;
+}
+
+/* Scrollbar in dark */
+html.dark ::-webkit-scrollbar-track {
+    background: #1f2937;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+    background: #4b5563;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+}
+

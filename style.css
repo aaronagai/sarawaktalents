@@ -351,15 +351,15 @@ input[type="search"]::-webkit-search-results-decoration {
     height: 34px;
     border-radius: 50%;
     border: none;
-    background-color: #e5e7eb;
-    color: #111827;
+    background: none;
+    color: #6b7280;
     cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
+    transition: color 0.2s;
     flex-shrink: 0;
 }
 
 .theme-toggle-btn:hover {
-    background-color: #d1d5db;
+    color: #111827;
 }
 
 /* ── Dark Mode ──────────────────────────────────────── */
@@ -408,12 +408,12 @@ html.dark #lang-ms.bg-white {
 
 /* Theme toggle in dark mode */
 html.dark .theme-toggle-btn {
-    background-color: #374151;
-    color: #f9fafb;
+    background: none;
+    color: #9ca3af;
 }
 
 html.dark .theme-toggle-btn:hover {
-    background-color: #4b5563;
+    color: #f9fafb;
 }
 
 /* Swipe section */

@@ -1,7 +1,7 @@
 {
-  "name": "GPS PRN-13 Candidates",
-  "short_name": "GPS PRN-13",
-  "description": "Sarawak State Election Candidate Directory",
+  "name": "Sarawak Talents",
+  "short_name": "Sarawak Talents",
+  "description": "Where top Sarawakian talents gather",
   "start_url": "/gps-prn13-candidates/",
   "scope": "/gps-prn13-candidates/",
   "display": "standalone",
@@ -10,14 +10,20 @@
   "theme_color": "#0d9488",
   "icons": [
     {
+      "src": "sslogo.png",
+      "sizes": "134x142",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
       "src": "icon-192.png",
-      "sizes": "192x192",
+      "sizes": "192x204",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
       "src": "icon-512.png",
-      "sizes": "512x512",
+      "sizes": "512x543",
       "type": "image/png",
       "purpose": "any maskable"
     }

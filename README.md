@@ -1,6 +1,6 @@
-# GPS PRN-13 — Candidate Directory
+# Sarawak Talents
 
-A clean, interactive candidate directory for the **Gabungan Parti Sarawak (GPS)** coalition, built for the **13th Sarawak State Election (PRN-13) 2026**.
+A clean, interactive directory where **top Sarawakian talents** gather — discover exceptional people from across the Land of the Hornbills.
 
 🔗 **Live site:** [aaronagai.github.io/gps-prn13-candidates](https://aaronagai.github.io/gps-prn13-candidates)
 
@@ -8,22 +8,21 @@ A clean, interactive candidate directory for the **Gabungan Parti Sarawak (GPS)*
 
 ## Features
 
-### Candidate Grid
-- All 82 GPS candidates across 9 zones
-- Candidate headshot photos with initials + party colour fallback
-- **Incumbent / Challenger** badge on each card
-- Click any card to open a detailed candidate profile modal
+### Talent Grid
+- Profile cards with headshot photos and initials fallback
+- **Featured / Member** badge on each card
+- Click any card to open a detailed talent profile modal
 
 ### Search & Filter
-- Live search by candidate name, DUN, or constituency
-- Multi-select filters: **Party**, **Race**, **Parliament**, **Status** (Incumbent / Challenger)
-- Sort by: **DUN No**, **Name A–Z**, **Party**
+- Live search by name, role, field, or city
+- Multi-select filters: **Field**, **Background**, **Industry**, **Type** (Featured / Member)
+- Sort by: **ID**, **Name A–Z**, **Field**
 - Filter badge indicator when filters are active
 - Clear all filters button
 
-### Explore the Roster (Swipe Stack)
-- Swipe or drag cards left/right to browse candidates
-- Tap the front card to open the candidate profile modal
+### Explore Talents (Swipe Stack)
+- Swipe or drag cards left/right to browse profiles
+- Tap the front card to open the talent profile modal
 - Arrow buttons for keyboard-friendly navigation
 
 ### Bilingual Support
@@ -33,18 +32,17 @@ A clean, interactive candidate directory for the **Gabungan Parti Sarawak (GPS)*
 ### PWA (Progressive Web App)
 - Installable on Android and iOS homescreen
 - Offline support via service worker — core assets and viewed photos are cached
-- Teal app icon with "GPS" branding
 
 ---
 
-## Parties
+## Fields
 
-| Party | Full Name | Colour |
-|-------|-----------|--------|
-| PBB | Parti Pesaka Bumiputera Bersatu | Red |
-| SUPP | Sarawak United People's Party | Yellow |
-| PRS | Parti Rakyat Sarawak | Green |
-| PDP | Parti Demokratik Progresif | Blue |
+| Field | Description | Colour |
+|-------|-------------|--------|
+| Tech | Technology & engineering | Teal |
+| Arts | Creative & performing arts | Orange |
+| Business | Entrepreneurship & commerce | Blue |
+| Science | Research & innovation | Green |
 
 ---
 
@@ -57,18 +55,18 @@ A clean, interactive candidate directory for the **Gabungan Parti Sarawak (GPS)*
 
 ---
 
-## Adding / Updating Candidate Photos
+## Adding / Updating Talent Photos
 
-1. Name the file by DUN number — e.g. `N26.jpg`
+1. Name the file by talent ID — e.g. `T01.jpg`
 2. Place it in the `photos/` folder
 3. The card and modal will display it automatically; cards without a photo show an initials avatar
 
-## Updating the Candidate List
+## Updating the Talent List
 
-If candidates change, provide the updated data as a CSV or table with these columns:
+Edit the `candidates` array in `script.js` with these fields:
 
 ```
-DUN No | Name | DUN Name | Party | Zone | Parliamentary | Race
+id | dun_no (ID) | name | dun (role) | party (field) | zone (city) | parliamentary (industry) | race (background)
 ```
 
 ---

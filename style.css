@@ -1421,3 +1421,15 @@ html.dark ::-webkit-scrollbar-thumb {
 html.dark ::-webkit-scrollbar-thumb:hover {
     background: #444444;
 }
+
+/* ── Hero ASCII: keep the headline + subtitle legible on small screens ─
+   The full-width field is dense; on a tall phone column it was drowning
+   the subtitle. Drop the opacity and clear a much larger centre zone. */
+@media (max-width: 767px) {
+    .hero-ascii-bg {
+        -webkit-mask-image: radial-gradient(ellipse 90% 62% at 50% 47%, transparent 52%, #000 88%);
+        mask-image: radial-gradient(ellipse 90% 62% at 50% 47%, transparent 52%, #000 88%);
+    }
+    .hero-ascii-bg.is-ready { opacity: 0.34; }
+    html.dark .hero-ascii-bg.is-ready { opacity: 0.5; }
+}

@@ -40,6 +40,7 @@
                 Preview mode — connect Supabase (see <code>config.js</code>) to make this live.
             </div>
 
+            <div class="join-stage" id="join-stage">
             <!-- STEP 0 · Invite -->
             <section class="join-step" data-step="0">
                 <h1 class="join-title">You're invited</h1>
@@ -83,6 +84,21 @@
                             <span class="join-btn join-btn--ghost">Upload photo</span>
                             <input id="avatar-input" type="file" accept="image/*" hidden>
                         </label>
+                    </div>
+
+                    <div class="join-field">
+                        <span class="join-label">Badge <span class="join-optional">(optional square logo)</span></span>
+                        <div class="join-badge-row">
+                            <label class="join-badge-preview" id="badge-preview" title="Upload a square image">
+                                <img id="badge-img" alt="" hidden>
+                                <span id="badge-plus" aria-hidden="true">+</span>
+                                <input id="badge-input" type="file" accept="image/*" hidden>
+                            </label>
+                            <div class="join-badge-hint">
+                                <span>A rounded-square logo shown next to your name.</span>
+                                <button type="button" id="badge-remove" class="join-badge-remove" hidden>Remove</button>
+                            </div>
+                        </div>
                     </div>
 
                     <label class="join-field">
@@ -184,9 +200,12 @@
                 <p class="join-sub">Your profile is live. Welcome to Sarawak Talents.</p>
                 <a href="index.html" class="join-btn join-btn--primary">Go to the directory</a>
             </section>
+            </div>
 
         </div>
     </main>
+
+    <canvas id="confetti-canvas" class="confetti-canvas" aria-hidden="true"></canvas>
 
     <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

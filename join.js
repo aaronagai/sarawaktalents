@@ -12,6 +12,9 @@
     var steps = Array.prototype.slice.call(document.querySelectorAll('.join-step'));
     var dots = Array.prototype.slice.call(document.querySelectorAll('.join-progress-dot'));
     var banner = document.getElementById('preview-banner');
+    var stage = document.getElementById('join-stage');
+    var mqReduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var currentStep = null;
     var params = new URLSearchParams(location.search);
 
     var avatarFile = null;
@@ -20,12 +23,107 @@
 
     if (!LIVE && banner) banner.hidden = false;
 
-    // ── navigation ──────────────────────────────────────────────────────────
+    // ── navigation: steps "fly" directionally + the tray height morphs ───────
+    function stepEl(step) { return document.querySelector('.join-step[data-step="' + step + '"]'); }
+    function stepIndex(step) { return step === 'done' ? 3 : Number(step); }
+
     function showStep(step) {
-        steps.forEach(function (s) { s.hidden = String(s.dataset.step) !== String(step); });
-        var idx = (step === 'done') ? 3 : Number(step);
-        dots.forEach(function (d, i) { d.classList.toggle('is-active', i <= idx); });
+        step = String(step);
+        var next = stepEl(step);
+        if (!next) return;
+        var prev = currentStep != null ? stepEl(currentStep) : null;
+        dots.forEach(function (d, i) { d.classList.toggle('is-active', i <= stepIndex(step)); });
+        currentStep = step;
+
+        // First render, same step, or reduced motion → instant swap
+        if (!prev || prev === next || mqReduce.matches) {
+            steps.forEach(function (s) {
+                s.hidden = (s !== next);
+                s.classList.remove('is-anim');
+                s.style.transform = ''; s.style.opacity = '';
+            });
+            stage.style.height = '';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+
+        // Direction: forward flies in from the right, back from the left.
+        var offset = 44 * (stepIndex(step) >= stepIndex(prev.dataset.step) ? 1 : -1);
+        var h0 = prev.offsetHeight;
+
+        next.hidden = false;
+        next.classList.add('is-anim');
+        next.style.transform = 'translateX(' + offset + 'px)';
+        next.style.opacity = '0';
+        var h1 = next.offsetHeight;      // measured while off-screen
+
+        prev.classList.add('is-anim');
+        stage.style.height = h0 + 'px';
+        void stage.offsetHeight;         // reflow so the height transition runs
+
+        requestAnimationFrame(function () {
+            stage.style.height = h1 + 'px';
+            prev.style.transform = 'translateX(' + (-offset) + 'px)';
+            prev.style.opacity = '0';
+            next.style.transform = 'translateX(0)';
+            next.style.opacity = '1';
+        });
         window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        window.setTimeout(function () {
+            prev.hidden = true;
+            prev.classList.remove('is-anim'); prev.style.transform = ''; prev.style.opacity = '';
+            next.classList.remove('is-anim'); next.style.transform = ''; next.style.opacity = '';
+            stage.style.height = '';       // back to natural flow
+        }, 520);
+    }
+
+    // ── Confetti: high-intensity delight for the rare "You're in" moment ─────
+    function fireConfetti() {
+        var canvas = document.getElementById('confetti-canvas');
+        if (!canvas || mqReduce.matches) return;
+        var ctx = canvas.getContext('2d');
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = window.innerHeight * dpr;
+        canvas.style.display = 'block';
+        var colors = ['#7c3aed', '#a78bfa', '#22c55e', '#f59e0b', '#ec4899', '#38bdf8'];
+        var parts = [];
+        for (var i = 0; i < 130; i++) {
+            parts.push({
+                x: window.innerWidth * 0.5 * dpr + (Math.random() - 0.5) * 90 * dpr,
+                y: window.innerHeight * 0.42 * dpr,
+                vx: (Math.random() - 0.5) * 11 * dpr,
+                vy: (Math.random() * -9 - 4) * dpr,
+                g: 0.26 * dpr,
+                w: (4 + Math.random() * 5) * dpr,
+                h: (6 + Math.random() * 8) * dpr,
+                rot: Math.random() * Math.PI,
+                vr: (Math.random() - 0.5) * 0.32,
+                color: colors[i % colors.length]
+            });
+        }
+        var start = performance.now();
+        (function frame(now) {
+            var t = now - start;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            var alive = false;
+            for (var i = 0; i < parts.length; i++) {
+                var p = parts[i];
+                p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.vx *= 0.99;
+                var a = t < 1700 ? 1 : Math.max(0, 1 - (t - 1700) / 700);
+                if (p.y < canvas.height + 40 * dpr && a > 0) alive = true;
+                ctx.save();
+                ctx.globalAlpha = a;
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rot);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+                ctx.restore();
+            }
+            if (t < 2600 && alive) requestAnimationFrame(frame);
+            else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = 'none'; }
+        })(start);
     }
 
     function setError(el, msg) {
@@ -147,6 +245,44 @@
         reader.readAsDataURL(f);
     });
 
+    // ── optional rounded-square badge (org logo) ─────────────────────────────
+    var badgeInput = document.getElementById('badge-input');
+    var badgeImg = document.getElementById('badge-img');
+    var badgePlus = document.getElementById('badge-plus');
+    var badgeRemove = document.getElementById('badge-remove');
+    var badgeFile = null;
+    var badgeRemoved = false;
+
+    function showBadge(src) {
+        badgeImg.src = src;
+        badgeImg.hidden = false;
+        badgePlus.style.display = 'none';
+        badgeRemove.hidden = false;
+    }
+    function clearBadge() {
+        badgeImg.hidden = true;
+        badgeImg.removeAttribute('src');
+        badgePlus.style.display = '';
+        badgeRemove.hidden = true;
+    }
+
+    badgeInput.addEventListener('change', function () {
+        var f = badgeInput.files && badgeInput.files[0];
+        if (!f) return;
+        badgeFile = f;
+        badgeRemoved = false;
+        var reader = new FileReader();
+        reader.onload = function (ev) { showBadge(ev.target.result); };
+        reader.readAsDataURL(f);
+    });
+
+    badgeRemove.addEventListener('click', function () {
+        badgeFile = null;
+        badgeRemoved = true;      // signal removal on save (edit mode)
+        badgeInput.value = '';
+        clearBadge();
+    });
+
     // Pre-fill the form from an existing profile (edit mode)
     function prefillProfile(p) {
         currentUsername = p.username || null;
@@ -166,6 +302,7 @@
             avatarImg.hidden = false;
             avatarInitials.style.display = 'none';
         }
+        if (p.org_photo) showBadge(p.org_photo);
         usernameOk = true;
         setUserStatus('is-ok', 'Your current handle');
         syncInitials();
@@ -229,9 +366,14 @@
         sb.auth.getUser().then(function (u) {
             var user = u.data && u.data.user;
             if (!user) { submitBtn.disabled = false; setError(profileError, 'Session expired — please sign in again.'); showStep(1); return; }
-            uploadAvatar(user.id).then(function (avatarUrl) {
+            Promise.all([
+                uploadImage(avatarFile, user.id, 'avatar'),
+                uploadImage(badgeFile, user.id, 'badge')
+            ]).then(function (urls) {
                 var payload = collectProfile(user.id);
-                if (avatarUrl) payload.avatar_url = avatarUrl;   // don't wipe existing on edit
+                if (urls[0]) payload.avatar_url = urls[0];    // don't wipe existing on edit
+                if (urls[1]) payload.org_photo = urls[1];
+                else if (badgeRemoved) payload.org_photo = null;
                 return sb.from('profiles').upsert(payload).select().single();
             }).then(function (res) {
                 submitBtn.disabled = false;
@@ -254,20 +396,22 @@
         });
     }
 
-    function uploadAvatar(uid) {
-        if (!avatarFile) return Promise.resolve(null);
-        var ext = (avatarFile.name.split('.').pop() || 'jpg').toLowerCase();
-        var path = uid + '/avatar.' + ext;
-        return sb.storage.from('avatars').upload(path, avatarFile, { upsert: true })
+    function uploadImage(file, uid, key) {
+        if (!file) return Promise.resolve(null);
+        var ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        var path = uid + '/' + key + '.' + ext;
+        return sb.storage.from('avatars').upload(path, file, { upsert: true })
             .then(function (res) {
                 if (res.error) throw res.error;
-                return sb.storage.from('avatars').getPublicUrl(path).data.publicUrl;
+                // cache-bust so a re-upload shows immediately
+                return sb.storage.from('avatars').getPublicUrl(path).data.publicUrl + '?t=' + Date.now();
             });
     }
 
     function finish() {
         if (editMode) { location.href = 'index.html'; return; }
         showStep('done');
+        setTimeout(fireConfetti, 180);   // fire as the "done" tray settles
     }
 
     // ── returning from Google OAuth (live mode) ────────────────────────────────

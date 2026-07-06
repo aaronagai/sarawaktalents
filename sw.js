@@ -1,19 +1,21 @@
-const CACHE = 'sarawaktalents-v7';
+const CACHE = 'sarawaktalents-v8';
+// Relative paths so the app works both at the domain root (sarawaktalents.com)
+// and under the /sarawaktalents/ project path.
 const ASSETS = [
-  '/sarawaktalents/',
-  '/sarawaktalents/index.html',
-  '/sarawaktalents/style.css',
-  '/sarawaktalents/transitions/index.css',
-  '/sarawaktalents/transitions/_root.css',
-  '/sarawaktalents/transitions.js',
-  '/sarawaktalents/icons.js',
-  '/sarawaktalents/script.js',
-  '/sarawaktalents/manifest.json',
-  '/sarawaktalents/sslogo.png',
-  '/sarawaktalents/sslogo.svg',
-  '/sarawaktalents/favicon-32.png',
-  '/sarawaktalents/icon-192.png',
-  '/sarawaktalents/icon-512.png',
+  './',
+  './index.html',
+  './style.css',
+  './transitions/index.css',
+  './transitions/_root.css',
+  './transitions.js',
+  './icons.js',
+  './script.js',
+  './manifest.json',
+  './sslogo.png',
+  './sslogo.svg',
+  './favicon-32.png',
+  './icon-192.png',
+  './icon-512.png',
 ];
 
 // Install: cache core assets

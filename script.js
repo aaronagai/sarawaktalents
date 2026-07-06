@@ -144,7 +144,13 @@ const candidates = [
 const members = new Set(['T02']);
 
 function candidatePhoto(c) {
+  if (c.avatar_url) return c.avatar_url;
   return `photos/user${c.id}.png`;
+}
+
+// Stable ordering key: live rows carry _seq; demo rows fall back to numeric id.
+function seqOf(c) {
+  return c._seq !== undefined ? c._seq : c.id;
 }
 
 const partyColours = {
@@ -302,9 +308,12 @@ const selectedStatuses    = statusMS.selected;
 
 // --- Populate dynamic filter options ---
 function populateFilters() {
-  partyMS.populate(['Tech', 'Arts', 'Business', 'Science']);
+  const catOrder = { Tech: 0, Arts: 1, Business: 2, Science: 3, Community: 4, Other: 5 };
+  const parties = [...new Set(candidates.map(c => c.party).filter(Boolean))]
+    .sort((a, b) => (catOrder[a] ?? 99) - (catOrder[b] ?? 99) || a.localeCompare(b));
+  partyMS.populate(parties.length ? parties : ['Tech', 'Arts', 'Business', 'Science']);
 
-  const races = [...new Set(candidates.map(c => c.race).filter(r => r !== 'N/A'))].sort();
+  const races = [...new Set(candidates.map(c => c.race).filter(r => r && r !== 'N/A'))].sort();
   raceMS.populate(races);
 
   const parliaments = [...new Set(candidates.map(c => c.parliamentary))].sort();
@@ -386,9 +395,9 @@ function render() {
 
   filtered.sort((a, b) => {
     if (currentSort === 'name')  return a.name.localeCompare(b.name);
-    if (currentSort === 'party') return (partyOrder[a.party] ?? 99) - (partyOrder[b.party] ?? 99) || a.id - b.id;
-    if (currentSort === 'zone')  return a.zone.localeCompare(b.zone) || a.id - b.id;
-    return a.id - b.id; // default: dun
+    if (currentSort === 'party') return (partyOrder[a.party] ?? 99) - (partyOrder[b.party] ?? 99) || seqOf(a) - seqOf(b);
+    if (currentSort === 'zone')  return a.zone.localeCompare(b.zone) || seqOf(a) - seqOf(b);
+    return seqOf(a) - seqOf(b); // default order
   });
 
   grid.innerHTML = '';
@@ -558,7 +567,7 @@ function closeModal() {
 document.getElementById('candidate-grid').addEventListener('click', e => {
   const cardEl = e.target.closest('[data-id]');
   if (!cardEl) return;
-  const c = candidates.find(x => x.id === +cardEl.dataset.id);
+  const c = candidates.find(x => String(x.id) === cardEl.dataset.id);
   if (c) openModal(c);
 });
 
@@ -570,4 +579,69 @@ document.getElementById('candidate-modal').addEventListener('click', e => {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 Transitions.initAvatarGroup('.hero-proof .t-avatar-group');
+
+// ── Auth entry points ────────────────────────────────────────────────
+// "Get Started" → invite-only join flow. "Log In" → straight to sign-in.
+let loginTarget = 'join.html?mode=login';
+document.querySelectorAll('.hero-nav-btn--get-started').forEach(btn => {
+  btn.addEventListener('click', () => { window.location.href = 'join.html'; });
+});
+document.querySelectorAll('.hero-nav-btn--login').forEach(btn => {
+  btn.addEventListener('click', () => { window.location.href = loginTarget; });
+});
+
+// ── Live data from Supabase (falls back to demo data) ────────────────
+function mapProfile(p, i) {
+  return {
+    id: p.id,
+    dun_no: p.username ? '@' + p.username : '',
+    username: p.username || '',
+    name: p.name,
+    dun: p.role || '',
+    party: p.category || 'Other',
+    zone: p.location || '',
+    parliamentary: p.industry || '',
+    race: p.background || 'N/A',
+    orgPhoto: p.org_photo || '',
+    avatar_url: p.avatar_url || '',
+    _seq: i
+  };
+}
+
+async function loadProfiles() {
+  if (!window.ST_CONFIGURED || !window.stSupabase) return;   // keep demo data
+  try {
+    const { data, error } = await window.stSupabase
+      .from('profiles')
+      .select('id, username, name, role, category, location, industry, background, avatar_url, org_photo, created_at')
+      .eq('status', 'active')
+      .order('created_at', { ascending: true });
+    if (error) { console.warn('[directory] load failed:', error.message); return; }
+    if (!data || data.length === 0) return;                  // keep demo until first member
+    candidates.length = 0;
+    data.forEach((p, i) => candidates.push(mapProfile(p, i)));
+    members.clear();
+    populateFilters();
+    render();
+  } catch (e) {
+    console.warn('[directory] load error:', e);
+  }
+}
+
+// Swap the "Log In" CTA to "Edit profile" for signed-in members.
+async function reflectAuthState() {
+  if (!window.ST_CONFIGURED || !window.stSupabase) return;
+  const { data: { session } } = await window.stSupabase.auth.getSession();
+  if (!session) return;
+  const { data: prof } = await window.stSupabase
+    .from('profiles').select('id').eq('id', session.user.id).maybeSingle();
+  if (!prof) return;
+  loginTarget = 'join.html?mode=edit';
+  document.querySelectorAll('.hero-nav-btn--login').forEach(btn => {
+    btn.textContent = 'Edit profile';
+  });
+}
+
+loadProfiles();
+reflectAuthState();
 

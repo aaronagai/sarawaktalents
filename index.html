@@ -47,6 +47,9 @@
 <body class="bg-gray-100 text-gray-800 font-sans flex flex-col min-h-screen">
 
     <header class="hero">
+        <div class="hero-ascii-bg" aria-hidden="true">
+            <pre class="hero-ascii-pre" id="ascii-bg"></pre>
+        </div>
         <div class="site-container">
             <nav class="hero-nav">
                 <a href="/" class="hero-logo" aria-label="Sarawak Talents home">
@@ -343,10 +346,14 @@
 
     <script src="transitions.js"></script>
     <script src="icons.js"></script>
+    <script src="ascii-hero.js"></script>
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
     <script src="script.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sarawaktalents/sw.js');
+            navigator.serviceWorker.register('sw.js');
         }
     </script>
 </body>

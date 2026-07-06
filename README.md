@@ -2,7 +2,7 @@
 
 A clean, interactive directory where **top Sarawakian talents** gather — discover exceptional people from across the Land of the Hornbills.
 
-🔗 **Live site:** [aaronagai.github.io/gps-prn13-candidates](https://aaronagai.github.io/gps-prn13-candidates)
+🔗 **Live site:** [aaronagai.github.io/sarawaktalents](https://aaronagai.github.io/sarawaktalents)
 
 ---
 

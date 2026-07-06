@@ -1,19 +1,19 @@
-const CACHE = 'gps-prn13-v6';
+const CACHE = 'sarawaktalents-v7';
 const ASSETS = [
-  '/gps-prn13-candidates/',
-  '/gps-prn13-candidates/index.html',
-  '/gps-prn13-candidates/style.css',
-  '/gps-prn13-candidates/transitions/index.css',
-  '/gps-prn13-candidates/transitions/_root.css',
-  '/gps-prn13-candidates/transitions.js',
-  '/gps-prn13-candidates/icons.js',
-  '/gps-prn13-candidates/script.js',
-  '/gps-prn13-candidates/manifest.json',
-  '/gps-prn13-candidates/sslogo.png',
-  '/gps-prn13-candidates/sslogo.svg',
-  '/gps-prn13-candidates/favicon-32.png',
-  '/gps-prn13-candidates/icon-192.png',
-  '/gps-prn13-candidates/icon-512.png',
+  '/sarawaktalents/',
+  '/sarawaktalents/index.html',
+  '/sarawaktalents/style.css',
+  '/sarawaktalents/transitions/index.css',
+  '/sarawaktalents/transitions/_root.css',
+  '/sarawaktalents/transitions.js',
+  '/sarawaktalents/icons.js',
+  '/sarawaktalents/script.js',
+  '/sarawaktalents/manifest.json',
+  '/sarawaktalents/sslogo.png',
+  '/sarawaktalents/sslogo.svg',
+  '/sarawaktalents/favicon-32.png',
+  '/sarawaktalents/icon-192.png',
+  '/sarawaktalents/icon-512.png',
 ];
 
 // Install: cache core assets

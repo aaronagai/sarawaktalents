@@ -342,8 +342,10 @@ function cardGradientClass(party) {
 }
 
 function buildCard(c) {
-  const card = document.createElement('div');
-  card.className = 'talent-card flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer';
+  // Live profiles become links to their own name-card page; demo cards stay divs.
+  const card = document.createElement(c.username ? 'a' : 'div');
+  card.className = 'talent-card no-underline text-current flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer';
+  if (c.username) card.href = 'profile.html?u=' + encodeURIComponent(c.username);
   card.style.animation = 'fadeUp 0.3s ease both';
   card.dataset.id = c.id;
 
@@ -567,6 +569,7 @@ function closeModal() {
 document.getElementById('candidate-grid').addEventListener('click', e => {
   const cardEl = e.target.closest('[data-id]');
   if (!cardEl) return;
+  if (cardEl.tagName === 'A') return;   // live cards navigate to their own URL
   const c = candidates.find(x => String(x.id) === cardEl.dataset.id);
   if (c) openModal(c);
 });

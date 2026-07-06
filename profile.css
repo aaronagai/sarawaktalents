@@ -1,0 +1,136 @@
+/* ── Public profile / digital name card ──────────────────────────── */
+.pf-body {
+    min-height: 100vh;
+    background: #ffffff;
+    color: #111827;
+    display: flex;
+    flex-direction: column;
+}
+html.dark .pf-body { background: #0a0a0a; color: #fff; }
+
+.pf-topbar { display: flex; justify-content: center; padding: 1.25rem; }
+.pf-logo-pill {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.5rem 1rem; border-radius: 9999px;
+    background: #f3f4f6; color: #111827; text-decoration: none;
+    font-size: 0.8125rem; font-weight: 500;
+}
+.pf-logo-pill img { display: block; }
+html.dark .pf-logo-pill { background: #1a1a1a; color: #fff; }
+html.dark .pf-logo-pill img { filter: brightness(0) invert(1); }
+
+.pf-main { flex: 1; width: 100%; max-width: 40rem; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+.pf-note { text-align: center; color: #6b7280; padding: 4rem 0; }
+.pf-back { display: inline-block; margin-top: 1rem; color: #7c3aed; text-decoration: none; }
+
+/* Header */
+.pf-head { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.75rem; }
+.pf-avatar {
+    width: 4.25rem; height: 4.25rem; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(145deg, #7c3aed, #4f46e5); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; font-weight: 500; overflow: hidden;
+}
+.pf-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.pf-name {
+    display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+    font-size: 1.5rem; font-weight: 500; letter-spacing: -0.01em; line-height: 1.2;
+}
+.pf-verified { color: #7c3aed; }
+html.dark .pf-verified { color: #a78bfa; }
+.pf-badge { width: 22px; height: 22px; border-radius: 6px; object-fit: cover; border: 1px solid #e5e7eb; }
+.pf-loc { font-size: 0.9375rem; color: #6b7280; margin-top: 0.15rem; }
+html.dark .pf-loc { color: #888; }
+
+/* Organisation logos */
+.pf-orgs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+.pf-orgs:empty { display: none; }
+.pf-org { width: 2.5rem; height: 2.5rem; border-radius: 0.6rem; object-fit: cover; border: 1px solid #e5e7eb; }
+html.dark .pf-org { border-color: #2a2a2a; }
+
+/* Education section */
+.pf-edu-section { margin-bottom: 2rem; }
+.pf-section-title { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #9ca3af; margin-bottom: 0.5rem; }
+.pf-edu { font-size: 0.9375rem; color: #374151; }
+.pf-edu b { font-weight: 500; color: #111827; }
+html.dark .pf-edu { color: #b0b0b0; }
+html.dark .pf-edu b { color: #fff; }
+
+/* Lead + bio */
+.pf-lead { font-size: 1.0625rem; line-height: 1.5; margin-bottom: 0.75rem; }
+.pf-lead b { font-weight: 500; }
+.pf-bio { font-size: 1rem; font-weight: 300; line-height: 1.6; color: #374151; margin-bottom: 1.5rem; }
+html.dark .pf-bio { color: #b0b0b0; }
+
+/* Tags */
+.pf-tags { display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin-bottom: 2rem; }
+.pf-tag { font-size: 0.9375rem; color: #9ca3af; }
+html.dark .pf-tag { color: #777; }
+
+/* Socials — link-in-bio buttons */
+.pf-socials { display: flex; flex-wrap: wrap; gap: 0.625rem; margin-bottom: 2rem; }
+.pf-social {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.5rem 0.875rem 0.5rem 0.5rem;
+    border: 1px solid #e5e7eb; border-radius: 9999px;
+    text-decoration: none; color: #111827; font-size: 0.875rem; font-weight: 500;
+    background: #fff; transition: border-color 0.15s, transform 0.05s;
+}
+.pf-social:hover { border-color: #d1d5db; }
+.pf-social:active { transform: translateY(1px); }
+html.dark .pf-social { background: #141414; border-color: #2a2a2a; color: #fff; }
+.pf-social-ic {
+    width: 1.5rem; height: 1.5rem; border-radius: 6px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 0.6875rem; font-weight: 700; letter-spacing: -0.02em;
+}
+
+/* Actions */
+.pf-actions { display: flex; flex-wrap: wrap; gap: 0.625rem; margin-bottom: 2rem; }
+.pf-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0.6875rem 1.25rem; border-radius: 0.875rem;
+    font-size: 0.9375rem; font-weight: 500; cursor: pointer; border: none;
+    transition: opacity 0.15s, background 0.15s;
+}
+.pf-btn--dark { background: #111827; color: #fff; }
+.pf-btn--dark:hover { opacity: 0.88; }
+html.dark .pf-btn--dark { background: #fff; color: #0a0a0a; }
+.pf-btn--ghost { background: #f3f4f6; color: #374151; }
+.pf-btn--ghost:hover { background: #e5e7eb; }
+html.dark .pf-btn--ghost { background: #1c1c1c; color: #d4d4d4; }
+
+.pf-rule { border: none; border-top: 1px solid #eee; margin: 1.5rem 0; }
+html.dark .pf-rule { border-color: #222; }
+.pf-footnote { font-size: 0.8125rem; color: #9ca3af; }
+
+.pf-footer { text-align: center; padding: 2rem; font-size: 0.8125rem; color: #9ca3af; }
+
+/* ── QR tray ─────────────────────────────────────────────────────── */
+.qr-backdrop {
+    position: fixed; inset: 0; z-index: 60;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center; padding: 1.25rem;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+}
+.qr-backdrop.is-open { opacity: 1; pointer-events: auto; }
+.qr-card {
+    position: relative; background: #fff; border-radius: 1.5rem; padding: 1.75rem;
+    width: min(20rem, 100%); text-align: center;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+    transform: scale(0.94); transition: transform 0.24s cubic-bezier(0.32,0.72,0,1);
+}
+.qr-backdrop.is-open .qr-card { transform: scale(1); }
+html.dark .qr-card { background: #161616; }
+.qr-close {
+    position: absolute; top: 0.75rem; right: 0.875rem; background: none; border: none;
+    font-size: 1rem; color: #9ca3af; cursor: pointer;
+}
+.qr-code-wrap {
+    background: #fff; border-radius: 1rem; padding: 0.75rem; display: inline-block; margin-bottom: 1rem;
+    border: 1px solid #eee;
+}
+.qr-code-wrap img { display: block; width: 12rem; height: 12rem; image-rendering: pixelated; }
+.qr-name { font-size: 1.05rem; font-weight: 500; }
+.qr-url { font-size: 0.8125rem; color: #9ca3af; margin-top: 0.25rem; word-break: break-all; }
+.qr-tray-actions { margin-top: 1.25rem; }

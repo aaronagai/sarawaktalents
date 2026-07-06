@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile · Sarawak Talents</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' };</script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="profile.css">
+    <link rel="icon" href="sslogo.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body class="pf-body">
+
+    <header class="pf-topbar">
+        <a href="index.html" class="pf-logo-pill" aria-label="Sarawak Talents">
+            <img src="sslogo.svg" alt="" width="20" height="21">
+            <span>Sarawak Talents</span>
+        </a>
+    </header>
+
+    <main class="pf-main">
+        <div id="pf-loading" class="pf-note">Loading…</div>
+
+        <div id="pf-notfound" class="pf-note" hidden>
+            <p>This profile isn't available.</p>
+            <a href="index.html" class="pf-back">← Back to the directory</a>
+        </div>
+
+        <article id="pf-content" hidden>
+            <!-- Header -->
+            <div class="pf-head">
+                <div class="pf-avatar" id="pf-avatar"><span id="pf-initials"></span><img id="pf-avatar-img" alt="" hidden></div>
+                <div class="pf-head-text">
+                    <h1 class="pf-name">
+                        <span id="pf-name"></span>
+                        <svg class="pf-verified" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 1.8 3-.2 1 2.8 2.6 1.5-.7 2.9.7 2.9-2.6 1.5-1 2.8-3-.2L12 22l-2.4-1.8-3 .2-1-2.8L3 16.3l.7-2.9L3 10.5l2.6-1.5 1-2.8 3 .2L12 2zm-1.1 12.9l5-5-1.4-1.4-3.6 3.6-1.6-1.6-1.4 1.4 3 3z"/></svg>
+                    </h1>
+                    <p class="pf-loc" id="pf-loc"></p>
+                </div>
+            </div>
+
+            <!-- Organisation logos -->
+            <div class="pf-orgs" id="pf-orgs"></div>
+
+            <!-- Role + bio -->
+            <p class="pf-lead" id="pf-lead"></p>
+            <p class="pf-bio" id="pf-bio" hidden></p>
+
+            <!-- Tags -->
+            <div class="pf-tags" id="pf-tags"></div>
+
+            <!-- Education -->
+            <div class="pf-edu-section" id="pf-edu-section" hidden>
+                <h2 class="pf-section-title">Education</h2>
+                <p class="pf-edu" id="pf-edu"></p>
+            </div>
+
+            <!-- Socials -->
+            <div class="pf-socials" id="pf-socials"></div>
+
+            <!-- Actions -->
+            <div class="pf-actions">
+                <button type="button" id="pf-qr-btn" class="pf-btn pf-btn--dark">Show QR code</button>
+                <button type="button" id="pf-vcard-btn" class="pf-btn pf-btn--ghost">Save contact</button>
+                <button type="button" id="pf-copy-btn" class="pf-btn pf-btn--ghost">Copy link</button>
+            </div>
+
+            <hr class="pf-rule">
+            <p class="pf-footnote">One scan shares everything that matters — <span id="pf-url-label"></span></p>
+        </article>
+    </main>
+
+    <footer class="pf-footer">
+        <span>© <span id="pf-year"></span> Sarawak Talents</span>
+    </footer>
+
+    <!-- QR tray -->
+    <div id="qr-backdrop" class="qr-backdrop" role="dialog" aria-modal="true">
+        <div class="qr-card">
+            <button id="qr-close" class="qr-close" aria-label="Close">✕</button>
+            <div class="qr-code-wrap"><img id="qr-img" alt="Profile QR code"></div>
+            <div class="qr-name" id="qr-name"></div>
+            <div class="qr-url" id="qr-url"></div>
+            <div class="qr-tray-actions">
+                <button id="qr-download" class="pf-btn pf-btn--dark">Download PNG</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+    <script src="supabase-client.js"></script>
+    <script src="profile.js"></script>
+    <script>
+        (function () { if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark'); })();
+    </script>
+</body>
+</html>

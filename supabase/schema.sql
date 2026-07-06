@@ -58,7 +58,9 @@ create table if not exists public.profiles (
     bio        text,
     links      jsonb not null default '{}'::jsonb,   -- {website, x, linkedin, ...}
     avatar_url text,                     -- storage public URL
-    org_photo  text,                     -- org/badge image URL
+    org_photo  text,                     -- primary org/badge image (= org_photos[0])
+    org_photos jsonb not null default '[]'::jsonb,  -- up to 3 org logo URLs
+    education  jsonb not null default '{}'::jsonb,   -- { program, school }
     status     text not null default 'active' check (status in ('active','hidden')),
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()

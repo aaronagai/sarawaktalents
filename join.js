@@ -245,43 +245,51 @@
         reader.readAsDataURL(f);
     });
 
-    // ── optional rounded-square badge (org logo) ─────────────────────────────
-    var badgeInput = document.getElementById('badge-input');
-    var badgeImg = document.getElementById('badge-img');
-    var badgePlus = document.getElementById('badge-plus');
-    var badgeRemove = document.getElementById('badge-remove');
-    var badgeFile = null;
-    var badgeRemoved = false;
+    // ── organisation logos (up to 3 slots) ──────────────────────────────────
+    // Each slot: { file: File|null, url: existing URL|null }.
+    var orgSlots = [{ file: null, url: null }, { file: null, url: null }, { file: null, url: null }];
 
-    function showBadge(src) {
-        badgeImg.src = src;
-        badgeImg.hidden = false;
-        badgePlus.style.display = 'none';
-        badgeRemove.hidden = false;
-    }
-    function clearBadge() {
-        badgeImg.hidden = true;
-        badgeImg.removeAttribute('src');
-        badgePlus.style.display = '';
-        badgeRemove.hidden = true;
+    function paintSlot(i) {
+        var slot = document.querySelector('.join-org-slot[data-slot="' + i + '"]');
+        var img = slot.querySelector('img');
+        var plus = slot.querySelector('.join-org-plus');
+        var x = slot.querySelector('.join-org-x');
+        var s = orgSlots[i];
+        var has = !!(s.file || s.url);
+        slot.classList.toggle('is-filled', has);
+        img.hidden = !has;
+        plus.style.display = has ? 'none' : '';
+        x.hidden = !has;
     }
 
-    badgeInput.addEventListener('change', function () {
-        var f = badgeInput.files && badgeInput.files[0];
-        if (!f) return;
-        badgeFile = f;
-        badgeRemoved = false;
-        var reader = new FileReader();
-        reader.onload = function (ev) { showBadge(ev.target.result); };
-        reader.readAsDataURL(f);
+    Array.prototype.forEach.call(document.querySelectorAll('.join-org-slot'), function (slot) {
+        var i = Number(slot.dataset.slot);
+        var input = slot.querySelector('input');
+        var x = slot.querySelector('.join-org-x');
+        input.addEventListener('change', function () {
+            var f = input.files && input.files[0];
+            if (!f) return;
+            orgSlots[i].file = f;
+            orgSlots[i].url = null;
+            var reader = new FileReader();
+            reader.onload = function (ev) { slot.querySelector('img').src = ev.target.result; paintSlot(i); };
+            reader.readAsDataURL(f);
+        });
+        x.addEventListener('click', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            orgSlots[i] = { file: null, url: null };
+            input.value = '';
+            slot.querySelector('img').removeAttribute('src');
+            paintSlot(i);
+        });
     });
 
-    badgeRemove.addEventListener('click', function () {
-        badgeFile = null;
-        badgeRemoved = true;      // signal removal on save (edit mode)
-        badgeInput.value = '';
-        clearBadge();
-    });
+    function setOrgSlot(i, url) {
+        orgSlots[i].url = url;
+        orgSlots[i].file = null;
+        document.querySelector('.join-org-slot[data-slot="' + i + '"] img').src = url;
+        paintSlot(i);
+    }
 
     // Pre-fill the form from an existing profile (edit mode)
     function prefillProfile(p) {
@@ -295,14 +303,22 @@
         document.getElementById('pf-background').value = p.background || '';
         document.getElementById('pf-bio').value = p.bio || '';
         var links = p.links || {};
-        document.getElementById('pf-link-web').value = links.website || '';
-        document.getElementById('pf-link-linkedin').value = links.linkedin || '';
+        LINK_KEYS.forEach(function (k) {
+            var el = document.getElementById('pf-link-' + k);
+            if (el) el.value = links[k] || '';
+        });
         if (p.avatar_url) {
             avatarImg.src = p.avatar_url;
             avatarImg.hidden = false;
             avatarInitials.style.display = 'none';
         }
-        if (p.org_photo) showBadge(p.org_photo);
+        // Organisation logos
+        var orgs = (p.org_photos && p.org_photos.length) ? p.org_photos : (p.org_photo ? [p.org_photo] : []);
+        orgs.slice(0, 3).forEach(function (url, i) { setOrgSlot(i, url); });
+        // Education
+        var edu = p.education || {};
+        document.getElementById('pf-edu-program').value = edu.program || '';
+        document.getElementById('pf-edu-school').value = edu.school || '';
         usernameOk = true;
         setUserStatus('is-ok', 'Your current handle');
         syncInitials();
@@ -317,12 +333,15 @@
         submitBtn.textContent = 'Save changes';
     }
 
+    var LINK_KEYS = ['website', 'instagram', 'x', 'linkedin', 'facebook', 'tiktok', 'github', 'whatsapp', 'email'];
+
     function collectProfile(uid) {
         var links = {};
-        var web = document.getElementById('pf-link-web').value.trim();
-        var li = document.getElementById('pf-link-linkedin').value.trim();
-        if (web) links.website = web;
-        if (li) links.linkedin = li;
+        LINK_KEYS.forEach(function (k) {
+            var el = document.getElementById('pf-link-' + k);
+            var v = el ? el.value.trim() : '';
+            if (v) links[k] = v;
+        });
         return {
             id: uid,
             username: usernameEl.value.trim().toLowerCase(),
@@ -333,8 +352,18 @@
             industry: document.getElementById('pf-industry').value.trim() || null,
             background: document.getElementById('pf-background').value || null,
             bio: document.getElementById('pf-bio').value.trim() || null,
-            links: links
+            links: links,
+            education: collectEducation()
         };
+    }
+
+    function collectEducation() {
+        var e = {};
+        var prog = document.getElementById('pf-edu-program').value.trim();
+        var school = document.getElementById('pf-edu-school').value.trim();
+        if (prog) e.program = prog;
+        if (school) e.school = school;
+        return e;
     }
 
     function validProfile() {
@@ -366,14 +395,16 @@
         sb.auth.getUser().then(function (u) {
             var user = u.data && u.data.user;
             if (!user) { submitBtn.disabled = false; setError(profileError, 'Session expired — please sign in again.'); showStep(1); return; }
-            Promise.all([
-                uploadImage(avatarFile, user.id, 'avatar'),
-                uploadImage(badgeFile, user.id, 'badge')
-            ]).then(function (urls) {
+            var orgUploads = orgSlots.map(function (s, i) {
+                return s.file ? uploadImage(s.file, user.id, 'org' + i) : Promise.resolve(s.url);
+            });
+            Promise.all([uploadImage(avatarFile, user.id, 'avatar')].concat(orgUploads)).then(function (all) {
+                var avatarUrl = all[0];
+                var orgUrls = all.slice(1).filter(Boolean);   // compact, order preserved
                 var payload = collectProfile(user.id);
-                if (urls[0]) payload.avatar_url = urls[0];    // don't wipe existing on edit
-                if (urls[1]) payload.org_photo = urls[1];
-                else if (badgeRemoved) payload.org_photo = null;
+                if (avatarUrl) payload.avatar_url = avatarUrl; // don't wipe existing on edit
+                payload.org_photos = orgUrls;
+                payload.org_photo = orgUrls[0] || null;        // primary → directory badge
                 return sb.from('profiles').upsert(payload).select().single();
             }).then(function (res) {
                 submitBtn.disabled = false;

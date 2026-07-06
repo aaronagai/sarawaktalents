@@ -87,18 +87,13 @@
                     </div>
 
                     <div class="join-field">
-                        <span class="join-label">Badge <span class="join-optional">(optional square logo)</span></span>
-                        <div class="join-badge-row">
-                            <label class="join-badge-preview" id="badge-preview" title="Upload a square image">
-                                <img id="badge-img" alt="" hidden>
-                                <span id="badge-plus" aria-hidden="true">+</span>
-                                <input id="badge-input" type="file" accept="image/*" hidden>
-                            </label>
-                            <div class="join-badge-hint">
-                                <span>A rounded-square logo shown next to your name.</span>
-                                <button type="button" id="badge-remove" class="join-badge-remove" hidden>Remove</button>
-                            </div>
+                        <span class="join-label">Organisations <span class="join-optional">(optional — up to 3 logos)</span></span>
+                        <div class="join-orgs" id="join-orgs">
+                            <label class="join-org-slot" data-slot="0"><img alt="" hidden><span class="join-org-plus" aria-hidden="true">+</span><input type="file" accept="image/*" hidden><span class="join-org-x" hidden>✕</span></label>
+                            <label class="join-org-slot" data-slot="1"><img alt="" hidden><span class="join-org-plus" aria-hidden="true">+</span><input type="file" accept="image/*" hidden><span class="join-org-x" hidden>✕</span></label>
+                            <label class="join-org-slot" data-slot="2"><img alt="" hidden><span class="join-org-plus" aria-hidden="true">+</span><input type="file" accept="image/*" hidden><span class="join-org-x" hidden>✕</span></label>
                         </div>
+                        <span class="join-optional" style="font-size:0.75rem;">The first logo shows next to your name in the directory.</span>
                     </div>
 
                     <label class="join-field">
@@ -178,14 +173,34 @@
                     </label>
 
                     <div class="join-grid-2">
-                        <label class="join-field">
-                            <span class="join-label">Website / X</span>
-                            <input id="pf-link-web" type="url" class="join-input" placeholder="https://">
-                        </label>
-                        <label class="join-field">
-                            <span class="join-label">LinkedIn</span>
-                            <input id="pf-link-linkedin" type="url" class="join-input" placeholder="https://linkedin.com/in/">
-                        </label>
+                        <label class="join-field"><span class="join-label">Program <span class="join-optional">(optional)</span></span>
+                            <input id="pf-edu-program" type="text" class="join-input" placeholder="e.g. BSc Computer Science"></label>
+                        <label class="join-field"><span class="join-label">University <span class="join-optional">(optional)</span></span>
+                            <input id="pf-edu-school" type="text" class="join-input" placeholder="e.g. UNIMAS"></label>
+                    </div>
+
+                    <div class="join-field">
+                        <span class="join-label">Socials &amp; links <span class="join-optional">(all optional — used for your QR card)</span></span>
+                    </div>
+                    <div class="join-grid-2 join-socials">
+                        <label class="join-field"><span class="join-label">Website</span>
+                            <input id="pf-link-website" type="text" class="join-input" placeholder="yoursite.com"></label>
+                        <label class="join-field"><span class="join-label">Instagram</span>
+                            <input id="pf-link-instagram" type="text" class="join-input" placeholder="@handle"></label>
+                        <label class="join-field"><span class="join-label">X (Twitter)</span>
+                            <input id="pf-link-x" type="text" class="join-input" placeholder="@handle"></label>
+                        <label class="join-field"><span class="join-label">LinkedIn</span>
+                            <input id="pf-link-linkedin" type="text" class="join-input" placeholder="linkedin.com/in/…"></label>
+                        <label class="join-field"><span class="join-label">Facebook</span>
+                            <input id="pf-link-facebook" type="text" class="join-input" placeholder="facebook.com/…"></label>
+                        <label class="join-field"><span class="join-label">TikTok</span>
+                            <input id="pf-link-tiktok" type="text" class="join-input" placeholder="@handle"></label>
+                        <label class="join-field"><span class="join-label">GitHub</span>
+                            <input id="pf-link-github" type="text" class="join-input" placeholder="@handle"></label>
+                        <label class="join-field"><span class="join-label">WhatsApp</span>
+                            <input id="pf-link-whatsapp" type="tel" class="join-input" placeholder="60123456789"></label>
+                        <label class="join-field"><span class="join-label">Email</span>
+                            <input id="pf-link-email" type="email" class="join-input" placeholder="you@email.com"></label>
                     </div>
 
                     <p id="profile-error" class="join-error" hidden></p>

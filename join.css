@@ -326,6 +326,32 @@ html.dark .join-username-status.is-bad { color: #f87171; }
 html.dark .join-badge-preview { background: #0f0f0f; border-color: #333; }
 html.dark .join-badge-preview:hover { border-color: #a78bfa; }
 
+/* Organisation logos (up to 3) */
+.join-orgs { display: flex; gap: 0.625rem; }
+.join-org-slot {
+    position: relative;
+    width: 3.25rem; height: 3.25rem;
+    border-radius: 0.85rem;
+    border: 1.5px dashed #d1d5db;
+    background: #fafafa;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; overflow: hidden; flex-shrink: 0;
+    color: #9ca3af; font-size: 1.5rem; font-weight: 300;
+    transition: border-color 0.15s;
+}
+.join-org-slot:hover { border-color: #7c3aed; }
+.join-org-slot img { width: 100%; height: 100%; object-fit: cover; }
+.join-org-slot.is-filled { border-style: solid; }
+.join-org-x {
+    position: absolute; top: -6px; right: -6px;
+    width: 1.15rem; height: 1.15rem; border-radius: 50%;
+    background: #111827; color: #fff; font-size: 0.6rem;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
+}
+html.dark .join-org-slot { background: #0f0f0f; border-color: #333; }
+html.dark .join-org-slot:hover { border-color: #a78bfa; }
+
 /* Done */
 .join-done { text-align: center; padding: 1rem 0; }
 .join-done-check {

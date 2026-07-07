@@ -12,6 +12,8 @@ const translations = {
     heroSubtitle:      'The coolest network for Sarawakians. Juh, kita ngerami sama-sama!',
     logIn:             'Log In',
     getStarted:        'Get Started',
+    profile:           'Profile',
+    editProfile:       'Edit profile',
     memberCount:       '+92',
     subtitle:          'Where top Sarawakian talents gather',
     searchPlaceholder: 'Search by name, role, or city...',
@@ -56,6 +58,8 @@ const translations = {
     heroSubtitle:      'Rangkaian paling hebat untuk orang Sarawak. Juh, kita ngerami sama-sama!',
     logIn:             'Log Masuk',
     getStarted:        'Mula',
+    profile:           'Profil',
+    editProfile:       'Edit profil',
     memberCount:       '+92',
     subtitle:          'Di mana bakat terbaik Sarawak berkumpul',
     searchPlaceholder: 'Cari mengikut nama, peranan, atau bandar...',
@@ -574,9 +578,11 @@ Transitions.initAvatarGroup('.hero-proof .t-avatar-group');
 
 // ── Auth entry points ────────────────────────────────────────────────
 // "Get Started" → invite-only join flow. "Log In" → straight to sign-in.
+// For signed-in members these become "Profile" and "Edit profile".
 let loginTarget = 'join.html?mode=login';
+let getStartedTarget = 'join.html';
 document.querySelectorAll('.hero-nav-btn--get-started').forEach(btn => {
-  btn.addEventListener('click', () => { window.location.href = 'join.html'; });
+  btn.addEventListener('click', () => { window.location.href = getStartedTarget; });
 });
 document.querySelectorAll('.hero-nav-btn--login').forEach(btn => {
   btn.addEventListener('click', () => { window.location.href = loginTarget; });
@@ -638,18 +644,26 @@ async function loadProfiles() {
   }
 }
 
-// Swap the "Log In" CTA to "Edit profile" for signed-in members.
+// Signed-in members: "Log In" → "Edit profile", "Get Started" → "Profile".
 async function reflectAuthState() {
   if (!window.ST_CONFIGURED || !window.stSupabase) return;
   const { data: { session } } = await window.stSupabase.auth.getSession();
   if (!session) return;
   const { data: prof } = await window.stSupabase
-    .from('profiles').select('id').eq('id', session.user.id).maybeSingle();
+    .from('profiles').select('id, username').eq('id', session.user.id).maybeSingle();
   if (!prof) return;
   loginTarget = 'join.html?mode=edit';
   document.querySelectorAll('.hero-nav-btn--login').forEach(btn => {
-    btn.textContent = 'Edit profile';
+    btn.setAttribute('data-i18n', 'editProfile');
+    btn.textContent = (translations[currentLang] || translations.en).editProfile;
   });
+  if (prof.username) {
+    getStartedTarget = 'profile.html?u=' + encodeURIComponent(prof.username);
+    document.querySelectorAll('.hero-nav-btn--get-started').forEach(btn => {
+      btn.setAttribute('data-i18n', 'profile');
+      btn.textContent = (translations[currentLang] || translations.en).profile;
+    });
+  }
 }
 
 loadProfiles();

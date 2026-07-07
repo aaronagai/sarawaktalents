@@ -31,7 +31,8 @@
 
     <header class="join-topbar">
         <a href="index.html" class="join-logo" aria-label="Sarawak Talents home">
-            <img src="sslogo.svg" alt="" width="30" height="32">
+            <img src="sslogo.svg" alt="" class="brand-mark" width="27" height="28">
+            <span class="brand-text">SarawakTalents<span class="brand-tld">.com</span></span>
         </a>
         <a href="index.html" class="join-exit">Back to directory</a>
     </header>
@@ -141,14 +142,51 @@
                             <span class="join-label">Location <em>*</em></span>
                             <select id="pf-location" class="join-input" required>
                                 <option value="" disabled selected>Choose one</option>
-                                <option>Kuching</option>
-                                <option>Miri</option>
-                                <option>Sibu</option>
+                                <option>Asajaya</option>
+                                <option>Bau</option>
+                                <option>Belaga</option>
+                                <option>Beluru</option>
+                                <option>Betong</option>
                                 <option>Bintulu</option>
-                                <option>Samarahan</option>
-                                <option>Sri Aman</option>
+                                <option>Bukit Mabong</option>
+                                <option>Dalat</option>
+                                <option>Daro</option>
+                                <option>Gedong</option>
+                                <option>Julau</option>
+                                <option>Kabong</option>
+                                <option>Kanowit</option>
                                 <option>Kapit</option>
+                                <option>Kuching</option>
+                                <option>Lawas</option>
                                 <option>Limbang</option>
+                                <option>Lingga</option>
+                                <option>Lubok Antu</option>
+                                <option>Lundu</option>
+                                <option>Marudi</option>
+                                <option>Matu</option>
+                                <option>Meradong</option>
+                                <option>Miri</option>
+                                <option>Mukah</option>
+                                <option>Pakan</option>
+                                <option>Pantu</option>
+                                <option>Pusa</option>
+                                <option>Samarahan</option>
+                                <option>Saratok</option>
+                                <option>Sarikei</option>
+                                <option>Sebauh</option>
+                                <option>Sebuyau</option>
+                                <option>Selangau</option>
+                                <option>Serian</option>
+                                <option>Sibu</option>
+                                <option>Siburan</option>
+                                <option>Simunjan</option>
+                                <option>Song</option>
+                                <option>Sri Aman</option>
+                                <option>Subis</option>
+                                <option>Tanjung Manis</option>
+                                <option>Tatau</option>
+                                <option>Tebedu</option>
+                                <option>Telang Usan</option>
                                 <option>Outside Sarawak</option>
                             </select>
                         </label>
@@ -157,20 +195,6 @@
                     <label class="join-field">
                         <span class="join-label">Industry <span class="join-optional">(free text)</span></span>
                         <input id="pf-industry" type="text" class="join-input" placeholder="e.g. Software Development">
-                    </label>
-
-                    <label class="join-field">
-                        <span class="join-label">Background <span class="join-optional">(optional)</span></span>
-                        <select id="pf-background" class="join-input">
-                            <option value="">Prefer not to say</option>
-                            <option>Iban</option>
-                            <option>Malay</option>
-                            <option>Chinese</option>
-                            <option>Bidayuh</option>
-                            <option>Melanau</option>
-                            <option>Orang Ulu</option>
-                            <option>Other</option>
-                        </select>
                     </label>
 
                     <label class="join-field">
@@ -217,7 +241,11 @@
 
             <!-- DONE -->
             <section class="join-step join-done" data-step="done" hidden>
-                <div class="join-done-check" aria-hidden="true">✓</div>
+                <div class="join-done-check" aria-hidden="true">
+                    <span class="t-success-check" data-state="out">
+                        <svg viewBox="0 0 48 48" fill="none"><path d="M13 24l7 7 15-17"/></svg>
+                    </span>
+                </div>
                 <h1 class="join-title">You're in.</h1>
                 <p class="join-sub">Your profile is live. Welcome to Sarawak Talents.</p>
                 <a href="index.html" class="join-btn join-btn--primary">Go to the directory</a>

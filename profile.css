@@ -10,12 +10,15 @@ html.dark .pf-body { background: #0a0a0a; color: #fff; }
 
 .pf-topbar { display: flex; justify-content: center; padding: 1.25rem; }
 .pf-logo-pill {
-    display: inline-flex; align-items: center; gap: 0.5rem;
-    padding: 0.5rem 1rem; border-radius: 9999px;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.375rem 0.75rem; border-radius: 9999px;
     background: #f3f4f6; color: #111827; text-decoration: none;
-    font-size: 0.8125rem; font-weight: 500;
+    font-weight: 500;
 }
 .pf-logo-pill img { display: block; }
+/* Compact lockup in the profile pill (smaller than the hero header). */
+.pf-logo-pill .brand-mark { height: 1.2rem; }
+.pf-logo-pill .brand-text { font-size: 0.875rem; }
 html.dark .pf-logo-pill { background: #1a1a1a; color: #fff; }
 html.dark .pf-logo-pill img { filter: brightness(0) invert(1); }
 
@@ -36,10 +39,36 @@ html.dark .pf-logo-pill img { filter: brightness(0) invert(1); }
     display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
     font-size: 1.5rem; font-weight: 500; letter-spacing: -0.01em; line-height: 1.2;
 }
-.pf-verified { color: #7c3aed; flex-shrink: 0; }
-html.dark .pf-verified { color: #a78bfa; }
-.pf-org-inline { width: 28px; height: 28px; border-radius: 7px; object-fit: cover; border: 1px solid #e5e7eb; flex-shrink: 0; }
-html.dark .pf-org-inline { border-color: #2a2a2a; }
+.pf-verified { color: #6b7280; flex-shrink: 0; }
+html.dark .pf-verified { color: #a0a0a0; }
+.pf-org-inline { display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; vertical-align: middle; }
+/* Badges match the verified checkmark size (22px). */
+.pf-org-inline img { width: 22px; height: 22px; border-radius: 6px; object-fit: cover; border: 1px solid #e5e7eb; display: block; }
+html.dark .pf-org-inline img { border-color: #2a2a2a; }
+/* Organisation badge tooltip — hover (desktop) / tap-focus (mobile). */
+.pf-org-badge { position: relative; display: inline-flex; outline: none; cursor: default; }
+.pf-org-tip {
+    position: absolute; bottom: calc(100% + 8px); right: 0; left: auto;
+    transform: translateY(4px);
+    background: #e5e7eb; color: #111827; font-size: 0.72rem; font-weight: 500;
+    padding: 0.4rem 0.6rem; border-radius: 0.5rem;
+    white-space: normal; width: max-content; max-width: min(240px, 72vw);
+    text-align: left; line-height: 1.3;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.16s ease, transform 0.16s ease;
+    z-index: 30; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+}
+.pf-org-tip::after {
+    content: ''; position: absolute; top: 100%; right: 9px; left: auto;
+    border: 5px solid transparent; border-top-color: #e5e7eb;
+}
+.pf-org-badge:hover .pf-org-tip,
+.pf-org-badge:focus .pf-org-tip,
+.pf-org-badge:focus-within .pf-org-tip {
+    opacity: 1; transform: translateY(0);
+}
+html.dark .pf-org-tip { background: #d1d5db; color: #111827; }
+html.dark .pf-org-tip::after { border-top-color: #d1d5db; }
 .pf-badge { width: 22px; height: 22px; border-radius: 6px; object-fit: cover; border: 1px solid #e5e7eb; }
 .pf-loc { font-size: 0.9375rem; color: #6b7280; margin-top: 0.15rem; }
 html.dark .pf-loc { color: #888; }
@@ -140,13 +169,29 @@ html.dark .qr-ic.is-active { box-shadow: 0 0 0 3px #0a0a0a, 0 6px 18px rgba(0, 0
 .qr-dl { display: block; margin: 0.75rem auto 0; background: none; border: none; color: #9ca3af; font-size: 0.8125rem; cursor: pointer; }
 .qr-dl:hover { color: #6b7280; }
 
-/* Desktop: QR card on the left, social buttons stacked on the right */
-.qr-cols { display: none; }
+/* Phone: QR on top, then a vertical stack of Family-style cards.
+   Desktop: QR card on the left, social buttons stacked on the right. */
+.qr-cols { display: flex; flex-direction: column; gap: 0.625rem; margin: 1rem 0 1.25rem; }
 @media (min-width: 768px) {
-    .qr-stage { display: none; }
-    .qr-cols { display: flex; align-items: center; gap: 1.5rem; margin: 1rem 0 1.25rem; }
+    /* Stretch both columns to the same height so the QR matches the card stack. */
+    .qr-cols { flex-direction: row; align-items: stretch; gap: 1.5rem; }
     /* The QR button list covers socials on desktop, so hide the redundant list. */
     .pf-socials { display: none; }
+    /* QR card grows to the full height of the visible cards. */
+    .qr-card-box { display: flex; align-items: center; justify-content: center; }
+    .qr-card-box img { width: auto; height: 100%; }
+    /* Show ~3.5 cards, scroll to reveal the rest. */
+    .qr-buttons {
+        max-height: 14.75rem;
+        overflow-y: auto;
+        padding-right: 0.45rem;
+        scrollbar-width: thin;
+        scrollbar-color: #d1d5db transparent;
+    }
+    .qr-buttons::-webkit-scrollbar { width: 6px; }
+    .qr-buttons::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+    html.dark .qr-buttons { scrollbar-color: #3a3a3a transparent; }
+    html.dark .qr-buttons::-webkit-scrollbar-thumb { background: #3a3a3a; }
 }
 .qr-card-box {
     flex-shrink: 0;
@@ -168,11 +213,65 @@ html.dark .qr-card-box { background: #161616; box-shadow: 0 12px 34px rgba(0, 0,
 .qr-social-btn.is-active { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12); }
 html.dark .qr-social-btn { background: #141414; border-color: #2a2a2a; color: #fff; }
 html.dark .qr-social-btn.is-active { border-color: #a78bfa; box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15); }
+/* Arrow appears on the active card — tap again to open its destination. */
+.qr-social-btn .qr-arrow {
+    margin-left: auto; font-size: 1.35rem; line-height: 1; color: #7c3aed;
+    opacity: 0; transform: translateX(-5px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.qr-social-btn.is-active .qr-arrow { opacity: 1; transform: translateX(0); }
+html.dark .qr-social-btn .qr-arrow { color: #a78bfa; }
 .qr-social-ic {
     width: 1.75rem; height: 1.75rem; border-radius: 0.5rem; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
     color: #fff; font-size: 0.7rem; font-weight: 700;
 }
+/* Brand glyphs (simple-icons) sit centred in their coloured tile. */
+.pf-social-ic .soc-svg { width: 58%; height: 58%; display: block; }
+.qr-social-ic .soc-svg { width: 60%; height: 60%; display: block; }
+.qr-ic .soc-svg { width: 52%; height: 52%; display: block; }
 .qr-social-btn--soon { color: #9ca3af; border-style: dashed; cursor: default; justify-content: center; }
 .qr-social-btn--soon:hover { border-color: #e5e7eb; }
 html.dark .qr-social-btn--soon { color: #666; }
+
+/* Phone: socials collapse to a centred grid of tappable circular icons.
+   (Placed after the base rules so these overrides win.) Tap selects
+   (QR retargets + ring); tap again opens. */
+@media (max-width: 767px) {
+    .qr-card-box { align-self: center; margin-bottom: 0.75rem; }
+    .qr-card-box img { width: 200px; height: 200px; }
+    .qr-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.1rem 1.15rem; }
+    .qr-social-btn {
+        flex: 0 0 auto; width: 3.25rem; min-width: 0; padding: 0; gap: 0;
+        border: none; background: none; border-radius: 50%; justify-content: center;
+    }
+    .qr-social-btn:hover { border-color: transparent; }
+    .qr-social-btn:active { transform: scale(0.92); }
+    .qr-social-text, .qr-social-btn .qr-arrow { display: none !important; }
+    .qr-social-ic { width: 3.25rem; height: 3.25rem; border-radius: 50%; transition: box-shadow 0.18s ease; }
+    .qr-social-btn.is-active { box-shadow: none; }
+    .qr-social-btn.is-active .qr-social-ic { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #7c3aed; }
+    html.dark .qr-social-btn.is-active .qr-social-ic { box-shadow: 0 0 0 2px #0a0a0a, 0 0 0 4px #a78bfa; }
+    .qr-social-btn--soon { display: none; }
+}
+
+/* ── Card entrance — staggered settle (transitions.dev #18) ─────────────────
+   Each block of the name card rises into place in sequence when the profile
+   loads, so the card assembles itself rather than snapping in. */
+.pf-reveal > * {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+        opacity   0.5s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.pf-reveal.is-shown > * { opacity: 1; transform: none; }
+.pf-reveal.is-shown > *:nth-child(1) { transition-delay: 0ms; }
+.pf-reveal.is-shown > *:nth-child(2) { transition-delay: 55ms; }
+.pf-reveal.is-shown > *:nth-child(3) { transition-delay: 110ms; }
+.pf-reveal.is-shown > *:nth-child(4) { transition-delay: 165ms; }
+.pf-reveal.is-shown > *:nth-child(5) { transition-delay: 220ms; }
+.pf-reveal.is-shown > *:nth-child(n+6) { transition-delay: 275ms; }
+@media (prefers-reduced-motion: reduce) {
+    .pf-reveal > * { opacity: 1 !important; transform: none !important; transition: none !important; }
+}

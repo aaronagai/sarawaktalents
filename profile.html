@@ -26,8 +26,8 @@
 
     <header class="pf-topbar">
         <a href="index.html" class="pf-logo-pill" aria-label="Sarawak Talents">
-            <img src="sslogo.svg" alt="" width="20" height="21">
-            <span>Sarawak Talents</span>
+            <img src="sslogo.svg" alt="" class="brand-mark" width="27" height="28">
+            <span class="brand-text">SarawakTalents<span class="brand-tld">.com</span></span>
         </a>
     </header>
 
@@ -47,7 +47,7 @@
                     <h1 class="pf-name">
                         <span id="pf-name"></span>
                         <re-icon icon="verified" size="22" weight="filled" class="pf-verified" aria-hidden="true"></re-icon>
-                        <img class="pf-org-inline" id="pf-org-inline" alt="" hidden>
+                        <span class="pf-org-inline" id="pf-org-inline" hidden></span>
                     </h1>
                     <p class="pf-loc" id="pf-loc"></p>
                 </div>
@@ -60,20 +60,12 @@
             <!-- Tags -->
             <div class="pf-tags" id="pf-tags"></div>
 
-            <!-- Interactive QR — tap a social, the code retargets -->
+            <!-- Interactive QR — tap a card, the code retargets; tap again to open -->
             <div class="pf-qr-live">
-                <!-- Mobile: ring of socials around the QR -->
-                <div class="qr-stage">
-                    <div class="qr-ring" id="qr-ring"></div>
-                    <div class="qr-center"><img class="qr-live-img" alt="QR code"></div>
-                </div>
-                <!-- Desktop: QR card + stacked social buttons -->
                 <div class="qr-cols">
                     <div class="qr-card-box"><img class="qr-live-img" alt="QR code"></div>
                     <div class="qr-buttons" id="qr-buttons"></div>
                 </div>
-                <a class="pf-btn pf-btn--dark qr-open" id="qr-open" target="_blank" rel="noopener noreferrer">Open</a>
-                <button type="button" class="qr-dl" id="qr-dl">Download QR</button>
             </div>
 
             <!-- Education -->
@@ -81,9 +73,6 @@
                 <h2 class="pf-section-title">Education</h2>
                 <p class="pf-edu" id="pf-edu"></p>
             </div>
-
-            <!-- Socials -->
-            <div class="pf-socials" id="pf-socials"></div>
 
             <!-- Actions -->
             <div class="pf-actions">

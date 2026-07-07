@@ -61,14 +61,12 @@
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans flex flex-col min-h-screen">
 
-    <header class="hero">
-        <div class="hero-ascii-bg" aria-hidden="true">
-            <pre class="hero-ascii-pre" id="ascii-bg"></pre>
-        </div>
+    <header class="site-header" id="site-header">
         <div class="site-container">
             <nav class="hero-nav">
                 <a href="/" class="hero-logo" aria-label="Sarawak Talents home">
-                    <img src="sslogo.svg" alt="" class="hero-logo-img" width="32" height="34" />
+                    <img src="sslogo.svg" alt="" class="brand-mark" width="27" height="28" />
+                    <span class="brand-text">SarawakTalents<span class="brand-tld">.com</span></span>
                 </a>
                 <div class="hero-nav-actions">
                     <button type="button" class="hero-nav-btn hero-nav-btn--login" data-i18n="logIn">Log In</button>
@@ -78,21 +76,26 @@
                     </button>
                 </div>
             </nav>
+        </div>
+    </header>
 
+    <header class="hero">
+        <div class="hero-photo-bg" aria-hidden="true"></div>
+        <div class="site-container">
             <div class="hero-content">
                 <div class="hero-proof">
                     <div class="avatar-stack t-avatar-group" aria-hidden="true">
                         <span class="avatar-stack-item t-avatar">
-                            <img src="photos/user1.png" alt="" width="32" height="32" loading="lazy" decoding="async">
+                            <img src="photos/user1.svg" alt="" width="32" height="32" loading="lazy" decoding="async">
                         </span>
                         <span class="avatar-stack-item t-avatar">
-                            <img src="photos/user2.png" alt="" width="32" height="32" loading="lazy" decoding="async">
+                            <img src="photos/user2.svg" alt="" width="32" height="32" loading="lazy" decoding="async">
                         </span>
                         <span class="avatar-stack-item t-avatar">
-                            <img src="photos/user3.png" alt="" width="32" height="32" loading="lazy" decoding="async">
+                            <img src="photos/user3.svg" alt="" width="32" height="32" loading="lazy" decoding="async">
                         </span>
                         <span class="avatar-stack-item t-avatar">
-                            <img src="photos/user4.png" alt="" width="32" height="32" loading="lazy" decoding="async">
+                            <img src="photos/user4.svg" alt="" width="32" height="32" loading="lazy" decoding="async">
                         </span>
                         <span class="avatar-stack-item avatar-stack-count t-avatar" data-i18n="memberCount">+92</span>
                     </div>
@@ -181,7 +184,7 @@
         </div>
     </section>
 
-    <div class="sticky top-0 z-20 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm">
+    <div class="sticky top-14 z-20 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm">
         <div class="site-container">
 
             <!-- Search row -->
@@ -230,16 +233,6 @@
                     </button>
                     <div id="party-dropdown" class="t-dropdown absolute z-30 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden" data-origin="top-left">
                         <div id="party-options" class="py-1"></div>
-                    </div>
-                </div>
-
-                <div class="relative min-w-0">
-                    <button id="race-filter-btn" type="button" class="filter-panel-btn w-full py-2 pl-3 pr-3 border border-gray-300 rounded-lg text-sm bg-white cursor-pointer transition-colors text-left flex items-center justify-between gap-2 hover:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
-                        <span id="race-filter-label" class="truncate text-gray-500" data-i18n="allBackgrounds">All Backgrounds</span>
-                        <svg class="h-4 w-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div id="race-dropdown" class="t-dropdown absolute z-30 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden" data-origin="top-left">
-                        <div id="race-options" class="py-1 max-h-48 overflow-y-auto"></div>
                     </div>
                 </div>
 
@@ -346,10 +339,6 @@
                         <span class="modal-detail-label">Parliament</span>
                         <span id="modal-detail-parliament" class="modal-detail-value"></span>
                     </div>
-                    <div class="modal-detail-row" style="display:none">
-                        <span class="modal-detail-label">Race</span>
-                        <span id="modal-detail-race" class="modal-detail-value"></span>
-                    </div>
                     <div class="modal-detail-row">
                         <span class="modal-detail-label" data-i18n="statusLabel">Status</span>
                         <span id="modal-detail-status" class="text-[11px] font-semibold px-2 py-0.5 rounded-full"></span>
@@ -361,7 +350,6 @@
 
     <script src="transitions.js"></script>
     <script src="icons.js"></script>
-    <script src="ascii-hero.js"></script>
     <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-client.js"></script>

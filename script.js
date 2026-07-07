@@ -120,7 +120,6 @@ function applyLang(lang) {
 
   // Update all multi-select labels
   if (typeof partyMS      !== 'undefined') partyMS.updateLabel();
-  if (typeof raceMS       !== 'undefined') raceMS.updateLabel();
   if (typeof parliamentMS !== 'undefined') parliamentMS.updateLabel();
   if (typeof statusMS     !== 'undefined') statusMS.relabel([
     { value: 'featured', label: t.featured },
@@ -135,10 +134,10 @@ function applyLang(lang) {
 }
 
 const candidates = [
-  { id: 1, dun_no: "T01", name: "Aaron Nagai",     dun: "Software Engineer", party: "Tech",     zone: "Kuching", parliamentary: "Software Development",    race: "Iban",    orgPhoto: "photos/badges/sarawak-energy-icon.svg" },
-  { id: 2, dun_no: "T02", name: "Raden Hollywood", dun: "Musician",          party: "Arts",     zone: "Miri",    parliamentary: "Performing Arts",         race: "Malay",   orgPhoto: "photos/badges/air-borneo-icon.svg" },
-  { id: 3, dun_no: "T03", name: "Andrea Livlo",    dun: "Entrepreneur",      party: "Business", zone: "Sibu",    parliamentary: "Startups & Commerce",     race: "Chinese", orgPhoto: "photos/badges/petros-icon.svg" },
-  { id: 4, dun_no: "T04", name: "Aniq Ashwin",     dun: "Researcher",        party: "Science",  zone: "Bintulu", parliamentary: "Research & Innovation",   race: "Bidayuh", orgPhoto: "photos/badges/sarawakmetro-icon.svg" },
+  { id: 1, dun_no: "T01", name: "Aaron Nagai",     dun: "Software Engineer", party: "Tech",     zone: "Kuching", parliamentary: "Software Development",    orgPhoto: "photos/badges/sarawak-energy-icon.svg" },
+  { id: 2, dun_no: "T02", name: "Raden Hollywood", dun: "Musician",          party: "Arts",     zone: "Miri",    parliamentary: "Performing Arts",         orgPhoto: "photos/badges/air-borneo-icon.svg" },
+  { id: 3, dun_no: "T03", name: "Andrea Livlo",    dun: "Entrepreneur",      party: "Business", zone: "Sibu",    parliamentary: "Startups & Commerce",     orgPhoto: "photos/badges/petros-icon.svg" },
+  { id: 4, dun_no: "T04", name: "Aniq Ashwin",     dun: "Researcher",        party: "Science",  zone: "Bintulu", parliamentary: "Research & Innovation",   orgPhoto: "photos/badges/sarawakmetro-icon.svg" },
 ];
 
 const members = new Set(['T02']);
@@ -178,7 +177,7 @@ function toggleDropdownEl(el) {
 }
 
 function closeAllFilterDropdowns() {
-  ['party-dropdown', 'race-dropdown', 'parliament-dropdown', 'status-dropdown'].forEach(id => {
+  ['party-dropdown', 'parliament-dropdown', 'status-dropdown'].forEach(id => {
     const el = document.getElementById(id);
     if (dropdownIsOpen(el)) Transitions.closeDropdown(el);
   });
@@ -207,7 +206,6 @@ function updateFilterBadge() {
   if (!badge) return;
   const active =
     selectedParties.size > 0 ||
-    selectedRaces.size > 0 ||
     selectedParliaments.size > 0 ||
     selectedStatuses.size > 0;
   const wasOpen = badge.getAttribute('data-open') === 'true';
@@ -297,12 +295,10 @@ function makeMultiSelect({ btnId, dropdownId, optionsId, labelId, allKey }) {
 }
 
 const partyMS      = makeMultiSelect({ btnId: 'party-filter-btn',      dropdownId: 'party-dropdown',      optionsId: 'party-options',      labelId: 'party-filter-label',      allKey: 'allFields' });
-const raceMS       = makeMultiSelect({ btnId: 'race-filter-btn',       dropdownId: 'race-dropdown',       optionsId: 'race-options',        labelId: 'race-filter-label',       allKey: 'allBackgrounds' });
 const parliamentMS = makeMultiSelect({ btnId: 'parliament-filter-btn', dropdownId: 'parliament-dropdown', optionsId: 'parliament-options',  labelId: 'parliament-filter-label', allKey: 'allIndustries' });
 const statusMS     = makeMultiSelect({ btnId: 'status-filter-btn',     dropdownId: 'status-dropdown',     optionsId: 'status-options',      labelId: 'status-filter-label',     allKey: 'allTypes' });
 
 const selectedParties     = partyMS.selected;
-const selectedRaces       = raceMS.selected;
 const selectedParliaments = parliamentMS.selected;
 const selectedStatuses    = statusMS.selected;
 
@@ -312,9 +308,6 @@ function populateFilters() {
   const parties = [...new Set(candidates.map(c => c.party).filter(Boolean))]
     .sort((a, b) => (catOrder[a] ?? 99) - (catOrder[b] ?? 99) || a.localeCompare(b));
   partyMS.populate(parties.length ? parties : ['Tech', 'Arts', 'Business', 'Science']);
-
-  const races = [...new Set(candidates.map(c => c.race).filter(r => r && r !== 'N/A'))].sort();
-  raceMS.populate(races);
 
   const parliaments = [...new Set(candidates.map(c => c.parliamentary))].sort();
   parliamentMS.populate(parliaments);
@@ -362,9 +355,9 @@ function buildCard(c) {
       <div class="flex items-center gap-1.5 min-w-0">
         <p class="font-semibold text-gray-900 text-sm sm:text-base leading-tight truncate">${c.name}</p>
         <re-icon icon="verified" size="18" weight="filled" class="talent-verified-icon${c.id === 1 ? ' talent-verified-icon--gold' : ''} shrink-0" aria-hidden="true"></re-icon>
-        ${c.orgPhoto ? `<img src="${c.orgPhoto}" alt="" class="talent-org-badge shrink-0" aria-hidden="true" loading="lazy" />` : ''}
+        ${(c.orgPhotos && c.orgPhotos.length ? c.orgPhotos : (c.orgPhoto ? [c.orgPhoto] : [])).slice(0, 3).map(b => `<img src="${b}" alt="" class="talent-org-badge shrink-0" aria-hidden="true" loading="lazy" />`).join('')}
       </div>
-      <p class="text-xs sm:text-sm text-gray-500 mt-0.5 truncate">${c.dun}</p>
+      <p class="talent-sub text-xs sm:text-sm text-gray-500 mt-0.5 truncate">${c.dun}</p>
     </div>
   `;
   return card;
@@ -381,7 +374,6 @@ function render() {
   const filtered = candidates.filter(c => {
     const matchParty      = selectedParties.size     === 0 || selectedParties.has(c.party);
     const matchParliament = selectedParliaments.size === 0 || selectedParliaments.has(c.parliamentary);
-    const matchRace       = selectedRaces.size       === 0 || selectedRaces.has(c.race);
     const isMember    = members.has(c.dun_no);
     const matchStatus     = selectedStatuses.size    === 0 ||
       (selectedStatuses.has('member')   && isMember) ||
@@ -390,9 +382,8 @@ function render() {
       c.name.toLowerCase().includes(q) ||
       c.dun.toLowerCase().includes(q)  ||
       c.dun_no.toLowerCase().includes(q) ||
-      c.parliamentary.toLowerCase().includes(q) ||
-      c.race.toLowerCase().includes(q);
-    return matchParty && matchParliament && matchRace && matchStatus && matchSearch;
+      c.parliamentary.toLowerCase().includes(q);
+    return matchParty && matchParliament && matchStatus && matchSearch;
   });
 
   filtered.sort((a, b) => {
@@ -436,7 +427,6 @@ document.querySelectorAll('.sort-option').forEach(btn => {
 function clearAllFilters() {
   searchInput.value = '';
   partyMS.clear();
-  raceMS.clear();
   parliamentMS.clear();
   statusMS.clear();
   if (typeof updateFilterBadge === 'function') updateFilterBadge();
@@ -540,7 +530,6 @@ function openModal(c) {
   document.getElementById('modal-detail-party').textContent    = c.party;
   document.getElementById('modal-detail-zone').textContent     = c.zone;
   document.getElementById('modal-detail-parliament').textContent = c.parliamentary;
-  document.getElementById('modal-detail-race').textContent     = c.race;
 
   const t = translations[currentLang];
   const isMember = members.has(c.dun_no);
@@ -593,6 +582,24 @@ document.querySelectorAll('.hero-nav-btn--login').forEach(btn => {
   btn.addEventListener('click', () => { window.location.href = loginTarget; });
 });
 
+// ── Sticky header: transparent over the hero photo, frosted once the
+//    user scrolls past the hero and into the content below. ────────────
+(function initStickyHeader() {
+  const header = document.getElementById('site-header');
+  const hero = document.querySelector('.hero');
+  if (!header) return;
+  const threshold = () => (hero ? hero.offsetHeight - 72 : 320);
+  let ticking = false;
+  const update = () => {
+    header.classList.toggle('is-scrolled', window.scrollY > threshold());
+    ticking = false;
+  };
+  window.addEventListener('scroll', () => {
+    if (!ticking) { ticking = true; requestAnimationFrame(update); }
+  }, { passive: true });
+  update();
+})();
+
 // ── Live data from Supabase (falls back to demo data) ────────────────
 function mapProfile(p, i) {
   return {
@@ -604,8 +611,8 @@ function mapProfile(p, i) {
     party: p.category || 'Other',
     zone: p.location || '',
     parliamentary: p.industry || '',
-    race: p.background || 'N/A',
     orgPhoto: p.org_photo || '',
+    orgPhotos: (p.org_photos && p.org_photos.length) ? p.org_photos : (p.org_photo ? [p.org_photo] : []),
     avatar_url: p.avatar_url || '',
     _seq: i
   };
@@ -616,7 +623,7 @@ async function loadProfiles() {
   try {
     const { data, error } = await window.stSupabase
       .from('profiles')
-      .select('id, username, name, role, category, location, industry, background, avatar_url, org_photo, created_at')
+      .select('id, username, name, role, category, location, industry, background, avatar_url, org_photo, org_photos, created_at')
       .eq('status', 'active')
       .order('created_at', { ascending: true });
     if (error) { console.warn('[directory] load failed:', error.message); return; }

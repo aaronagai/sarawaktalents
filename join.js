@@ -256,15 +256,24 @@
         { label: 'Sarawak Future Fund', src: 'photos/badges/sswff-icon.svg' },
         { label: 'PetrolPrice',         src: 'photos/badges/petrolprice-icon.svg' }
     ];
-    var MAX_BADGES = 1;
-    var selectedBadges = [];   // chosen badge src path (single-select)
+    // Owner-only badges — never shown in the public picker, but still recognised
+    // so aaron/marc/raden don't wipe their Sarawak Talents mark when they edit.
+    var RESERVED_BADGES = ['photos/badges/sarawak-talents.svg'];
+    var MAX_BADGES = 1;                 // default cap for regular members
+    var OWNER_USERNAMES = ['aaron', 'harting', 'khairulzaman'];  // owners may hold multiple badges
+    var maxBadges = MAX_BADGES;         // raised for owners in edit mode
+    var isOwner = false;
+    var selectedBadges = [];            // chosen badge src paths
 
     var badgePicker = document.getElementById('badge-picker');
     var badgeHint = document.getElementById('badge-hint');
 
     function renderBadgePicker() {
         badgePicker.innerHTML = '';
-        AVAILABLE_BADGES.forEach(function (b) {
+        // Owners also see the reserved (Sarawak Talents) badges as pickable tiles.
+        var pickable = AVAILABLE_BADGES.slice();
+        if (isOwner) RESERVED_BADGES.forEach(function (src) { pickable.push({ label: 'Sarawak Talents', src: src }); });
+        pickable.forEach(function (b) {
             var sel = selectedBadges.indexOf(b.src) >= 0;
             var tile = document.createElement('button');
             tile.type = 'button';
@@ -283,16 +292,20 @@
         badgePicker.appendChild(soon);
 
         if (badgeHint) {
-            badgeHint.textContent = selectedBadges.length
-                ? 'This badge shows next to your name in the directory.'
-                : 'Pick one official badge (optional).';
+            badgeHint.textContent = isOwner
+                ? 'You can select more than one badge. The first shows next to your name in the directory.'
+                : (selectedBadges.length
+                    ? 'This badge shows next to your name in the directory.'
+                    : 'Pick one official badge (optional).');
         }
     }
 
     function toggleBadge(src) {
         var i = selectedBadges.indexOf(src);
-        if (i >= 0) selectedBadges.splice(i, 1);   // deselect
-        else selectedBadges = [src];               // single-select → replace
+        if (i >= 0) selectedBadges.splice(i, 1);                 // deselect
+        else if (maxBadges === 1) selectedBadges = [src];        // single-select → replace
+        else if (selectedBadges.length < maxBadges) selectedBadges.push(src);
+        else selectedBadges = selectedBadges.slice(0, maxBadges - 1).concat(src);  // at cap → replace last
         renderBadgePicker();
     }
 
@@ -307,7 +320,6 @@
         document.getElementById('pf-category').value = p.category || '';
         document.getElementById('pf-location').value = p.location || '';
         document.getElementById('pf-industry').value = p.industry || '';
-        document.getElementById('pf-background').value = p.background || '';
         document.getElementById('pf-bio').value = p.bio || '';
         var links = p.links || {};
         LINK_KEYS.forEach(function (k) {
@@ -320,9 +332,11 @@
             avatarInitials.style.display = 'none';
         }
         // Organisation logos
+        isOwner = OWNER_USERNAMES.indexOf((p.username || '').toLowerCase()) >= 0;
+        maxBadges = isOwner ? 3 : MAX_BADGES;
         var orgs = (p.org_photos && p.org_photos.length) ? p.org_photos : (p.org_photo ? [p.org_photo] : []);
-        var validSrcs = AVAILABLE_BADGES.map(function (b) { return b.src; });
-        selectedBadges = orgs.filter(function (u) { return validSrcs.indexOf(u) >= 0; }).slice(0, MAX_BADGES);
+        var validSrcs = AVAILABLE_BADGES.map(function (b) { return b.src; }).concat(RESERVED_BADGES);
+        selectedBadges = orgs.filter(function (u) { return validSrcs.indexOf(u) >= 0; }).slice(0, maxBadges);
         renderBadgePicker();
         // Education
         var edu = p.education || {};
@@ -359,11 +373,11 @@
             category: document.getElementById('pf-category').value,
             location: document.getElementById('pf-location').value,
             industry: document.getElementById('pf-industry').value.trim() || null,
-            background: document.getElementById('pf-background').value || null,
+            background: null,
             bio: document.getElementById('pf-bio').value.trim() || null,
             links: links,
             education: collectEducation(),
-            org_photos: selectedBadges.slice(0, MAX_BADGES),
+            org_photos: selectedBadges.slice(0, maxBadges),
             org_photo: selectedBadges[0] || null        // primary → directory badge
         };
     }
@@ -448,6 +462,8 @@
         if (editMode) { location.href = 'index.html'; return; }
         showStep('done');
         setTimeout(fireConfetti, 180);   // fire as the "done" tray settles
+        var chk = document.querySelector('.join-done .t-success-check');
+        if (chk) setTimeout(function () { chk.setAttribute('data-state', 'in'); }, 240);
     }
 
     // ── returning from Google OAuth (live mode) ────────────────────────────────

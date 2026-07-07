@@ -6,8 +6,11 @@
  * edge returns crawler-specific HTML. This worker proxies bot traffic to the
  * Supabase share function; humans pass through to GitHub Pages unchanged.
  */
+// Meta scrapes link previews under several names — facebookexternalhit (classic)
+// plus the newer meta-externalagent / meta-externalfetcher. All must be matched
+// or WhatsApp/Facebook fall through to the generic static page.
 const CRAWLER_RE =
-  /facebookexternalhit|whatsapp|twitterbot|linkedinbot|slackbot|discordbot|telegrambot|pinterest|googlebot|bingpreview|embedly|quora link preview|vkshare|redditbot/i
+  /facebookexternalhit|meta-externalagent|meta-externalfetcher|whatsapp|twitterbot|linkedinbot|slackbot|discordbot|telegrambot|pinterest|googlebot|bingpreview|embedly|quora link preview|vkshare|redditbot/i
 
 const SHARE_FN = 'https://zedeqvbsuljgxapkoihg.supabase.co/functions/v1/share'
 

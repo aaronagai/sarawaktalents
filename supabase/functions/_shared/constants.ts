@@ -13,7 +13,12 @@ export function profilePageUrl(username: string): string {
   return `${SITE_ORIGIN}/profile/?u=${encodeURIComponent(username)}`
 }
 
+// Bump whenever the card design changes. X / WhatsApp / Facebook cache the
+// og:image by its URL, so a new token forces them to re-fetch the render
+// instead of reusing a stale cached image. (share-image ignores this param.)
+export const IMAGE_VERSION = '2'
+
 export function shareImageUrl(supabaseUrl: string, username: string): string {
   const base = supabaseUrl.replace(/\/$/, '')
-  return `${base}/functions/v1/share-image?u=${encodeURIComponent(username)}`
+  return `${base}/functions/v1/share-image?u=${encodeURIComponent(username)}&v=${IMAGE_VERSION}`
 }

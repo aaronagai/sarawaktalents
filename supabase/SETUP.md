@@ -87,3 +87,16 @@ Test:
 - Share HTML (for crawlers): `https://zedeqvbsuljgxapkoihg.supabase.co/functions/v1/share?u=heinekenl`
 
 Humans hitting the share URL are redirected to the normal profile page.
+
+### Profile URLs on sarawaktalents.com (`/profile/?u=`)
+
+WhatsApp needs crawler-specific HTML for `https://sarawaktalents.com/profile/?u=…`.
+GitHub Pages alone cannot do that (same static file for every `?u=`). Deploy the
+Cloudflare Worker in `workers/` — see `workers/README.md`:
+
+```bash
+npx wrangler login
+npx wrangler deploy
+```
+
+Requires `sarawaktalents.com` on Cloudflare with proxy (orange cloud) enabled.

@@ -83,10 +83,6 @@
     }
 
     var profileUrl = ST_SITE.profile(handle, true);
-    // Share URL powers WhatsApp / iMessage previews (edge function). Humans are
-    // redirected to profileUrl; crawlers read per-user OG tags + preview image.
-    var shareUrl = ST_SITE.share(handle, true);
-    var publicUrl = shareUrl;
     var loaded = null;
 
     // ── boot ──────────────────────────────────────────────────────────────────
@@ -157,7 +153,7 @@
             el('pf-edu-section').hidden = false;
         }
 
-        el('pf-url-label').textContent = '@' + handle;
+        el('pf-url-label').textContent = location.host + ST_SITE.profile(handle, false);
         showState('pf-content');
         // Staggered blur-up entrance for the card (transitions.dev #18).
         var content = el('pf-content');
@@ -183,7 +179,7 @@
         });
 
         el('pf-copy-btn').addEventListener('click', function () {
-            navigator.clipboard.writeText(shareUrl).then(function () {
+            navigator.clipboard.writeText(profileUrl).then(function () {
                 var btn = el('pf-copy-btn'); var t = btn.textContent;
                 btn.textContent = 'Copied!';
                 setTimeout(function () { btn.textContent = t; }, 1400);
@@ -201,7 +197,7 @@
         var imgs = document.querySelectorAll('.qr-live-img');
         var active = PROFILE_KEY;   // default → the member's own Sarawak Talents card
 
-        function hrefForKey(k) { return k === PROFILE_KEY ? publicUrl : hrefFor(k, links[k]); }
+        function hrefForKey(k) { return k === PROFILE_KEY ? profileUrl : hrefFor(k, links[k]); }
         function targetHref() { return hrefForKey(active); }
         function setActive(k) { active = k; refresh(); }
         function openTarget(k) {
@@ -252,7 +248,7 @@
         var L = ['BEGIN:VCARD', 'VERSION:3.0', 'FN:' + (p.name || '')];
         if (p.role) L.push('TITLE:' + p.role);
         if (p.category) L.push('ORG:' + p.category);
-        L.push('URL:' + publicUrl);
+        L.push('URL:' + profileUrl);
         var links = p.links || {};
         if (links.email) L.push('EMAIL:' + links.email);
         if (links.whatsapp) L.push('TEL;TYPE=CELL:' + links.whatsapp.replace(/[^0-9+]/g, ''));

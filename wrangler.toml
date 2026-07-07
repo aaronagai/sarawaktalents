@@ -1,0 +1,8 @@
+name = "sarawaktalents-profile-og"
+main = "workers/profile-og.js"
+compatibility_date = "2024-08-01"
+
+# Route requires sarawaktalents.com on Cloudflare (orange-cloud proxy enabled).
+[[routes]]
+pattern = "sarawaktalents.com/profile*"
+zone_name = "sarawaktalents.com"

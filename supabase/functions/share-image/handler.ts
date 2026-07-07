@@ -7,8 +7,9 @@ import { loadResvg } from '../_shared/resvg.ts'
 import { getShareProfile, primaryBadge } from '../_shared/profile.ts'
 
 // Latin subset of SF Pro Rounded Regular, hosted in the public assets bucket.
+// Must be a TrueType (glyf) build — satori silently drops CFF/PostScript OTF glyphs.
 const FONT_URL =
-  'https://zedeqvbsuljgxapkoihg.supabase.co/storage/v1/object/public/assets/fonts/sf-pro-rounded-regular-latin.otf'
+  'https://zedeqvbsuljgxapkoihg.supabase.co/storage/v1/object/public/assets/fonts/sf-pro-rounded-regular-latin.ttf'
 
 let fontsPromise: Promise<{ name: string; weight: 400; data: ArrayBuffer }[]> | null = null
 

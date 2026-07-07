@@ -50,7 +50,8 @@
         'photos/badges/air-borneo-icon.svg': 'AirBorneo',
         'photos/badges/sarawakmetro-icon.svg': 'Sarawak Metro',
         'photos/badges/sswff-icon.svg': 'Sarawak Future Fund',
-        'photos/badges/petrolprice-icon.svg': 'PetrolPrice'
+        'photos/badges/petrolprice-icon.svg': 'PetrolPrice',
+        'photos/badges/timogah-icon.svg': 'Timogah'
     };
     function escapeHtml(s) {
         return String(s).replace(/[&<>"']/g, function (c) {

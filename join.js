@@ -259,6 +259,9 @@
     // Owner-only badges — never shown in the public picker, but still recognised
     // so aaron/marc/raden don't wipe their Sarawak Talents mark when they edit.
     var RESERVED_BADGES = ['photos/badges/sarawak-talents.svg'];
+    // Assigned badges — display on profiles but never offered in the edit picker
+    // (grant via admin / database, e.g. supabase/migrations/005_timogah_badge.sql).
+    var ASSIGNED_BADGES = ['photos/badges/timogah-icon.svg'];
     var MAX_BADGES = 1;                 // default cap for regular members
     var OWNER_USERNAMES = ['aaron', 'harting', 'khairulzaman'];  // owners may hold multiple badges
     var maxBadges = MAX_BADGES;         // raised for owners in edit mode
@@ -335,7 +338,8 @@
         isOwner = OWNER_USERNAMES.indexOf((p.username || '').toLowerCase()) >= 0;
         maxBadges = isOwner ? 3 : MAX_BADGES;
         var orgs = (p.org_photos && p.org_photos.length) ? p.org_photos : (p.org_photo ? [p.org_photo] : []);
-        var validSrcs = AVAILABLE_BADGES.map(function (b) { return b.src; }).concat(RESERVED_BADGES);
+        var validSrcs = AVAILABLE_BADGES.map(function (b) { return b.src; })
+            .concat(RESERVED_BADGES, ASSIGNED_BADGES);
         selectedBadges = orgs.filter(function (u) { return validSrcs.indexOf(u) >= 0; }).slice(0, maxBadges);
         renderBadgePicker();
         // Education

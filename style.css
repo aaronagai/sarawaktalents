@@ -1390,13 +1390,19 @@ html.dark .talent-verified-icon--gold {
 .talent-org-badge {
     width: 18px;
     height: 18px;
+    aspect-ratio: 1 / 1;
     border-radius: 5px;
-    object-fit: cover;
+    background: #fff;
+    object-fit: contain;
+    object-position: center;
+    padding: 2px;
+    box-sizing: border-box;
     flex-shrink: 0;
     border: 1px solid #e5e7eb;
 }
 
 html.dark .talent-org-badge {
+    background: #141414;
     border-color: #404040;
 }
 

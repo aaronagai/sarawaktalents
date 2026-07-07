@@ -54,11 +54,23 @@ html.dark .pf-logo-pill img { filter: brightness(0) invert(1); }
 .pf-verified { color: #6b7280; flex-shrink: 0; }
 html.dark .pf-verified { color: #a0a0a0; }
 .pf-org-inline { display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; vertical-align: middle; }
-/* Badges match the verified checkmark size (22px). */
-.pf-org-inline img { width: 22px; height: 22px; border-radius: 6px; object-fit: cover; border: 1px solid #e5e7eb; display: block; }
-html.dark .pf-org-inline img { border-color: #2a2a2a; }
 /* Organisation badge tooltip — hover (desktop) / tap-focus (mobile). */
-.pf-org-badge { position: relative; display: inline-flex; outline: none; cursor: default; }
+/* 1:1 square frame — fit the full SVG inside, never crop/zoom to fill. */
+.pf-org-badge {
+    position: relative;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; aspect-ratio: 1 / 1;
+    border-radius: 6px; background: #fff;
+    border: 1px solid #e5e7eb; overflow: hidden;
+    outline: none; cursor: default; flex-shrink: 0;
+}
+.pf-org-badge img {
+    width: 100%; height: 100%;
+    object-fit: contain; object-position: center;
+    padding: 2px; box-sizing: border-box;
+    display: block; border: none; border-radius: 0;
+}
+html.dark .pf-org-badge { background: #141414; border-color: #2a2a2a; }
 .pf-org-tip {
     position: absolute; bottom: calc(100% + 8px); right: 0; left: auto;
     transform: translateY(4px);
@@ -81,15 +93,28 @@ html.dark .pf-org-inline img { border-color: #2a2a2a; }
 }
 html.dark .pf-org-tip { background: #d1d5db; color: #111827; }
 html.dark .pf-org-tip::after { border-top-color: #d1d5db; }
-.pf-badge { width: 22px; height: 22px; border-radius: 6px; object-fit: cover; border: 1px solid #e5e7eb; }
+.pf-badge {
+    width: 22px; height: 22px; aspect-ratio: 1 / 1;
+    border-radius: 6px; background: #fff;
+    object-fit: contain; object-position: center;
+    padding: 2px; box-sizing: border-box;
+    border: 1px solid #e5e7eb;
+}
+html.dark .pf-badge { background: #141414; border-color: #2a2a2a; }
 .pf-loc { font-size: 0.9375rem; color: #6b7280; margin-top: 0.15rem; }
 html.dark .pf-loc { color: #888; }
 
 /* Organisation logos */
 .pf-orgs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
 .pf-orgs:empty { display: none; }
-.pf-org { width: 2.5rem; height: 2.5rem; border-radius: 0.6rem; object-fit: cover; border: 1px solid #e5e7eb; }
-html.dark .pf-org { border-color: #2a2a2a; }
+.pf-org {
+    width: 2.5rem; height: 2.5rem; aspect-ratio: 1 / 1;
+    border-radius: 0.6rem; background: #fff;
+    object-fit: contain; object-position: center;
+    padding: 0.25rem; box-sizing: border-box;
+    border: 1px solid #e5e7eb;
+}
+html.dark .pf-org { background: #141414; border-color: #2a2a2a; }
 
 /* Education section */
 .pf-edu-section { margin-bottom: 2rem; }

@@ -1,3 +1,5 @@
+import { loadResvg } from './resvg.ts'
+
 /** Rasterize small SVG badges for OG image compositing (Satori supports PNG/JPEG only). */
 export async function rasterizeBadge(url: string, size = 88): Promise<string | null> {
   if (!url.toLowerCase().endsWith('.svg')) return url
@@ -6,7 +8,7 @@ export async function rasterizeBadge(url: string, size = 88): Promise<string | n
     const res = await fetch(url)
     if (!res.ok) return null
     const svg = await res.text()
-    const { Resvg } = await import('npm:@resvg/resvg-wasm@2.6.2')
+    const { Resvg } = await loadResvg()
     const resvg = new Resvg(svg, {
       fitTo: { mode: 'width', value: size },
     })

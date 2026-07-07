@@ -26,11 +26,21 @@ export default {
     const username = url.searchParams.get('u')?.trim().toLowerCase()
     const ua = request.headers.get('user-agent') || ''
 
-    if (username && isProfilePath(url.pathname) && isCrawler(ua)) {
+    const forcePreview = url.searchParams.get('preview') === '1' // curl testing only
+    if (username && isProfilePath(url.pathname) && (isCrawler(ua) || forcePreview)) {
       const shareUrl = `${SHARE_FN}?u=${encodeURIComponent(username)}`
-      const res = await fetch(shareUrl, { headers: { 'User-Agent': ua } })
+      // Always fetch as a crawler — the share function redirects humans to the
+      // profile page, and fetch() would follow that redirect to static HTML.
+      const res = await fetch(shareUrl, {
+        headers: { 'User-Agent': 'facebookexternalhit/1.1' },
+        redirect: 'manual',
+      })
+      if (res.status >= 300 && res.status < 400) {
+        return fetch(request)
+      }
       const headers = new Headers(res.headers)
       headers.set('Cache-Control', 'public, max-age=300')
+      headers.set('X-ST-Profile-OG', '1')
       return new Response(res.body, { status: res.status, headers })
     }
 

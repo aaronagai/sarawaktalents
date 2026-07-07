@@ -260,7 +260,7 @@
     // so aaron/marc/raden don't wipe their Sarawak Talents mark when they edit.
     var RESERVED_BADGES = ['photos/badges/sarawak-talents.svg'];
     // Assigned badges — display on profiles but never offered in the edit picker
-    // (grant via admin / database, e.g. supabase/migrations/005_timogah_badge.sql).
+    // (grant via admin / database — e.g. @heinekenl has the Timogah badge).
     var ASSIGNED_BADGES = ['photos/badges/timogah-icon.svg'];
     var MAX_BADGES = 1;                 // default cap for regular members
     var OWNER_USERNAMES = ['aaron', 'harting', 'khairulzaman'];  // owners may hold multiple badges

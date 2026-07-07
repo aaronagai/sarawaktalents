@@ -321,7 +321,7 @@ html.dark .join-username-status.is-bad { color: #f87171; }
     transition: border-color 0.15s;
 }
 .join-badge-preview:hover { border-color: #7c3aed; }
-.join-badge-preview img { width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; transform: scale(1.2); }
+.join-badge-preview img { width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; }
 .join-badge-hint { font-size: 0.8125rem; color: #9ca3af; display: flex; flex-direction: column; gap: 0.2rem; align-items: flex-start; }
 .join-badge-remove { background: none; border: none; color: #dc2626; font-size: 0.8125rem; cursor: pointer; padding: 0; }
 html.dark .join-badge-preview { background: #0f0f0f; border-color: #333; }
@@ -341,7 +341,7 @@ html.dark .join-badge-preview:hover { border-color: #a78bfa; }
     transition: border-color 0.15s;
 }
 .join-org-slot:hover { border-color: #7c3aed; }
-.join-org-slot img { width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; transform: scale(1.2); }
+.join-org-slot img { width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; }
 .join-org-slot.is-filled { border-style: solid; }
 .join-org-x {
     position: absolute; top: -6px; right: -6px;
@@ -367,7 +367,7 @@ html.dark .join-org-slot:hover { border-color: #a78bfa; }
 }
 .join-badge-tile:hover { border-color: #c4b5fd; }
 .join-badge-tile:active { transform: translateY(1px); }
-.join-badge-tile img { width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; transform: scale(1.2); }
+.join-badge-tile img { width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; }
 .join-badge-tile.is-selected { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15); }
 .join-badge-check {
     position: absolute; top: -7px; right: -7px;

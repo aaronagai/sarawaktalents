@@ -1407,7 +1407,6 @@ html.dark .talent-verified-icon--gold {
     object-fit: contain;
     object-position: center;
     display: block;
-    transform: scale(1.2);
 }
 
 html.dark .talent-org-badge {

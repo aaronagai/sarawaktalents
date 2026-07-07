@@ -88,6 +88,16 @@ Test:
 
 Humans hitting the share URL are redirected to the normal profile page.
 
+The card text uses SF Pro Rounded Regular, served from the public `assets`
+storage bucket at `fonts/sf-pro-rounded-regular-latin.otf`. To regenerate it
+(e.g. to add glyphs), subset the system font and upload to that same path:
+
+```bash
+python3 -m fontTools.subset /Library/Fonts/SF-Pro-Rounded-Regular.otf \
+  --unicodes="U+0020-00FF,U+2013,U+2014,U+2018-201D,U+2026" \
+  --output-file=sf-pro-rounded-regular-latin.otf
+```
+
 ### Profile URLs on sarawaktalents.com (`/profile/?u=`)
 
 WhatsApp needs crawler-specific HTML for `https://sarawaktalents.com/profile/?u=…`.

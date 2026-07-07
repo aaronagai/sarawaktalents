@@ -6,21 +6,19 @@ import { rasterizeBadge } from '../_shared/badge-raster.ts'
 import { loadResvg } from '../_shared/resvg.ts'
 import { getShareProfile, primaryBadge } from '../_shared/profile.ts'
 
-const FONT_BASE = 'https://unpkg.com/@fontsource/inter@5.0.16/files'
+// Latin subset of SF Pro Rounded Regular, hosted in the public assets bucket.
+const FONT_URL =
+  'https://zedeqvbsuljgxapkoihg.supabase.co/storage/v1/object/public/assets/fonts/sf-pro-rounded-regular-latin.otf'
 
-let fontsPromise: Promise<{ name: string; weight: 500 | 700; data: ArrayBuffer }[]> | null = null
+let fontsPromise: Promise<{ name: string; weight: 400; data: ArrayBuffer }[]> | null = null
 
 function loadFonts() {
   if (!fontsPromise) {
-    fontsPromise = Promise.all(
-      ([[500, 'inter-latin-500-normal.woff'], [700, 'inter-latin-700-normal.woff']] as const).map(
-        async ([weight, file]) => {
-          const res = await fetch(`${FONT_BASE}/${file}`)
-          if (!res.ok) throw new Error(`font fetch failed: ${file} (${res.status})`)
-          return { name: 'Inter', weight, data: await res.arrayBuffer() }
-        },
-      ),
-    )
+    fontsPromise = (async () => {
+      const res = await fetch(FONT_URL)
+      if (!res.ok) throw new Error(`font fetch failed (${res.status})`)
+      return [{ name: 'SF Pro Rounded', weight: 400 as const, data: await res.arrayBuffer() }]
+    })()
     fontsPromise.catch(() => {
       fontsPromise = null // let the next request retry instead of caching the failure
     })
@@ -63,7 +61,7 @@ export async function buildShareImage(username: string): Promise<Response> {
     { style: { display: 'flex', alignItems: 'center', gap: 14 } },
     React.createElement(
       'span',
-      { style: { fontSize: 34, fontWeight: 500, letterSpacing: '-0.02em' } },
+      { style: { fontSize: 34, fontWeight: 400, letterSpacing: '-0.02em' } },
       `@${profile.username}`,
     ),
     badgeUrl
@@ -88,7 +86,7 @@ export async function buildShareImage(username: string): Promise<Response> {
         display: 'flex',
         flexDirection: 'column',
         fontSize: 58,
-        fontWeight: 700,
+        fontWeight: 400,
         lineHeight: 1.15,
         letterSpacing: '-0.03em',
         marginBottom: 28,
@@ -137,7 +135,7 @@ export async function buildShareImage(username: string): Promise<Response> {
             justifyContent: 'center',
             color: '#ffffff',
             fontSize: 120,
-            fontWeight: 700,
+            fontWeight: 400,
           },
         },
         (profile.name || '?').charAt(0).toUpperCase(),
@@ -153,7 +151,7 @@ export async function buildShareImage(username: string): Promise<Response> {
         flexDirection: 'row',
         background: '#ffffff',
         border: '4px solid #111111',
-        fontFamily: 'Inter',
+        fontFamily: 'SF Pro Rounded',
         color: '#111111',
       },
     },

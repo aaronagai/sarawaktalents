@@ -71,17 +71,6 @@ html.dark .pf-verified { color: #a0a0a0; }
     display: block; border: none; border-radius: 0;
 }
 html.dark .pf-org-badge { background: #141414; border-color: #2a2a2a; }
-.pf-org-badge img[src*="timogah-icon"] {
-    padding: 0;
-}
-.pf-org-badge:has(img[src*="timogah-icon"]) {
-    background: transparent;
-    border-color: transparent;
-}
-html.dark .pf-org-badge:has(img[src*="timogah-icon"]) {
-    background: transparent;
-    border-color: #2a2a2a;
-}
 .pf-org-tip {
     position: absolute; bottom: calc(100% + 8px); right: 0; left: auto;
     transform: translateY(4px);

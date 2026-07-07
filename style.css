@@ -1406,18 +1406,6 @@ html.dark .talent-org-badge {
     border-color: #404040;
 }
 
-/* Full-bleed badge art (e.g. Timogah) — no extra white frame or inset. */
-.talent-org-badge[src*="timogah-icon"] {
-    padding: 0;
-    background: transparent;
-    border-color: transparent;
-}
-
-html.dark .talent-org-badge[src*="timogah-icon"] {
-    background: transparent;
-    border-color: transparent;
-}
-
 html.dark [data-id] .bg-gray-100 {
     background-color: #262626;
 }

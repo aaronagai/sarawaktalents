@@ -121,7 +121,7 @@
                 var org = BADGE_ORGS[u] || 'Sarawak Talents';
                 var tip = escapeHtml(firstName + ' is an affiliate of ' + org);
                 return '<span class="pf-org-badge" tabindex="0" role="img" aria-label="' + tip + '">' +
-                       '<img src="' + encodeURI(u) + '" alt="" />' +
+                       '<img src="' + encodeURI(ST_SITE.asset(u)) + '" alt="" />' +
                        '<span class="pf-org-tip">' + tip + '</span></span>';
             }).join('');
             oi.hidden = false;

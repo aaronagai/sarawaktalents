@@ -359,7 +359,7 @@ function buildCard(c) {
       <div class="flex items-center gap-1.5 min-w-0">
         <p class="font-semibold text-gray-900 text-sm sm:text-base leading-tight truncate">${c.name}</p>
         <re-icon icon="verified" size="18" weight="filled" class="talent-verified-icon${c.id === 1 ? ' talent-verified-icon--gold' : ''} shrink-0" aria-hidden="true"></re-icon>
-        ${(c.orgPhotos && c.orgPhotos.length ? c.orgPhotos : (c.orgPhoto ? [c.orgPhoto] : [])).slice(0, 3).map(b => `<span class="talent-org-badge shrink-0" aria-hidden="true"><img src="${b}" alt="" loading="lazy" /></span>`).join('')}
+        ${(c.orgPhotos && c.orgPhotos.length ? c.orgPhotos : (c.orgPhoto ? [c.orgPhoto] : [])).slice(0, 3).map(b => `<span class="talent-org-badge shrink-0" aria-hidden="true"><img src="${ST_SITE.asset(b)}" alt="" loading="lazy" /></span>`).join('')}
       </div>
       <p class="talent-sub text-xs sm:text-sm text-gray-500 mt-0.5 truncate">${c.dun}</p>
     </div>

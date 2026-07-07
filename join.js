@@ -282,7 +282,7 @@
             tile.type = 'button';
             tile.className = 'join-badge-tile' + (sel ? ' is-selected' : '');
             tile.title = b.label;
-            tile.innerHTML = '<img src="' + b.src + '" alt="' + b.label + '">' +
+            tile.innerHTML = '<img src="' + ST_SITE.asset(b.src) + '" alt="' + b.label + '">' +
                 (sel ? '<span class="join-badge-check">✓</span>' : '');
             tile.addEventListener('click', function () { toggleBadge(b.src); });
             badgePicker.appendChild(tile);

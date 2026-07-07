@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile · Sarawak Talents</title>
+    <meta name="description" content="A Sarawak Talents profile — one scan shares every link that matters.">
+    <meta property="og:type" content="profile">
+    <meta property="og:site_name" content="Sarawak Talents">
+    <meta property="og:title" content="Sarawak Talents">
+    <meta property="og:description" content="A Sarawak Talents digital name card.">
+    <meta property="og:image" content="https://sarawaktalents.com/photos/linkpreview.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://sarawaktalents.com/photos/linkpreview.jpg">
+    <script src="https://unpkg.com/reicon@latest/cdn/reicon.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { darkMode: 'class' };</script>
     <link rel="stylesheet" href="style.css">
@@ -35,14 +46,12 @@
                 <div class="pf-head-text">
                     <h1 class="pf-name">
                         <span id="pf-name"></span>
-                        <svg class="pf-verified" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.4 1.8 3-.2 1 2.8 2.6 1.5-.7 2.9.7 2.9-2.6 1.5-1 2.8-3-.2L12 22l-2.4-1.8-3 .2-1-2.8L3 16.3l.7-2.9L3 10.5l2.6-1.5 1-2.8 3 .2L12 2zm-1.1 12.9l5-5-1.4-1.4-3.6 3.6-1.6-1.6-1.4 1.4 3 3z"/></svg>
+                        <re-icon icon="verified" size="22" weight="filled" class="pf-verified" aria-hidden="true"></re-icon>
+                        <img class="pf-org-inline" id="pf-org-inline" alt="" hidden>
                     </h1>
                     <p class="pf-loc" id="pf-loc"></p>
                 </div>
             </div>
-
-            <!-- Organisation logos -->
-            <div class="pf-orgs" id="pf-orgs"></div>
 
             <!-- Role + bio -->
             <p class="pf-lead" id="pf-lead"></p>
@@ -50,6 +59,22 @@
 
             <!-- Tags -->
             <div class="pf-tags" id="pf-tags"></div>
+
+            <!-- Interactive QR — tap a social, the code retargets -->
+            <div class="pf-qr-live">
+                <!-- Mobile: ring of socials around the QR -->
+                <div class="qr-stage">
+                    <div class="qr-ring" id="qr-ring"></div>
+                    <div class="qr-center"><img class="qr-live-img" alt="QR code"></div>
+                </div>
+                <!-- Desktop: QR card + stacked social buttons -->
+                <div class="qr-cols">
+                    <div class="qr-card-box"><img class="qr-live-img" alt="QR code"></div>
+                    <div class="qr-buttons" id="qr-buttons"></div>
+                </div>
+                <a class="pf-btn pf-btn--dark qr-open" id="qr-open" target="_blank" rel="noopener noreferrer">Open</a>
+                <button type="button" class="qr-dl" id="qr-dl">Download QR</button>
+            </div>
 
             <!-- Education -->
             <div class="pf-edu-section" id="pf-edu-section" hidden>
@@ -62,8 +87,7 @@
 
             <!-- Actions -->
             <div class="pf-actions">
-                <button type="button" id="pf-qr-btn" class="pf-btn pf-btn--dark">Show QR code</button>
-                <button type="button" id="pf-vcard-btn" class="pf-btn pf-btn--ghost">Save contact</button>
+                <button type="button" id="pf-vcard-btn" class="pf-btn pf-btn--dark">Save contact</button>
                 <button type="button" id="pf-copy-btn" class="pf-btn pf-btn--ghost">Copy link</button>
             </div>
 
@@ -75,19 +99,6 @@
     <footer class="pf-footer">
         <span>© <span id="pf-year"></span> Sarawak Talents</span>
     </footer>
-
-    <!-- QR tray -->
-    <div id="qr-backdrop" class="qr-backdrop" role="dialog" aria-modal="true">
-        <div class="qr-card">
-            <button id="qr-close" class="qr-close" aria-label="Close">✕</button>
-            <div class="qr-code-wrap"><img id="qr-img" alt="Profile QR code"></div>
-            <div class="qr-name" id="qr-name"></div>
-            <div class="qr-url" id="qr-url"></div>
-            <div class="qr-tray-actions">
-                <button id="qr-download" class="pf-btn pf-btn--dark">Download PNG</button>
-            </div>
-        </div>
-    </div>
 
     <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

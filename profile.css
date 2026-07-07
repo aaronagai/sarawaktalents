@@ -36,8 +36,10 @@ html.dark .pf-logo-pill img { filter: brightness(0) invert(1); }
     display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
     font-size: 1.5rem; font-weight: 500; letter-spacing: -0.01em; line-height: 1.2;
 }
-.pf-verified { color: #7c3aed; }
+.pf-verified { color: #7c3aed; flex-shrink: 0; }
 html.dark .pf-verified { color: #a78bfa; }
+.pf-org-inline { width: 28px; height: 28px; border-radius: 7px; object-fit: cover; border: 1px solid #e5e7eb; flex-shrink: 0; }
+html.dark .pf-org-inline { border-color: #2a2a2a; }
 .pf-badge { width: 22px; height: 22px; border-radius: 6px; object-fit: cover; border: 1px solid #e5e7eb; }
 .pf-loc { font-size: 0.9375rem; color: #6b7280; margin-top: 0.15rem; }
 html.dark .pf-loc { color: #888; }
@@ -106,31 +108,69 @@ html.dark .pf-rule { border-color: #222; }
 
 .pf-footer { text-align: center; padding: 2rem; font-size: 0.8125rem; color: #9ca3af; }
 
-/* ── QR tray ─────────────────────────────────────────────────────── */
-.qr-backdrop {
-    position: fixed; inset: 0; z-index: 60;
-    background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
-    display: flex; align-items: center; justify-content: center; padding: 1.25rem;
-    opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+/* ── Interactive QR (ring of socials) ────────────────────────────── */
+.pf-qr-live { text-align: center; margin: 0.5rem 0 2rem; }
+.qr-stage { position: relative; width: 280px; max-width: 100%; aspect-ratio: 1; margin: 1rem auto 1.25rem; }
+.qr-center { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.qr-center img {
+    width: 148px; height: 148px;
+    background: #fff; border: 1px solid #eee; border-radius: 1.25rem; padding: 10px;
+    image-rendering: pixelated;
 }
-.qr-backdrop.is-open { opacity: 1; pointer-events: auto; }
-.qr-card {
-    position: relative; background: #fff; border-radius: 1.5rem; padding: 1.75rem;
-    width: min(20rem, 100%); text-align: center;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.3);
-    transform: scale(0.94); transition: transform 0.24s cubic-bezier(0.32,0.72,0,1);
+html.dark .qr-center img { border-color: #2a2a2a; }
+.qr-ring { position: absolute; inset: 0; --r: 108px; }
+.qr-ic {
+    position: absolute; left: 50%; top: 50%;
+    width: 2.5rem; height: 2.5rem; border-radius: 50%;
+    transform: translate(-50%, -50%) translate(calc(var(--x) * var(--r)), calc(var(--y) * var(--r)));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 0.75rem; font-weight: 700; letter-spacing: -0.02em;
+    border: none; padding: 0; cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.32,0.72,0,1), box-shadow 0.2s;
 }
-.qr-backdrop.is-open .qr-card { transform: scale(1); }
-html.dark .qr-card { background: #161616; }
-.qr-close {
-    position: absolute; top: 0.75rem; right: 0.875rem; background: none; border: none;
-    font-size: 1rem; color: #9ca3af; cursor: pointer;
+.qr-ic.is-off { background: #eceef1 !important; color: #b8bec7; opacity: 0.55; cursor: default; }
+html.dark .qr-ic.is-off { background: #1e1e1e !important; color: #555; }
+.qr-ic.is-active {
+    box-shadow: 0 0 0 3px #fff, 0 6px 18px rgba(0, 0, 0, 0.25);
+    transform: translate(-50%, -50%) translate(calc(var(--x) * var(--r)), calc(var(--y) * var(--r))) scale(1.2);
+    z-index: 2;
 }
-.qr-code-wrap {
-    background: #fff; border-radius: 1rem; padding: 0.75rem; display: inline-block; margin-bottom: 1rem;
-    border: 1px solid #eee;
+html.dark .qr-ic.is-active { box-shadow: 0 0 0 3px #0a0a0a, 0 6px 18px rgba(0, 0, 0, 0.5); }
+.qr-open { min-width: 12rem; }
+.qr-dl { display: block; margin: 0.75rem auto 0; background: none; border: none; color: #9ca3af; font-size: 0.8125rem; cursor: pointer; }
+.qr-dl:hover { color: #6b7280; }
+
+/* Desktop: QR card on the left, social buttons stacked on the right */
+.qr-cols { display: none; }
+@media (min-width: 768px) {
+    .qr-stage { display: none; }
+    .qr-cols { display: flex; align-items: center; gap: 1.5rem; margin: 1rem 0 1.25rem; }
 }
-.qr-code-wrap img { display: block; width: 12rem; height: 12rem; image-rendering: pixelated; }
-.qr-name { font-size: 1.05rem; font-weight: 500; }
-.qr-url { font-size: 0.8125rem; color: #9ca3af; margin-top: 0.25rem; word-break: break-all; }
-.qr-tray-actions { margin-top: 1.25rem; }
+.qr-card-box {
+    flex-shrink: 0;
+    background: #fff; border-radius: 1.5rem; padding: 1rem;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.1);
+}
+html.dark .qr-card-box { background: #161616; box-shadow: 0 12px 34px rgba(0, 0, 0, 0.5); }
+.qr-card-box img { display: block; width: 180px; height: 180px; image-rendering: pixelated; }
+.qr-buttons { flex: 1; display: flex; flex-direction: column; gap: 0.625rem; }
+.qr-social-btn {
+    display: flex; align-items: center; gap: 0.75rem; width: 100%;
+    padding: 0.8125rem 1rem; border-radius: 0.9rem;
+    border: 1px solid #e5e7eb; background: #fff; color: #111827;
+    font-size: 0.9375rem; font-weight: 500; text-align: left; cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.05s;
+}
+.qr-social-btn:hover { border-color: #d1d5db; }
+.qr-social-btn:active { transform: translateY(1px); }
+.qr-social-btn.is-active { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12); }
+html.dark .qr-social-btn { background: #141414; border-color: #2a2a2a; color: #fff; }
+html.dark .qr-social-btn.is-active { border-color: #a78bfa; box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15); }
+.qr-social-ic {
+    width: 1.75rem; height: 1.75rem; border-radius: 0.5rem; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 0.7rem; font-weight: 700;
+}
+.qr-social-btn--soon { color: #9ca3af; border-style: dashed; cursor: default; justify-content: center; }
+.qr-social-btn--soon:hover { border-color: #e5e7eb; }
+html.dark .qr-social-btn--soon { color: #666; }

@@ -76,13 +76,9 @@
         el('pf-name').textContent = p.name || '';
         el('pf-loc').textContent = p.location ? p.location + ', Sarawak' : 'Sarawak';
 
-        // Organisation logos (up to 3)
+        // Organisation mark (inline, next to the name)
         var orgs = (p.org_photos && p.org_photos.length) ? p.org_photos : (p.org_photo ? [p.org_photo] : []);
-        if (orgs.length) {
-            el('pf-orgs').innerHTML = orgs.slice(0, 3).map(function (u) {
-                return '<img class="pf-org" src="' + encodeURI(u) + '" alt="">';
-            }).join('');
-        }
+        if (orgs.length) { var oi = el('pf-org-inline'); oi.src = encodeURI(orgs[0]); oi.hidden = false; }
 
         // Lead line
         var first = (p.name || '').split(/\s+/)[0];
@@ -130,30 +126,9 @@
         wireActions(p);
     }
 
-    // ── actions: QR, vCard, copy ───────────────────────────────────────────────
+    // ── actions: interactive QR, vCard, copy ───────────────────────────────────
     function wireActions(p) {
-        var backdrop = el('qr-backdrop');
-
-        el('pf-qr-btn').addEventListener('click', function () {
-            var qr = qrcode(0, 'M');
-            qr.addData(profileUrl);
-            qr.make();
-            el('qr-img').src = qr.createDataURL(6, 10);
-            el('qr-name').textContent = p.name || '';
-            el('qr-url').textContent = el('pf-url-label').textContent;
-            backdrop.classList.add('is-open');
-        });
-        function closeQr() { backdrop.classList.remove('is-open'); }
-        el('qr-close').addEventListener('click', closeQr);
-        backdrop.addEventListener('click', function (e) { if (e.target === backdrop) closeQr(); });
-        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeQr(); });
-
-        el('qr-download').addEventListener('click', function () {
-            var a = document.createElement('a');
-            a.href = el('qr-img').src;
-            a.download = (p.username || 'sarawak-talent') + '-qr.gif';
-            a.click();
-        });
+        buildInteractiveQR(p);
 
         el('pf-vcard-btn').addEventListener('click', function () {
             var vcf = buildVCard(p);
@@ -172,6 +147,84 @@
                 setTimeout(function () { btn.textContent = t; }, 1400);
             });
         });
+    }
+
+    // Interactive QR: a ring of the person's socials around a live QR. Tap a
+    // connected social and the code retargets to that link; unconnected socials
+    // are dimmed. Defaults to the first connected social, else the profile URL.
+    function buildInteractiveQR(p) {
+        var links = p.links || {};
+        var connected = SOCIAL_ORDER.filter(function (k) { return links[k]; });
+        var ring = el('qr-ring');
+        var buttons = el('qr-buttons');
+        var imgs = document.querySelectorAll('.qr-live-img');
+        var openBtn = el('qr-open');
+        var active = connected.length ? connected[0] : null;   // null → whole card
+
+        function targetHref() { return active ? hrefFor(active, links[active]) : profileUrl; }
+        function targetLabel() { return active ? SOCIALS[active].label : 'card'; }
+        function setActive(k) { active = k; refresh(); }
+
+        function refresh() {
+            var qr = qrcode(0, 'M');
+            qr.addData(targetHref());
+            qr.make();
+            var url = qr.createDataURL(6, 10);
+            Array.prototype.forEach.call(imgs, function (im) { im.src = url; });
+            openBtn.textContent = 'Open ' + targetLabel();
+            openBtn.href = targetHref();
+            if (!active || active === 'email' || active === 'whatsapp') openBtn.removeAttribute('target');
+            else openBtn.target = '_blank';
+            Array.prototype.forEach.call(document.querySelectorAll('.pf-qr-live [data-key]'), function (c) {
+                c.classList.toggle('is-active', c.dataset.key === active);
+            });
+        }
+
+        // Mobile: ring of icons
+        ring.innerHTML = '';
+        var N = SOCIAL_ORDER.length;
+        SOCIAL_ORDER.forEach(function (k, i) {
+            var meta = SOCIALS[k];
+            var on = !!links[k];
+            var ang = (-90 + i * (360 / N)) * Math.PI / 180;
+            var ic = document.createElement(on ? 'button' : 'div');
+            ic.className = 'qr-ic' + (on ? '' : ' is-off');
+            ic.dataset.key = k;
+            ic.title = meta.label;
+            ic.style.setProperty('--x', Math.cos(ang).toFixed(3));
+            ic.style.setProperty('--y', Math.sin(ang).toFixed(3));
+            if (on) ic.style.background = meta.color;
+            ic.innerHTML = '<span>' + meta.short + '</span>';
+            if (on) ic.addEventListener('click', function () { setActive(k); });
+            ring.appendChild(ic);
+        });
+
+        // Desktop: stacked social buttons (connected only) + "more soon"
+        buttons.innerHTML = '';
+        connected.forEach(function (k) {
+            var meta = SOCIALS[k];
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'qr-social-btn';
+            b.dataset.key = k;
+            b.innerHTML = '<span class="qr-social-ic" style="background:' + meta.color + '">' + meta.short + '</span>' +
+                          '<span class="qr-social-label">' + meta.label + '</span>';
+            b.addEventListener('click', function () { setActive(k); });
+            buttons.appendChild(b);
+        });
+        var soon = document.createElement('div');
+        soon.className = 'qr-social-btn qr-social-btn--soon';
+        soon.textContent = 'More coming soon';
+        buttons.appendChild(soon);
+
+        el('qr-dl').addEventListener('click', function () {
+            var a = document.createElement('a');
+            a.href = imgs[0].src;
+            a.download = (p.username || 'sarawak-talent') + '-qr.gif';
+            a.click();
+        });
+
+        refresh();
     }
 
     function buildVCard(p) {

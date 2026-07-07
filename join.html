@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Join · Sarawak Talents</title>
+    <meta name="description" content="Join Sarawak Talents — the invite-only network for top Sarawakian talents.">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Sarawak Talents">
+    <meta property="og:title" content="Join Sarawak Talents">
+    <meta property="og:description" content="Invite-only network for top Sarawakian talents.">
+    <meta property="og:url" content="https://sarawaktalents.com/join.html">
+    <meta property="og:image" content="https://sarawaktalents.com/photos/linkpreview.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://sarawaktalents.com/photos/linkpreview.jpg">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -87,13 +98,9 @@
                     </div>
 
                     <div class="join-field">
-                        <span class="join-label">Organisations <span class="join-optional">(optional — up to 3 logos)</span></span>
-                        <div class="join-orgs" id="join-orgs">
-                            <label class="join-org-slot" data-slot="0"><img alt="" hidden><span class="join-org-plus" aria-hidden="true">+</span><input type="file" accept="image/*" hidden><span class="join-org-x" hidden>✕</span></label>
-                            <label class="join-org-slot" data-slot="1"><img alt="" hidden><span class="join-org-plus" aria-hidden="true">+</span><input type="file" accept="image/*" hidden><span class="join-org-x" hidden>✕</span></label>
-                            <label class="join-org-slot" data-slot="2"><img alt="" hidden><span class="join-org-plus" aria-hidden="true">+</span><input type="file" accept="image/*" hidden><span class="join-org-x" hidden>✕</span></label>
-                        </div>
-                        <span class="join-optional" style="font-size:0.75rem;">The first logo shows next to your name in the directory.</span>
+                        <span class="join-label">Organisation <span class="join-optional">(optional — pick one)</span></span>
+                        <div class="join-badge-picker" id="badge-picker"></div>
+                        <span class="join-optional" id="badge-hint" style="font-size:0.75rem;">Select from the official badges. The first shows next to your name in the directory.</span>
                     </div>
 
                     <label class="join-field">

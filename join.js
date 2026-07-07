@@ -245,51 +245,58 @@
         reader.readAsDataURL(f);
     });
 
-    // ── organisation logos (up to 3 slots) ──────────────────────────────────
-    // Each slot: { file: File|null, url: existing URL|null }.
-    var orgSlots = [{ file: null, url: null }, { file: null, url: null }, { file: null, url: null }];
+    // ── organisation badges (pick up to 3 from the official set) ─────────────
+    // Beta: members can only choose badges we provide. To add one, drop the SVG
+    // into photos/badges/ and add an entry here.
+    var AVAILABLE_BADGES = [
+        { label: 'Sarawak Energy',      src: 'photos/badges/sarawak-energy-icon.svg' },
+        { label: 'Petros',              src: 'photos/badges/petros-icon.svg' },
+        { label: 'AirBorneo',           src: 'photos/badges/air-borneo-icon.svg' },
+        { label: 'Sarawak Metro',       src: 'photos/badges/sarawakmetro-icon.svg' },
+        { label: 'Sarawak Future Fund', src: 'photos/badges/sswff-icon.svg' },
+        { label: 'PetrolPrice',         src: 'photos/badges/petrolprice-icon.svg' }
+    ];
+    var MAX_BADGES = 1;
+    var selectedBadges = [];   // chosen badge src path (single-select)
 
-    function paintSlot(i) {
-        var slot = document.querySelector('.join-org-slot[data-slot="' + i + '"]');
-        var img = slot.querySelector('img');
-        var plus = slot.querySelector('.join-org-plus');
-        var x = slot.querySelector('.join-org-x');
-        var s = orgSlots[i];
-        var has = !!(s.file || s.url);
-        slot.classList.toggle('is-filled', has);
-        img.hidden = !has;
-        plus.style.display = has ? 'none' : '';
-        x.hidden = !has;
+    var badgePicker = document.getElementById('badge-picker');
+    var badgeHint = document.getElementById('badge-hint');
+
+    function renderBadgePicker() {
+        badgePicker.innerHTML = '';
+        AVAILABLE_BADGES.forEach(function (b) {
+            var sel = selectedBadges.indexOf(b.src) >= 0;
+            var tile = document.createElement('button');
+            tile.type = 'button';
+            tile.className = 'join-badge-tile' + (sel ? ' is-selected' : '');
+            tile.title = b.label;
+            tile.innerHTML = '<img src="' + b.src + '" alt="' + b.label + '">' +
+                (sel ? '<span class="join-badge-check">✓</span>' : '');
+            tile.addEventListener('click', function () { toggleBadge(b.src); });
+            badgePicker.appendChild(tile);
+        });
+        // Placeholder tile — more badges on the way.
+        var soon = document.createElement('div');
+        soon.className = 'join-badge-tile join-badge-tile--soon';
+        soon.title = 'More coming soon';
+        soon.innerHTML = '<span>More<br>coming<br>soon</span>';
+        badgePicker.appendChild(soon);
+
+        if (badgeHint) {
+            badgeHint.textContent = selectedBadges.length
+                ? 'This badge shows next to your name in the directory.'
+                : 'Pick one official badge (optional).';
+        }
     }
 
-    Array.prototype.forEach.call(document.querySelectorAll('.join-org-slot'), function (slot) {
-        var i = Number(slot.dataset.slot);
-        var input = slot.querySelector('input');
-        var x = slot.querySelector('.join-org-x');
-        input.addEventListener('change', function () {
-            var f = input.files && input.files[0];
-            if (!f) return;
-            orgSlots[i].file = f;
-            orgSlots[i].url = null;
-            var reader = new FileReader();
-            reader.onload = function (ev) { slot.querySelector('img').src = ev.target.result; paintSlot(i); };
-            reader.readAsDataURL(f);
-        });
-        x.addEventListener('click', function (e) {
-            e.preventDefault(); e.stopPropagation();
-            orgSlots[i] = { file: null, url: null };
-            input.value = '';
-            slot.querySelector('img').removeAttribute('src');
-            paintSlot(i);
-        });
-    });
-
-    function setOrgSlot(i, url) {
-        orgSlots[i].url = url;
-        orgSlots[i].file = null;
-        document.querySelector('.join-org-slot[data-slot="' + i + '"] img').src = url;
-        paintSlot(i);
+    function toggleBadge(src) {
+        var i = selectedBadges.indexOf(src);
+        if (i >= 0) selectedBadges.splice(i, 1);   // deselect
+        else selectedBadges = [src];               // single-select → replace
+        renderBadgePicker();
     }
+
+    renderBadgePicker();
 
     // Pre-fill the form from an existing profile (edit mode)
     function prefillProfile(p) {
@@ -314,7 +321,9 @@
         }
         // Organisation logos
         var orgs = (p.org_photos && p.org_photos.length) ? p.org_photos : (p.org_photo ? [p.org_photo] : []);
-        orgs.slice(0, 3).forEach(function (url, i) { setOrgSlot(i, url); });
+        var validSrcs = AVAILABLE_BADGES.map(function (b) { return b.src; });
+        selectedBadges = orgs.filter(function (u) { return validSrcs.indexOf(u) >= 0; }).slice(0, MAX_BADGES);
+        renderBadgePicker();
         // Education
         var edu = p.education || {};
         document.getElementById('pf-edu-program').value = edu.program || '';
@@ -353,7 +362,9 @@
             background: document.getElementById('pf-background').value || null,
             bio: document.getElementById('pf-bio').value.trim() || null,
             links: links,
-            education: collectEducation()
+            education: collectEducation(),
+            org_photos: selectedBadges.slice(0, MAX_BADGES),
+            org_photo: selectedBadges[0] || null        // primary → directory badge
         };
     }
 
@@ -395,16 +406,10 @@
         sb.auth.getUser().then(function (u) {
             var user = u.data && u.data.user;
             if (!user) { submitBtn.disabled = false; setError(profileError, 'Session expired — please sign in again.'); showStep(1); return; }
-            var orgUploads = orgSlots.map(function (s, i) {
-                return s.file ? uploadImage(s.file, user.id, 'org' + i) : Promise.resolve(s.url);
-            });
-            Promise.all([uploadImage(avatarFile, user.id, 'avatar')].concat(orgUploads)).then(function (all) {
-                var avatarUrl = all[0];
-                var orgUrls = all.slice(1).filter(Boolean);   // compact, order preserved
-                var payload = collectProfile(user.id);
-                if (avatarUrl) payload.avatar_url = avatarUrl; // don't wipe existing on edit
-                payload.org_photos = orgUrls;
-                payload.org_photo = orgUrls[0] || null;        // primary → directory badge
+            // Only the avatar is uploaded now; badges are chosen from our set.
+            uploadImage(avatarFile, user.id, 'avatar').then(function (avatarUrl) {
+                var payload = collectProfile(user.id);   // includes org_photos / org_photo
+                if (avatarUrl) payload.avatar_url = avatarUrl;   // don't wipe existing on edit
                 return sb.from('profiles').upsert(payload).select().single();
             }).then(function (res) {
                 submitBtn.disabled = false;

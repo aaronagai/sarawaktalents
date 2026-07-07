@@ -81,7 +81,7 @@
         }
     }
 
-    var profileUrl = location.origin + location.pathname + '?u=' + encodeURIComponent(handle);
+    var profileUrl = ST_SITE.profile(handle, true);
     var loaded = null;
 
     // ── boot ──────────────────────────────────────────────────────────────────
@@ -152,7 +152,7 @@
             el('pf-edu-section').hidden = false;
         }
 
-        el('pf-url-label').textContent = location.host + location.pathname.replace(/[^/]*$/, '') + '?u=' + handle;
+        el('pf-url-label').textContent = location.host + ST_SITE.profile(handle, false);
         showState('pf-content');
         // Staggered blur-up entrance for the card (transitions.dev #18).
         var content = el('pf-content');

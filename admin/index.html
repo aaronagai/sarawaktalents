@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin · Sarawak Talents</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' };</script>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../join.css">
+    <link rel="stylesheet" href="../admin.css">
+    <link rel="icon" href="../sslogo.svg" type="image/svg+xml">
+</head>
+<body class="join-body">
+
+    <header class="join-topbar admin-topbar">
+        <a href="../" class="join-logo" aria-label="Sarawak Talents home">
+            <img src="../sslogo.svg" alt="" class="brand-mark" width="27" height="28">
+            <span class="brand-text">SarawakTalents<span class="brand-tld">.com</span></span>
+        </a>
+        <a href="../" class="join-exit">Back to directory</a>
+    </header>
+
+    <main class="admin-main">
+        <!-- States -->
+        <div id="admin-loading" class="admin-note">Checking access…</div>
+
+        <div id="admin-signin" class="admin-card" hidden>
+            <h1 class="join-title">Admin</h1>
+            <p class="join-sub">Sign in to manage invites and members.</p>
+            <a href="../join/?mode=login" class="join-btn join-btn--primary" style="margin-top:1.25rem;">Sign in</a>
+        </div>
+
+        <div id="admin-denied" class="admin-card" hidden>
+            <h1 class="join-title">Not authorised</h1>
+            <p class="join-sub">This account isn't an admin. Ask an existing admin to add you.</p>
+            <a href="../" class="join-btn join-btn--ghost" style="margin-top:1.25rem;">Back to directory</a>
+        </div>
+
+        <!-- Admin panel -->
+        <div id="admin-panel" hidden>
+            <h1 class="admin-h1">Admin</h1>
+
+            <!-- Invites -->
+            <section class="admin-section">
+                <div class="admin-section-head">
+                    <h2 class="admin-h2">Invites</h2>
+                    <div class="admin-new-invite">
+                        <input id="invite-note" class="join-input admin-note-input" placeholder="Note (optional, e.g. 'for Aisha')">
+                        <button id="new-invite-btn" class="join-btn join-btn--primary">Generate invite</button>
+                    </div>
+                </div>
+                <div id="invites-list" class="admin-list"></div>
+            </section>
+
+            <!-- Members -->
+            <section class="admin-section">
+                <div class="admin-section-head">
+                    <h2 class="admin-h2">Members <span id="members-count" class="admin-count"></span></h2>
+                </div>
+                <div id="members-list" class="admin-list"></div>
+            </section>
+        </div>
+    </main>
+
+    <script src="../site-paths.js"></script>
+    <script src="../config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../supabase-client.js"></script>
+    <script src="../admin.js"></script>
+    <script>
+        (function () { if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark'); })();
+    </script>
+</body>
+</html>

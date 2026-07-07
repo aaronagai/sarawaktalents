@@ -342,7 +342,7 @@ function buildCard(c) {
   // Live profiles become links to their own name-card page; demo cards stay divs.
   const card = document.createElement(c.username ? 'a' : 'div');
   card.className = 'talent-card no-underline text-current flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer';
-  if (c.username) card.href = 'profile.html?u=' + encodeURIComponent(c.username);
+  if (c.username) card.href = ST_SITE.profile(c.username, false);
   card.style.animation = 'fadeUp 0.3s ease both';
   card.dataset.id = c.id;
 
@@ -579,8 +579,8 @@ Transitions.initAvatarGroup('.hero-proof .t-avatar-group');
 // ── Auth entry points ────────────────────────────────────────────────
 // "Get Started" → invite-only join flow. "Log In" → straight to sign-in.
 // For signed-in members these become "Profile" and "Edit profile".
-let loginTarget = 'join.html?mode=login';
-let getStartedTarget = 'join.html';
+let loginTarget = ST_SITE.join('mode=login');
+let getStartedTarget = ST_SITE.join();
 document.querySelectorAll('.hero-nav-btn--get-started').forEach(btn => {
   btn.addEventListener('click', () => { window.location.href = getStartedTarget; });
 });
@@ -652,13 +652,13 @@ async function reflectAuthState() {
   const { data: prof } = await window.stSupabase
     .from('profiles').select('id, username').eq('id', session.user.id).maybeSingle();
   if (!prof) return;
-  loginTarget = 'join.html?mode=edit';
+  loginTarget = ST_SITE.join('mode=edit');
   document.querySelectorAll('.hero-nav-btn--login').forEach(btn => {
     btn.setAttribute('data-i18n', 'editProfile');
     btn.textContent = (translations[currentLang] || translations.en).editProfile;
   });
   if (prof.username) {
-    getStartedTarget = 'profile.html?u=' + encodeURIComponent(prof.username);
+    getStartedTarget = ST_SITE.profile(prof.username, false);
     document.querySelectorAll('.hero-nav-btn--get-started').forEach(btn => {
       btn.setAttribute('data-i18n', 'profile');
       btn.textContent = (translations[currentLang] || translations.en).profile;

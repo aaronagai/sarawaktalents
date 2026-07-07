@@ -459,7 +459,7 @@
     }
 
     function finish() {
-        if (editMode) { location.href = 'index.html'; return; }
+        if (editMode) { location.href = ST_SITE.home(); return; }
         showStep('done');
         setTimeout(fireConfetti, 180);   // fire as the "done" tray settles
         var chk = document.querySelector('.join-done .t-success-check');
@@ -480,7 +480,7 @@
             sb.from('profiles').select('*').eq('id', uid).maybeSingle().then(function (p) {
                 if (p.data) {
                     if (editMode) { applyEditChrome(); prefillProfile(p.data); showStep(2); return; }
-                    location.href = 'index.html'; return;  // already a member → directory
+                    location.href = ST_SITE.home(); return;  // already a member → directory
                 }
                 if (editMode) { showStep(0); return; }  // nothing to edit yet
                 var code = localStorage.getItem(PENDING_KEY);

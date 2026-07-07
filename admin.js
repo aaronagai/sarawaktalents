@@ -10,9 +10,6 @@
     var show = function (id) { el(id).hidden = false; };
     var hide = function (id) { el(id).hidden = true; };
 
-    // Base URL of the site folder → for building invite links.
-    var baseUrl = location.origin + location.pathname.replace(/[^/]*$/, '');
-
     function state(which) {
         ['admin-loading', 'admin-signin', 'admin-denied', 'admin-panel'].forEach(hide);
         show(which);
@@ -74,7 +71,7 @@
                     copy.className = 'admin-btn-sm';
                     copy.textContent = 'Copy link';
                     copy.addEventListener('click', function () {
-                        var link = baseUrl + 'join.html?invite=' + encodeURIComponent(inv.code);
+                        var link = location.origin + ST_SITE.join('invite=' + encodeURIComponent(inv.code));
                         navigator.clipboard.writeText(link).then(function () {
                             copy.textContent = 'Copied!';
                             setTimeout(function () { copy.textContent = 'Copy link'; }, 1500);

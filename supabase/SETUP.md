@@ -62,3 +62,28 @@ Both are **safe to put in frontend code** — that's what they're designed for.
 Once I have the URL + anon key, I'll add them to a `config.js`, load
 `supabase-js`, and build the Google sign-in, invite gate, onboarding form, and
 switch the directory over to live data.
+
+---
+
+## 7. Deploy profile share previews (WhatsApp / social cards)
+
+Profile **Copy link** uses a Supabase Edge Function so WhatsApp, iMessage, and
+other apps show a personalised preview card (`@username`, badge, photo, “Find me
+on SarawakTalents.com”).
+
+One-time deploy (needs [Supabase CLI](https://supabase.com/docs/guides/cli)):
+
+```bash
+cd /path/to/sarawaktalents
+supabase login
+supabase link --project-ref zedeqvbsuljgxapkoihg
+supabase functions deploy share --no-verify-jwt
+supabase functions deploy share-image --no-verify-jwt
+```
+
+Test:
+
+- Preview image: `https://zedeqvbsuljgxapkoihg.supabase.co/functions/v1/share-image?u=heinekenl`
+- Share HTML (for crawlers): `https://zedeqvbsuljgxapkoihg.supabase.co/functions/v1/share?u=heinekenl`
+
+Humans hitting the share URL are redirected to the normal profile page.

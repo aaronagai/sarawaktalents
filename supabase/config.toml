@@ -1,0 +1,5 @@
+[functions.share]
+verify_jwt = false
+
+[functions.share-image]
+verify_jwt = false

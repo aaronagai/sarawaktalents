@@ -83,6 +83,7 @@
     }
 
     var profileUrl = ST_SITE.profile(handle, true);
+    var shareUrl = ST_SITE.share(handle, true);
     var loaded = null;
 
     // ── boot ──────────────────────────────────────────────────────────────────
@@ -179,7 +180,7 @@
         });
 
         el('pf-copy-btn').addEventListener('click', function () {
-            navigator.clipboard.writeText(profileUrl).then(function () {
+            navigator.clipboard.writeText(shareUrl).then(function () {
                 var btn = el('pf-copy-btn'); var t = btn.textContent;
                 btn.textContent = 'Copied!';
                 setTimeout(function () { btn.textContent = t; }, 1400);

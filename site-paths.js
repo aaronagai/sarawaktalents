@@ -35,6 +35,19 @@
             var url = siteRoot() + 'profile/?u=' + encodeURIComponent(username);
             return withOrigin ? location.origin + url : url;
         },
+        /** Link to share on WhatsApp etc. — crawlers get a custom preview card. */
+        share: function (username, withOrigin) {
+            var cfg = window.ST_CONFIG || {};
+            var base = cfg.SHARE_FUNCTION;
+            if (!base) {
+                return ST_SITE.profile(username, withOrigin);
+            }
+            var url = String(base).replace(/\/$/, '') + '?u=' + encodeURIComponent(username);
+            if (withOrigin && !/^https?:/i.test(url)) {
+                return location.origin + url;
+            }
+            return url;
+        },
         join: joinPath,
         admin: function () { return siteRoot() + 'admin/'; }
     };

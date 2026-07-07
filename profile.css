@@ -145,6 +145,8 @@ html.dark .qr-ic.is-active { box-shadow: 0 0 0 3px #0a0a0a, 0 6px 18px rgba(0, 0
 @media (min-width: 768px) {
     .qr-stage { display: none; }
     .qr-cols { display: flex; align-items: center; gap: 1.5rem; margin: 1rem 0 1.25rem; }
+    /* The QR button list covers socials on desktop, so hide the redundant list. */
+    .pf-socials { display: none; }
 }
 .qr-card-box {
     flex-shrink: 0;

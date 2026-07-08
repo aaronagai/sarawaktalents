@@ -1,0 +1,11 @@
+{
+  "name": "sarawaktalents",
+  "private": true,
+  "description": "Static site tooling. The site itself is plain HTML/CSS/JS served by GitHub Pages; this only builds the purged Tailwind stylesheet.",
+  "scripts": {
+    "build:css": "tailwindcss -c tailwind.config.js -i src/input.css -o tailwind.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.19"
+  }
+}

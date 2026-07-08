@@ -624,15 +624,34 @@ function mapProfile(p, i) {
   };
 }
 
+// Fetch the public list from the edge-cached worker when DIRECTORY_API is set
+// (collapses many visitors into one origin query). Returns null on any failure
+// so the caller falls back to querying Supabase directly.
+async function fetchDirectoryFromEdge() {
+  const url = window.ST_CONFIG && window.ST_CONFIG.DIRECTORY_API;
+  if (!url) return null;
+  try {
+    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (_) {
+    return null;
+  }
+}
+
 async function loadProfiles() {
   if (!window.ST_CONFIGURED || !window.stSupabase) return;   // keep demo data
   try {
-    const { data, error } = await window.stSupabase
-      .from('profiles')
-      .select('id, username, name, role, category, location, industry, background, avatar_url, org_photo, org_photos, created_at')
-      .eq('status', 'active')
-      .order('created_at', { ascending: true });
-    if (error) { console.warn('[directory] load failed:', error.message); return; }
+    let data = await fetchDirectoryFromEdge();
+    if (!data) {
+      const res = await window.stSupabase
+        .from('profiles')
+        .select('id, username, name, role, category, location, industry, background, avatar_url, org_photo, org_photos, created_at')
+        .eq('status', 'active')
+        .order('created_at', { ascending: true });
+      if (res.error) { console.warn('[directory] load failed:', res.error.message); return; }
+      data = res.data;
+    }
     if (!data || data.length === 0) return;                  // keep demo until first member
     candidates.length = 0;
     data.forEach((p, i) => candidates.push(mapProfile(p, i)));

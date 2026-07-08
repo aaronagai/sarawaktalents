@@ -1,5 +1,40 @@
+# Allow all crawlers by default.
 User-agent: *
 Allow: /
 
+# Social / link-preview crawlers — MUST stay allowed or WhatsApp, Facebook,
+# X, etc. can't render the personalised profile share cards. Note that
+# meta-externalagent doubles as Meta's AI crawler, so allowing previews
+# necessarily allows Meta to access this content.
 User-agent: facebookexternalhit
 Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
+User-agent: meta-externalfetcher
+Allow: /
+
+# AI-training crawlers — disallowed (content should not be used for AI training).
+# This preserves the protection Cloudflare's "Managed robots.txt" used to inject,
+# which was disabled because it also blocked meta-externalagent and broke previews.
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: GPTBot
+Disallow: /

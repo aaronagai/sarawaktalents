@@ -331,11 +331,6 @@ html.dark .hero-menu-btn {
     pointer-events: none;
 }
 
-/* No cursor to interact with — fall back to the untouched photo. */
-@media (hover: none), (pointer: coarse) {
-    .hero-dots { display: none; }
-}
-
 @media (prefers-reduced-motion: reduce) {
     .hero-photo-bg { animation: none; opacity: 1; }
 }

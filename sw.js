@@ -1,4 +1,4 @@
-const CACHE = 'sarawaktalents-v54';
+const CACHE = 'sarawaktalents-v55';
 // Relative paths so the app works both at the domain root (sarawaktalents.com)
 // and under the /sarawaktalents/ project path.
 const ASSETS = [

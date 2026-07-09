@@ -23,16 +23,84 @@
 
     if (!LIVE && banner) banner.hidden = false;
 
-    // ── Industry suggestions ────────────────────────────────────────────
+    // ── Industry dropdown + live profile-line preview ───────────────────
+    var industrySelect = document.getElementById('pf-industry-select');
+    var industryOther = document.getElementById('pf-industry'); // holds the "Other" value
+    var previewEl = document.getElementById('pf-preview');
+
     (function populateIndustryOptions() {
-        var list = document.getElementById('pf-industry-options');
-        if (!list || !window.ST_INDUSTRIES) return;
+        if (!industrySelect || !window.ST_INDUSTRIES) return;
+        var otherOpt = industrySelect.querySelector('option[value="__other"]');
         window.ST_INDUSTRIES.forEach(function (name) {
             var opt = document.createElement('option');
             opt.value = name;
-            list.appendChild(opt);
+            opt.textContent = name;
+            industrySelect.insertBefore(opt, otherOpt);
         });
     })();
+
+    // The single source of truth for the chosen industry (dropdown or "Other").
+    function currentIndustry() {
+        if (!industrySelect) return industryOther ? industryOther.value.trim() : '';
+        if (industrySelect.value === '__other') return industryOther ? industryOther.value.trim() : '';
+        return industrySelect.value || '';
+    }
+    function setIndustry(val) {
+        val = (val || '').trim();
+        if (!industrySelect) { if (industryOther) industryOther.value = val; return; }
+        var opt = Array.prototype.filter.call(industrySelect.options, function (o) {
+            return o.value !== '__other' && o.value.toLowerCase() === val.toLowerCase();
+        })[0];
+        if (val && opt) {
+            industrySelect.value = opt.value;
+            if (industryOther) { industryOther.hidden = true; industryOther.value = ''; industryOther.required = false; }
+        } else if (val) {
+            industrySelect.value = '__other';
+            if (industryOther) { industryOther.hidden = false; industryOther.value = val; industryOther.required = true; }
+        } else {
+            industrySelect.selectedIndex = 0;
+            if (industryOther) { industryOther.hidden = true; industryOther.value = ''; industryOther.required = false; }
+        }
+        updatePreview();
+    }
+
+    // Grammar-proof profile line — mirrors the renderer in profile.js.
+    function leadArticle(word) { return /^[aeiou]/i.test((word || '').trim()) ? 'an' : 'a'; }
+    function buildLead(name, role, industry) {
+        var first = (name || '').trim().split(/\s+/)[0] || 'You';
+        role = (role || '').trim();
+        industry = (industry || '').trim();
+        var same = role && industry && role.toLowerCase() === industry.toLowerCase();
+        if (role && industry && !same) return first + ' is ' + leadArticle(role) + ' ' + role + ' in ' + industry + '.';
+        if (same || (industry && !role)) return first + ' works in ' + industry + '.';
+        if (role) return first + ' is ' + leadArticle(role) + ' ' + role + '.';
+        return '';
+    }
+    function updatePreview() {
+        if (!previewEl) return;
+        var nameEl = document.getElementById('pf-name');
+        var roleEl = document.getElementById('pf-role');
+        var line = buildLead(nameEl ? nameEl.value : '', roleEl ? roleEl.value : '', currentIndustry());
+        if (line) { previewEl.textContent = 'Preview: ' + line; previewEl.hidden = false; }
+        else { previewEl.hidden = true; }
+    }
+
+    if (industrySelect) {
+        industrySelect.addEventListener('change', function () {
+            var other = industrySelect.value === '__other';
+            if (industryOther) {
+                industryOther.hidden = !other;
+                industryOther.required = other;
+                if (other) industryOther.focus(); else industryOther.value = '';
+            }
+            updatePreview();
+        });
+    }
+    ['pf-name', 'pf-role'].forEach(function (id) {
+        var e = document.getElementById(id);
+        if (e) e.addEventListener('input', updatePreview);
+    });
+    if (industryOther) industryOther.addEventListener('input', updatePreview);
 
     // ── navigation: steps "fly" directionally + the tray height morphs ───────
     function stepEl(step) { return document.querySelector('.join-step[data-step="' + step + '"]'); }
@@ -382,7 +450,7 @@
         document.getElementById('pf-role').value = p.role || '';
         document.getElementById('pf-category').value = p.category || '';
         document.getElementById('pf-location').value = p.location || '';
-        document.getElementById('pf-industry').value = p.industry || '';
+        setIndustry(p.industry || '');
         document.getElementById('pf-bio').value = p.bio || '';
         var links = p.links || {};
         LINK_KEYS.forEach(function (k) {
@@ -437,7 +505,7 @@
             role: document.getElementById('pf-role').value.trim(),
             category: document.getElementById('pf-category').value,
             location: document.getElementById('pf-location').value,
-            industry: document.getElementById('pf-industry').value.trim() || null,
+            industry: currentIndustry() || null,
             background: null,
             bio: document.getElementById('pf-bio').value.trim() || null,
             links: links,

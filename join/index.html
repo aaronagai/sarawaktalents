@@ -119,8 +119,8 @@
                     </label>
 
                     <label class="join-field">
-                        <span class="join-label">Role / headline <em>*</em></span>
-                        <input id="pf-role" type="text" class="join-input" required placeholder="e.g. Software Engineer">
+                        <span class="join-label">Job title <em>*</em> <span class="join-optional">what you do — a person, not a field</span></span>
+                        <input id="pf-role" type="text" class="join-input" required placeholder="e.g. Lawyer, Software Engineer, Student, Founder">
                     </label>
 
                     <div class="join-grid-2">
@@ -191,10 +191,17 @@
                     </div>
 
                     <label class="join-field">
-                        <span class="join-label">Industry <span class="join-optional">(pick a suggestion or type your own)</span></span>
-                        <input id="pf-industry" type="text" class="join-input" list="pf-industry-options" placeholder="e.g. Software Development" autocomplete="off">
-                        <datalist id="pf-industry-options"></datalist>
+                        <span class="join-label">Industry <em>*</em></span>
+                        <select id="pf-industry-select" class="join-input" required>
+                            <option value="" disabled selected>Choose your industry</option>
+                            <!-- industry options injected from ST_INDUSTRIES in join.js -->
+                            <option value="__other">Other (type your own)</option>
+                        </select>
+                        <input id="pf-industry" type="text" class="join-input join-industry-other" placeholder="Your industry" autocomplete="off" hidden>
                     </label>
+
+                    <!-- Live preview of the profile line so people catch awkward combos before saving -->
+                    <p id="pf-preview" class="join-preview" aria-live="polite" hidden></p>
 
                     <label class="join-field">
                         <span class="join-label">Short bio <span class="join-optional">(optional)</span></span>

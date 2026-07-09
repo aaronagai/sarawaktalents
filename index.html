@@ -323,15 +323,21 @@
     <div id="welcome-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="welcome-modal-title">
         <div class="modal-wrapper">
             <button id="welcome-modal-close" class="modal-close" aria-label="Close">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                <re-icon icon="x" size="14" weight="outline"></re-icon>
             </button>
             <div class="modal-card t-modal">
-                <div class="p-6 sm:p-8 text-center">
-                    <h2 id="welcome-modal-title" class="welcome-modal-title text-xl font-semibold">Welcome to SarawakTalents!</h2>
+                <div class="p-6 sm:p-8 text-center t-stagger">
+                    <h2 id="welcome-modal-title" class="welcome-modal-title text-xl font-semibold t-stagger-line t-stagger-line--1">
+                        <re-icon icon="sparkles" size="18" weight="outline" class="welcome-modal-icon" aria-hidden="true"></re-icon>
+                        Welcome to SarawakTalents!
+                    </h2>
+                    <p class="welcome-modal-sub t-stagger-line t-stagger-line--2">Glad you're here — juh, have a look around.</p>
                 </div>
             </div>
         </div>
     </div>
+
+    <canvas id="welcome-confetti-canvas" class="confetti-canvas" aria-hidden="true"></canvas>
 
     <script src="transitions.js"></script>
     <script src="icons.js"></script>

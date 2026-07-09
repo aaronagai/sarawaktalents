@@ -576,73 +576,77 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 
 Transitions.initAvatarGroup('.hero-proof .t-avatar-group');
 
-// ── Confetti burst ────────────────────────────────────────────────────
-function burstConfetti() {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-  const canvas = document.createElement('canvas');
-  canvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:9999;';
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = window.innerWidth * dpr;
-  canvas.height = window.innerHeight * dpr;
-  document.body.appendChild(canvas);
-  const ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
-
-  const colors = ['#14b8a6', '#0d9488', '#f97316', '#3b82f6', '#eab308'];
-  const particles = Array.from({ length: 140 }, () => ({
-    x: window.innerWidth / 2 + (Math.random() - 0.5) * 120,
-    y: window.innerHeight * 0.35,
-    vx: (Math.random() - 0.5) * 8,
-    vy: -(Math.random() * 8 + 4),
-    size: Math.random() * 6 + 4,
-    color: colors[Math.floor(Math.random() * colors.length)],
-    rotation: Math.random() * 360,
-    rotationSpeed: (Math.random() - 0.5) * 12,
-    gravity: 0.25 + Math.random() * 0.15,
-    drag: 0.995,
-  }));
-
-  const start = performance.now();
-  const duration = 2600;
-
-  function frame(now) {
-    const elapsed = now - start;
-    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-    const fade = Math.max(0, 1 - elapsed / duration);
-    particles.forEach(p => {
-      p.vx *= p.drag;
-      p.vy = p.vy * p.drag + p.gravity;
-      p.x += p.vx;
-      p.y += p.vy;
-      p.rotation += p.rotationSpeed;
-      ctx.save();
-      ctx.globalAlpha = fade;
-      ctx.translate(p.x, p.y);
-      ctx.rotate((p.rotation * Math.PI) / 180);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
-      ctx.restore();
-    });
-    if (elapsed < duration) {
-      requestAnimationFrame(frame);
-    } else {
-      canvas.remove();
-    }
-  }
-  requestAnimationFrame(frame);
-}
-
 // ── Welcome popup ─────────────────────────────────────────────────────
 (() => {
   const backdrop = document.getElementById('welcome-modal');
   const card = backdrop.querySelector('.modal-card');
-  const open = () => { backdrop.classList.add('is-open'); card.classList.add('is-open'); };
+  const copy = backdrop.querySelector('.t-stagger');
+  const mqReduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  // Reuses the same canvas + particle approach as join.js's fireConfetti —
+  // kept as a one-off burst for this rare first-visit moment.
+  function fireWelcomeConfetti() {
+    const canvas = document.getElementById('welcome-confetti-canvas');
+    if (!canvas || mqReduce.matches) return;
+    const ctx = canvas.getContext('2d');
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    canvas.style.display = 'block';
+    const colors = ['#14b8a6', '#0d9488', '#f97316', '#3b82f6', '#eab308'];
+    const parts = [];
+    for (let i = 0; i < 130; i++) {
+      parts.push({
+        x: window.innerWidth * 0.5 * dpr + (Math.random() - 0.5) * 90 * dpr,
+        y: window.innerHeight * 0.42 * dpr,
+        vx: (Math.random() - 0.5) * 11 * dpr,
+        vy: (Math.random() * -9 - 4) * dpr,
+        g: 0.26 * dpr,
+        w: (4 + Math.random() * 5) * dpr,
+        h: (6 + Math.random() * 8) * dpr,
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.32,
+        color: colors[i % colors.length],
+      });
+    }
+    const start = performance.now();
+    (function frame(now) {
+      const t = now - start;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let alive = false;
+      parts.forEach(p => {
+        p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.vx *= 0.99;
+        const a = t < 1700 ? 1 : Math.max(0, 1 - (t - 1700) / 700);
+        if (p.y < canvas.height + 40 * dpr && a > 0) alive = true;
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      });
+      if (t < 2600 && alive) requestAnimationFrame(frame);
+      else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = 'none'; }
+    })(start);
+  }
+
+  const open = () => {
+    backdrop.classList.add('is-open');
+    card.classList.add('is-open');
+    copy.classList.remove('is-hiding');
+    copy.classList.remove('is-shown');
+    void copy.offsetHeight;
+    copy.classList.add('is-shown');
+  };
   const close = () => {
     const wasOpen = backdrop.classList.contains('is-open');
     backdrop.classList.remove('is-open');
     card.classList.remove('is-open');
-    if (wasOpen) burstConfetti();
+    copy.classList.add('is-hiding');
+    copy.classList.remove('is-shown');
+    setTimeout(() => copy.classList.remove('is-hiding'), 200);
+    if (wasOpen) fireWelcomeConfetti();
   };
   document.getElementById('welcome-modal-close').addEventListener('click', close);
   backdrop.addEventListener('click', e => { if (e.target === backdrop) close(); });

@@ -209,6 +209,7 @@
         var links = p.links || {};
         var connected = SOCIAL_ORDER.filter(function (k) { return links[k]; });
         var buttons = el('qr-buttons');
+        var openRow = el('qr-open-row');
         var imgs = document.querySelectorAll('.qr-live-img');
         var active = PROFILE_KEY;   // default → the member's own Sarawak Talents card
 
@@ -224,6 +225,24 @@
         // card opens its destination — so no separate "Open" button is needed.
         function activateOrOpen(k) { if (active === k) openTarget(k); else setActive(k); }
 
+        // Explicit "Open" affordance under the QR, so visiting a link is obvious
+        // instead of relying on the hidden "tap the icon again" gesture.
+        function updateOpenRow() {
+            if (!openRow) return;
+            if (active === PROFILE_KEY) {
+                openRow.innerHTML = '<p class="qr-open-hint">Tap an icon to point the QR there — then tap <b>Open</b> to visit the link.</p>';
+                return;
+            }
+            var meta = metaFor(active);
+            openRow.innerHTML = '';
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'qr-open-btn';
+            b.innerHTML = 'Open ' + escapeHtml(meta.label) + ' <span aria-hidden="true">↗</span>';
+            b.addEventListener('click', function () { openTarget(active); });
+            openRow.appendChild(b);
+        }
+
         function refresh() {
             var qr = qrcode(0, 'M');
             qr.addData(targetHref());
@@ -233,6 +252,7 @@
             Array.prototype.forEach.call(document.querySelectorAll('.pf-qr-live [data-key]'), function (c) {
                 c.classList.toggle('is-active', c.dataset.key === active);
             });
+            updateOpenRow();
         }
 
         // Sarawak Talents card first, then connected socials + "more soon".

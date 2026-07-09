@@ -271,11 +271,6 @@ html.dark .hero-logo-img {
     background: #111827;
 }
 
-.welcome-modal-ok-btn {
-    color: #ffffff;
-    background: #111827;
-}
-
 /* Mobile menu */
 .hero-menu-btn {
     display: none;
@@ -1150,11 +1145,6 @@ html.dark .hero-nav-btn--login {
 }
 
 html.dark .hero-nav-btn--get-started {
-    color: #0a0a0a;
-    background: #ffffff;
-}
-
-html.dark .welcome-modal-ok-btn {
     color: #0a0a0a;
     background: #ffffff;
 }

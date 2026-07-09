@@ -329,10 +329,7 @@ html.dark .hero-menu-btn {
     inset: 0;
     z-index: 0;
     pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.9s ease;
 }
-.hero-dots.is-ready { opacity: 1; }
 
 /* No cursor to interact with — fall back to the untouched photo. */
 @media (hover: none), (pointer: coarse) {

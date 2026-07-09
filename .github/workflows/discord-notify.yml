@@ -1,0 +1,74 @@
+name: Discord notify
+
+# Posts plain-English messages to the team Discord (#dev-activity) on every push
+# and when a pull request is opened. Uses the DISCORD_WEBHOOK repo secret.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send friendly message to Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          EVENT: ${{ github.event_name }}
+          ACTOR: ${{ github.actor }}
+          REF_NAME: ${{ github.ref_name }}
+          HEAD_MSG: ${{ github.event.head_commit.message }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_BASE: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+
+          # Friendly first names instead of GitHub usernames.
+          case "$ACTOR" in
+            aaronagai) who="Aaron" ;;
+            Harting02) who="Marc" ;;
+            *) who="$ACTOR" ;;
+          esac
+
+          msg=""
+
+          if [ "$EVENT" = "push" ]; then
+            subject=$(printf '%s' "$HEAD_MSG" | head -n1)
+            [ -z "$subject" ] && { echo "no commit subject (branch create/delete) — skipping"; exit 0; }
+
+            # Merge commits read badly as a subject; use a generic phrase instead.
+            merge=false
+            case "$subject" in
+              "Merge pull request"*|"Merge branch"*|"Merge remote"*) merge=true ;;
+            esac
+
+            case "$REF_NAME" in
+              main)
+                if [ "$merge" = true ]; then
+                  msg="🚀 **$who** just shipped the latest changes to the **LIVE site**!"$'\n'"🌐 https://sarawaktalents.com"
+                else
+                  msg="🚀 **$who** shipped to the **LIVE site** — *$subject*"$'\n'"🌐 https://sarawaktalents.com"
+                fi ;;
+              staging)
+                if [ "$merge" = true ]; then
+                  msg="🎨 **$who** updated the **preview site** with the latest changes."$'\n'"👀 https://sarawaktalents.pages.dev"
+                else
+                  msg="🎨 **$who** pushed to the **preview site** — *$subject*"$'\n'"👀 https://sarawaktalents.pages.dev"
+                fi ;;
+              *)
+                msg="🌿 **$who** pushed to branch \`$REF_NAME\` — *$subject*" ;;
+            esac
+
+          elif [ "$EVENT" = "pull_request" ]; then
+            where="the LIVE site"
+            [ "$PR_BASE" != "main" ] && where="\`$PR_BASE\`"
+            msg="📬 **$who** opened a request to ship to $where: *$PR_TITLE*"$'\n'"$PR_URL"
+          fi
+
+          [ -z "$msg" ] && exit 0
+          jq -n --arg c "$msg" --arg u "Sarawak Talents" '{content: $c, username: $u}' \
+            | curl -sS -H "Content-Type: application/json" -d @- "$DISCORD_WEBHOOK" >/dev/null
+          echo "sent: $msg"

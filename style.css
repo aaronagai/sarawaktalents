@@ -321,6 +321,16 @@ html.dark .hero-menu-btn {
 
 @keyframes hero-photo-in { to { opacity: 1; } }
 
+/* Interactive dot-grid rendered from the hero painting. Sits above the still
+   photo, below the headline. Colours are sampled from the image so it reads as
+   the painting until the cursor makes the grid ripple to life. */
+.hero-dots {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .hero-photo-bg { animation: none; opacity: 1; }
 }

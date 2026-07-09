@@ -583,7 +583,6 @@ Transitions.initAvatarGroup('.hero-proof .t-avatar-group');
   const open = () => { backdrop.classList.add('is-open'); card.classList.add('is-open'); };
   const close = () => { backdrop.classList.remove('is-open'); card.classList.remove('is-open'); };
   document.getElementById('welcome-modal-close').addEventListener('click', close);
-  document.getElementById('welcome-modal-ok').addEventListener('click', close);
   backdrop.addEventListener('click', e => { if (e.target === backdrop) close(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
 

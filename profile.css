@@ -270,7 +270,7 @@ html.dark .qr-social-btn--soon { color: #666; }
 
 /* Open row under the QR: a hint by default, a clear "Open <platform>" button
    once a social is selected — so opening the link no longer needs a hidden gesture. */
-.qr-open-row { margin-top: 0.5rem; min-height: 2.75rem; display: flex; align-items: center; justify-content: center; }
+.qr-open-row { margin-top: 0.5rem; min-height: 2.75rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; }
 .qr-open-hint { margin: 0; font-size: 0.8125rem; line-height: 1.35; color: #6b7280; text-align: center; max-width: 22rem; }
 .qr-open-hint b { color: #7c3aed; font-weight: 600; }
 html.dark .qr-open-hint { color: #9ca3af; }

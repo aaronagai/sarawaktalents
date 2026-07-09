@@ -201,8 +201,6 @@
             });
         });
 
-        var saveBtn = el('pf-saveqr-btn');
-        if (saveBtn) saveBtn.addEventListener('click', function () { exportProfileCard(p); });
     }
 
     // ── Save / share the Sarawak Talents QR as a portrait image ─────────────────
@@ -336,12 +334,23 @@
         // instead of relying on the hidden "tap the icon again" gesture.
         function updateOpenRow() {
             if (!openRow) return;
+            openRow.innerHTML = '';
+            // Sarawak Talents card selected → Save the QR (same slot the socials use to Open).
             if (active === PROFILE_KEY) {
-                openRow.innerHTML = '<p class="qr-open-hint">Tap an icon to point the QR there — then tap <b>Open</b> to visit the link.</p>';
+                var s = document.createElement('button');
+                s.type = 'button';
+                s.className = 'qr-open-btn';
+                s.id = 'pf-saveqr-btn';
+                s.innerHTML = 'Save QR <span aria-hidden="true">↓</span>';
+                s.addEventListener('click', function () { exportProfileCard(p); });
+                openRow.appendChild(s);
+                var hint = document.createElement('p');
+                hint.className = 'qr-open-hint';
+                hint.textContent = 'Save your card image, or tap an icon to open its link.';
+                openRow.appendChild(hint);
                 return;
             }
             var meta = metaFor(active);
-            openRow.innerHTML = '';
             var b = document.createElement('button');
             b.type = 'button';
             b.className = 'qr-open-btn';

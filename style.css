@@ -953,38 +953,6 @@ html.dark .feature-card:hover { box-shadow: 0 20px 45px -14px rgba(0, 0, 0, 0.55
     color: #111827;
 }
 
-.welcome-modal-title {
-    color: #111827;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.375rem;
-}
-
-.welcome-modal-icon {
-    display: inline-flex;
-    color: #0d9488;
-    flex-shrink: 0;
-}
-
-.welcome-modal-sub {
-    margin-top: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 300;
-    color: #6b7280;
-}
-
-/* Confetti overlay, shared canvas element reused across bursts */
-.confetti-canvas {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 9999;
-    display: none;
-}
-
 .modal-photo-area {
     position: relative;
     height: clamp(220px, 55vw, 300px);
@@ -1538,18 +1506,6 @@ html.dark .modal-close {
 html.dark .modal-close:hover {
     background-color: #333333;
     color: var(--dm-text);
-}
-
-html.dark .welcome-modal-title {
-    color: var(--dm-text);
-}
-
-html.dark .welcome-modal-icon {
-    color: #2dd4bf;
-}
-
-html.dark .welcome-modal-sub {
-    color: var(--dm-text-muted);
 }
 
 html.dark .modal-detail-label {

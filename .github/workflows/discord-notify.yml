@@ -25,6 +25,14 @@ jobs:
           PR_BASE: ${{ github.event.pull_request.base.ref }}
         run: |
           set -euo pipefail
+
+          # Friendly first names instead of GitHub usernames.
+          case "$ACTOR" in
+            aaronagai) who="Aaron" ;;
+            Harting02) who="Marc" ;;
+            *) who="$ACTOR" ;;
+          esac
+
           msg=""
 
           if [ "$EVENT" = "push" ]; then
@@ -40,24 +48,24 @@ jobs:
             case "$REF_NAME" in
               main)
                 if [ "$merge" = true ]; then
-                  msg="🚀 **$ACTOR** just shipped the latest changes to the **LIVE site**!"$'\n'"🌐 https://sarawaktalents.com"
+                  msg="🚀 **$who** just shipped the latest changes to the **LIVE site**!"$'\n'"🌐 https://sarawaktalents.com"
                 else
-                  msg="🚀 **$ACTOR** shipped to the **LIVE site** — *$subject*"$'\n'"🌐 https://sarawaktalents.com"
+                  msg="🚀 **$who** shipped to the **LIVE site** — *$subject*"$'\n'"🌐 https://sarawaktalents.com"
                 fi ;;
               staging)
                 if [ "$merge" = true ]; then
-                  msg="🎨 **$ACTOR** updated the **preview site** with the latest changes."$'\n'"👀 https://sarawaktalents.pages.dev"
+                  msg="🎨 **$who** updated the **preview site** with the latest changes."$'\n'"👀 https://sarawaktalents.pages.dev"
                 else
-                  msg="🎨 **$ACTOR** pushed to the **preview site** — *$subject*"$'\n'"👀 https://sarawaktalents.pages.dev"
+                  msg="🎨 **$who** pushed to the **preview site** — *$subject*"$'\n'"👀 https://sarawaktalents.pages.dev"
                 fi ;;
               *)
-                msg="🌿 **$ACTOR** pushed to branch \`$REF_NAME\` — *$subject*" ;;
+                msg="🌿 **$who** pushed to branch \`$REF_NAME\` — *$subject*" ;;
             esac
 
           elif [ "$EVENT" = "pull_request" ]; then
             where="the LIVE site"
             [ "$PR_BASE" != "main" ] && where="\`$PR_BASE\`"
-            msg="📬 **$ACTOR** opened a request to ship to $where: *$PR_TITLE*"$'\n'"$PR_URL"
+            msg="📬 **$who** opened a request to ship to $where: *$PR_TITLE*"$'\n'"$PR_URL"
           fi
 
           [ -z "$msg" ] && exit 0

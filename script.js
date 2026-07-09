@@ -576,6 +576,23 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 
 Transitions.initAvatarGroup('.hero-proof .t-avatar-group');
 
+// ── Welcome popup ─────────────────────────────────────────────────────
+(() => {
+  const backdrop = document.getElementById('welcome-modal');
+  const card = backdrop.querySelector('.modal-card');
+  const open = () => { backdrop.classList.add('is-open'); card.classList.add('is-open'); };
+  const close = () => { backdrop.classList.remove('is-open'); card.classList.remove('is-open'); };
+  document.getElementById('welcome-modal-close').addEventListener('click', close);
+  document.getElementById('welcome-modal-ok').addEventListener('click', close);
+  backdrop.addEventListener('click', e => { if (e.target === backdrop) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+
+  if (!sessionStorage.getItem('st-welcome-seen')) {
+    sessionStorage.setItem('st-welcome-seen', '1');
+    open();
+  }
+})();
+
 // ── Auth entry points ────────────────────────────────────────────────
 // "Get Started" → invite-only join flow. "Log In" → straight to sign-in.
 // For signed-in members these become "Profile" and "Edit profile".

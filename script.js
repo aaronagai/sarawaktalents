@@ -649,6 +649,7 @@ Transitions.initAvatarGroup('.hero-proof .t-avatar-group');
     if (wasOpen) fireWelcomeConfetti();
   };
   document.getElementById('welcome-modal-close').addEventListener('click', close);
+  document.getElementById('welcome-modal-cta').addEventListener('click', close);
   backdrop.addEventListener('click', e => { if (e.target === backdrop) close(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
 

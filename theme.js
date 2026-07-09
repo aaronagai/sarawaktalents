@@ -1,9 +1,15 @@
 /**
  * Theme mode — system | light | dark (localStorage: theme-mode).
- * Shared by index, profile, and any page with .footer-theme-pill.t-tabs.
+ * Shared by index, profile, and any page with #theme-toggle.
  */
 const Theme = (() => {
   const STORAGE_KEY = 'theme-mode';
+  const CYCLE = ['system', 'light', 'dark'];
+  const MODE_UI = {
+    system: { icon: 'monitor', label: 'System theme' },
+    light: { icon: 'sun', label: 'Light theme' },
+    dark: { icon: 'moon', label: 'Dark theme' },
+  };
   let themeMode = 'system';
   let systemThemeMQ = null;
 
@@ -67,22 +73,26 @@ const Theme = (() => {
     return { moveTo, tabs, active };
   }
 
-  function syncThemeTabsUI() {
-    const bar = document.querySelector('.footer-theme-pill.t-tabs');
-    if (!bar) return;
-    const tabId =
-      themeMode === 'light'
-        ? 'theme-light'
-        : themeMode === 'dark'
-          ? 'theme-dark'
-          : 'theme-system';
-    bar.querySelectorAll('.t-tab').forEach(t => {
-      t.setAttribute('aria-selected', t.id === tabId ? 'true' : 'false');
-    });
-    if (bar._moveThemePill) {
-      const active = bar.querySelector(`#${tabId}`);
-      if (active) bar._moveThemePill(active, false);
+  function syncThemeToggleUI() {
+    const btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+    const iconEl = btn.querySelector('re-icon');
+    const { icon, label } = MODE_UI[themeMode] || MODE_UI.system;
+    btn.setAttribute('aria-label', label);
+    if (!iconEl || iconEl.getAttribute('icon') === icon) return;
+
+    const reduced =
+      typeof Transitions !== 'undefined' && Transitions.prefersReducedMotion();
+    if (reduced) {
+      iconEl.setAttribute('icon', icon);
+      return;
     }
+
+    btn.classList.add('is-changing');
+    window.setTimeout(() => {
+      iconEl.setAttribute('icon', icon);
+      btn.classList.remove('is-changing');
+    }, 140);
   }
 
   function applyThemeMode(mode, { persist = true } = {}) {
@@ -94,7 +104,7 @@ const Theme = (() => {
       localStorage.removeItem('theme');
     }
     updateThemeMeta(dark);
-    syncThemeTabsUI();
+    syncThemeToggleUI();
   }
 
   function initThemeSystemListener() {
@@ -108,26 +118,19 @@ const Theme = (() => {
     });
   }
 
-  function initThemeTabs() {
-    const bar = document.querySelector('.footer-theme-pill.t-tabs');
-    if (!bar) return;
-    const api = initSlidingTabs(bar, {
-      onSelect(tab) {
-        const mode =
-          tab.id === 'theme-light'
-            ? 'light'
-            : tab.id === 'theme-dark'
-              ? 'dark'
-              : 'system';
-        applyThemeMode(mode);
-      },
+  function initThemeToggle() {
+    const btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      const idx = CYCLE.indexOf(themeMode);
+      const next = CYCLE[(idx + 1) % CYCLE.length];
+      applyThemeMode(next);
     });
-    if (api) bar._moveThemePill = api.moveTo;
   }
 
   function init() {
     initThemeSystemListener();
-    initThemeTabs();
+    initThemeToggle();
     applyThemeMode(getStoredThemeMode(), { persist: false });
   }
 

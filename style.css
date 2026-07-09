@@ -1230,41 +1230,47 @@ html.dark .industry-chip.is-active {
     height: var(--lang-tab-h);
 }
 
-.footer-theme-pill.t-tabs {
-    --theme-tab-size: 30px;
-    gap: 0;
-    padding: 3px;
-    vertical-align: middle;
-}
-
-.footer-theme-pill .t-tab {
-    min-height: unset;
-    min-width: unset;
-    width: var(--theme-tab-size);
-    height: var(--theme-tab-size);
-    padding: 0;
+.footer-theme-toggle {
+    --theme-btn-size: 36px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: var(--theme-btn-size);
+    height: var(--theme-btn-size);
+    padding: 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 50%;
+    background-color: #f3f4f6;
+    color: #111827;
+    cursor: pointer;
+    vertical-align: middle;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
 }
 
-.footer-theme-pill .t-tab re-icon {
+.footer-theme-toggle:hover {
+    background-color: #e5e7eb;
+}
+
+.footer-theme-toggle:active {
+    transform: scale(0.94);
+}
+
+.footer-theme-toggle re-icon {
     display: block;
     color: inherit;
+    transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-.footer-theme-pill .t-tab:not([aria-selected="true"]) {
-    color: #6b7280;
+.footer-theme-toggle.is-changing re-icon {
+    opacity: 0;
+    transform: scale(0.72) rotate(-14deg);
 }
 
-.footer-theme-pill .t-tab[aria-selected="true"] {
-    color: #111827;
-}
-
-.footer-theme-pill .t-tabs-pill {
-    top: 3px;
-    height: var(--theme-tab-size);
-    border-radius: 50%;
+@media (prefers-reduced-motion: reduce) {
+    .footer-theme-toggle,
+    .footer-theme-toggle re-icon {
+        transition: none;
+    }
 }
 
 /* ── Dark Mode (charcoal minimal — matches features reference) ─ */
@@ -1627,17 +1633,15 @@ html.dark .footer-lang-pill .t-tab[aria-selected="true"] {
     color: var(--dm-text);
 }
 
-html.dark .footer-theme-pill.t-tabs {
+html.dark .footer-theme-toggle {
     background-color: var(--dm-surface);
-    border: 1px solid var(--dm-border);
-}
-
-html.dark .footer-theme-pill .t-tab:not([aria-selected="true"]) {
-    color: var(--dm-text-muted);
-}
-
-html.dark .footer-theme-pill .t-tab[aria-selected="true"] {
+    border-color: var(--dm-border);
     color: var(--dm-text);
+}
+
+html.dark .footer-theme-toggle:hover {
+    background-color: #1f1f1f;
+    border-color: var(--dm-border-strong);
 }
 
 /* Modal */

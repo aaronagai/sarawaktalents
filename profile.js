@@ -127,18 +127,33 @@
             oi.hidden = false;
         }
 
-        // Lead line
-        var first = (p.name || '').split(/\s+/)[0];
-        var lead = escapeHtml(first) + ' is';
-        if (p.role) lead += ' ' + articleBefore(p.role) + ' <b>' + escapeHtml(p.role) + '</b>';
-        if (p.industry) lead += ' in ' + escapeHtml(p.industry);
-        lead += '.';
+        // Lead line — grammar-proof for any combination of title / industry.
+        var first = escapeHtml((p.name || '').split(/\s+/)[0]);
+        var role = (p.role || '').trim();
+        var industry = (p.industry || '').trim();
+        var sameRI = role && industry && role.toLowerCase() === industry.toLowerCase();
+        var lead;
+        if (role && industry && !sameRI) {
+            lead = first + ' is ' + articleBefore(role) + ' <b>' + escapeHtml(role) + '</b> in ' + escapeHtml(industry) + '.';
+        } else if (sameRI || (industry && !role)) {
+            lead = first + ' works in <b>' + escapeHtml(industry) + '</b>.';
+        } else if (role) {
+            lead = first + ' is ' + articleBefore(role) + ' <b>' + escapeHtml(role) + '</b>.';
+        } else {
+            lead = first + '.';
+        }
         el('pf-lead').innerHTML = lead;
 
         if (p.bio) { el('pf-bio').textContent = p.bio; el('pf-bio').hidden = false; }
 
-        // Tags
-        var tags = [p.category, p.industry].filter(Boolean);
+        // Tags (dedupe case-insensitively so category/industry don't repeat).
+        var seenTag = {};
+        var tags = [p.category, p.industry].filter(function (t) {
+            if (!t) return false;
+            var k = String(t).toLowerCase();
+            if (seenTag[k]) return false;
+            seenTag[k] = 1; return true;
+        });
         el('pf-tags').innerHTML = tags.map(function (t) {
             return '<span class="pf-tag">' + escapeHtml(t) + '</span>';
         }).join('');

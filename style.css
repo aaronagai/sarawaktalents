@@ -943,49 +943,62 @@ html.dark .feature-card:hover { box-shadow: 0 20px 45px -14px rgba(0, 0, 0, 0.55
     color: #111827;
 }
 
-.welcome-modal-badge {
-    width: 60px;
-    height: 60px;
-    margin: 0 auto 1.125rem;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #ffffff;
-    background: linear-gradient(135deg, #2dd4bf, #0d9488);
-    box-shadow: 0 10px 22px rgba(13, 148, 136, 0.32);
+/* Welcome popup — minimal: no photo, no icon, no CTA. A soft brand-teal glow
+   behind refined type is the whole design; the × is the only affordance. */
+.welcome-modal-wrapper {
+    width: min(320px, calc(100vw - 2 * var(--site-gutter) - 1.5rem));
+}
+
+@media (min-width: 640px) {
+    .welcome-modal-wrapper {
+        width: min(360px, calc(100vw - 2.5rem));
+    }
+}
+
+.welcome-modal-card {
+    position: relative;
+    background:
+        radial-gradient(120% 90% at 50% -10%, rgba(45, 212, 191, 0.22) 0%, rgba(45, 212, 191, 0) 60%),
+        #ffffff;
+}
+
+.welcome-modal-body {
+    position: relative;
+    padding: 2.5rem 1.75rem 2.25rem;
+    text-align: center;
+}
+
+@media (min-width: 640px) {
+    .welcome-modal-body { padding: 2.75rem 2.25rem 2.5rem; }
+}
+
+.welcome-modal-eyebrow {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #9ca3af;
 }
 
 .welcome-modal-title {
+    margin-top: 0.25rem;
+    font-family: 'SF Pro Rounded', 'Nunito', ui-rounded, -apple-system, system-ui, sans-serif;
+    font-size: 1.625rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
     color: #111827;
 }
 
+@media (min-width: 640px) {
+    .welcome-modal-title { font-size: 1.75rem; }
+}
+
 .welcome-modal-sub {
-    margin-top: 0.5rem;
+    margin-top: 0.75rem;
     font-size: 0.875rem;
     font-weight: 300;
+    line-height: 1.5;
     color: #6b7280;
-}
-
-.welcome-modal-cta {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 1.5rem;
-    padding: 0.625rem 1.75rem;
-    border: none;
-    border-radius: 9999px;
-    background: #111827;
-    color: #ffffff;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    min-height: var(--touch-min);
-    transition: opacity 0.15s;
-}
-
-.welcome-modal-cta:hover {
-    opacity: 0.85;
 }
 
 /* Confetti overlay, shared canvas element reused across bursts */
@@ -1554,22 +1567,22 @@ html.dark .modal-close:hover {
     color: var(--dm-text);
 }
 
+html.dark .welcome-modal-card {
+    background:
+        radial-gradient(120% 90% at 50% -10%, rgba(45, 212, 191, 0.16) 0%, rgba(45, 212, 191, 0) 60%),
+        var(--dm-surface);
+}
+
 html.dark .welcome-modal-title {
     color: var(--dm-text);
 }
 
-html.dark .welcome-modal-badge {
-    background: linear-gradient(135deg, #2dd4bf, #0f766e);
-    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.4);
+html.dark .welcome-modal-eyebrow {
+    color: var(--dm-text-muted);
 }
 
 html.dark .welcome-modal-sub {
     color: var(--dm-text-muted);
-}
-
-html.dark .welcome-modal-cta {
-    background: #2dd4bf;
-    color: #0f172a;
 }
 
 html.dark .modal-detail-label {

@@ -576,12 +576,74 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 
 Transitions.initAvatarGroup('.hero-proof .t-avatar-group');
 
+// ── Confetti burst ────────────────────────────────────────────────────
+function burstConfetti() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:9999;';
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const colors = ['#14b8a6', '#0d9488', '#f97316', '#3b82f6', '#eab308'];
+  const particles = Array.from({ length: 140 }, () => ({
+    x: window.innerWidth / 2 + (Math.random() - 0.5) * 120,
+    y: window.innerHeight * 0.35,
+    vx: (Math.random() - 0.5) * 8,
+    vy: -(Math.random() * 8 + 4),
+    size: Math.random() * 6 + 4,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    rotation: Math.random() * 360,
+    rotationSpeed: (Math.random() - 0.5) * 12,
+    gravity: 0.25 + Math.random() * 0.15,
+    drag: 0.995,
+  }));
+
+  const start = performance.now();
+  const duration = 2600;
+
+  function frame(now) {
+    const elapsed = now - start;
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    const fade = Math.max(0, 1 - elapsed / duration);
+    particles.forEach(p => {
+      p.vx *= p.drag;
+      p.vy = p.vy * p.drag + p.gravity;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rotation += p.rotationSpeed;
+      ctx.save();
+      ctx.globalAlpha = fade;
+      ctx.translate(p.x, p.y);
+      ctx.rotate((p.rotation * Math.PI) / 180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+      ctx.restore();
+    });
+    if (elapsed < duration) {
+      requestAnimationFrame(frame);
+    } else {
+      canvas.remove();
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
 // ── Welcome popup ─────────────────────────────────────────────────────
 (() => {
   const backdrop = document.getElementById('welcome-modal');
   const card = backdrop.querySelector('.modal-card');
   const open = () => { backdrop.classList.add('is-open'); card.classList.add('is-open'); };
-  const close = () => { backdrop.classList.remove('is-open'); card.classList.remove('is-open'); };
+  const close = () => {
+    const wasOpen = backdrop.classList.contains('is-open');
+    backdrop.classList.remove('is-open');
+    card.classList.remove('is-open');
+    if (wasOpen) burstConfetti();
+  };
   document.getElementById('welcome-modal-close').addEventListener('click', close);
   backdrop.addEventListener('click', e => { if (e.target === backdrop) close(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });

@@ -943,6 +943,10 @@ html.dark .feature-card:hover { box-shadow: 0 20px 45px -14px rgba(0, 0, 0, 0.55
     color: #111827;
 }
 
+.welcome-modal-title {
+    color: #111827;
+}
+
 .modal-photo-area {
     position: relative;
     height: clamp(220px, 55vw, 300px);
@@ -1495,6 +1499,10 @@ html.dark .modal-close {
 
 html.dark .modal-close:hover {
     background-color: #333333;
+    color: var(--dm-text);
+}
+
+html.dark .welcome-modal-title {
     color: var(--dm-text);
 }
 

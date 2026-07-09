@@ -498,3 +498,245 @@ html.dark .join-badge-tile.is-selected { border-color: #a78bfa; box-shadow: 0 0 
     .join-done-check .t-success-check { animation: none !important; opacity: 1; }
     .join-done-check .t-success-check svg path { animation: none !important; stroke-dashoffset: 0 !important; }
 }
+
+/* ── Onboarding tour (3 slides, shown once right after signup) ──────────── */
+.onboarding-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    background: #fafafa;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: max(1.5rem, env(safe-area-inset-top)) 1.5rem max(1.5rem, env(safe-area-inset-bottom));
+    overflow-y: auto;
+}
+.onboarding-overlay[hidden] { display: none; }
+html.dark .onboarding-overlay { background: #0a0a0a; }
+
+.onboarding-skip {
+    position: absolute;
+    top: max(1.25rem, env(safe-area-inset-top));
+    right: max(1.25rem, env(safe-area-inset-right));
+    background: none;
+    border: none;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 0.5rem 0.75rem;
+    transition: color 0.15s;
+}
+.onboarding-skip:hover { color: #374151; }
+html.dark .onboarding-skip { color: #666; }
+html.dark .onboarding-skip:hover { color: #d4d4d4; }
+
+.onboarding-shell {
+    width: 100%;
+    max-width: 26rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.onboarding-slides {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.onboarding-slide {
+    width: 100%;
+    text-align: center;
+    animation: onboarding-slide-in 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes onboarding-slide-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .onboarding-slide { animation: none; }
+}
+
+.onboarding-art {
+    position: relative;
+    height: 11rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.onboarding-art-badge {
+    position: absolute;
+    top: 0.25rem;
+    right: calc(50% - 5.5rem);
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    box-shadow: 0 6px 16px rgba(17, 24, 39, 0.12);
+}
+html.dark .onboarding-art-badge { background: #1c1c1e; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4); }
+
+.onboarding-art-badge--teal  { color: #0d9488; }
+.onboarding-art-badge--amber { color: #b45309; }
+.onboarding-art-badge--blue  { color: #1d4ed8; }
+html.dark .onboarding-art-badge--teal  { color: #5eead4; }
+html.dark .onboarding-art-badge--amber { color: #fcd34d; }
+html.dark .onboarding-art-badge--blue  { color: #93c5fd; }
+
+/* Slide 1 — mock profile / name-card */
+.onboarding-card-mock {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 17.5rem;
+    padding: 1rem 1.125rem;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 1.125rem;
+    box-shadow: 0 16px 32px -12px rgba(17, 24, 39, 0.18);
+    transform: rotate(-3deg);
+}
+html.dark .onboarding-card-mock {
+    background: #161616;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 16px 32px -12px rgba(0, 0, 0, 0.5);
+}
+
+.onboarding-card-avatar {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 9999px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.onboarding-card-info {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    min-width: 0;
+}
+.onboarding-card-info strong {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #111827;
+}
+html.dark .onboarding-card-info strong { color: #fff; }
+.onboarding-card-info span {
+    font-size: 0.75rem;
+    font-weight: 300;
+    color: #6b7280;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+html.dark .onboarding-card-info span { color: #999; }
+
+.onboarding-card-qr {
+    margin-left: auto;
+    color: #9ca3af;
+    flex-shrink: 0;
+}
+html.dark .onboarding-card-qr { color: #666; }
+
+/* Slide 2 — overlapping avatar cluster */
+.onboarding-avatar-cluster {
+    display: flex;
+}
+.onboarding-avatar-cluster img {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 9999px;
+    object-fit: cover;
+    border: 3px solid #fafafa;
+    box-shadow: 0 10px 24px -8px rgba(17, 24, 39, 0.2);
+    margin-left: -1rem;
+}
+html.dark .onboarding-avatar-cluster img { border-color: #0a0a0a; }
+.onboarding-avatar-cluster img:first-child { margin-left: 0; }
+
+/* Slide 3 — big icon badge */
+.onboarding-icon-badge {
+    width: 6rem;
+    height: 6rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(59, 130, 246, 0.12);
+    color: #1d4ed8;
+}
+html.dark .onboarding-icon-badge { background: rgba(96, 165, 250, 0.16); color: #93c5fd; }
+
+.onboarding-eyebrow {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #0d9488;
+    margin-bottom: 0.5rem;
+}
+html.dark .onboarding-eyebrow { color: #5eead4; }
+
+.onboarding-title {
+    font-family: 'SF Pro Rounded', 'Nunito', ui-rounded, -apple-system, system-ui, sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: #111827;
+    margin-bottom: 0.75rem;
+}
+html.dark .onboarding-title { color: #fff; }
+
+.onboarding-desc {
+    font-size: 0.9375rem;
+    font-weight: 300;
+    line-height: 1.6;
+    color: #6b7280;
+    max-width: 22rem;
+    margin: 0 auto;
+}
+html.dark .onboarding-desc { color: #999; }
+
+.onboarding-footer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+}
+
+.onboarding-dots {
+    display: flex;
+    gap: 0.5rem;
+}
+.onboarding-dot {
+    width: 1.5rem;
+    height: 5px;
+    border-radius: 99px;
+    background: #e5e7eb;
+    transition: background 0.3s, width 0.3s;
+}
+.onboarding-dot.is-active { background: #0d9488; width: 2.25rem; }
+html.dark .onboarding-dot { background: #2a2a2a; }
+html.dark .onboarding-dot.is-active { background: #2dd4bf; }
+
+.onboarding-actions {
+    width: 100%;
+    display: flex;
+    gap: 0.75rem;
+}
+.onboarding-actions .join-btn { flex: 1; }
+.onboarding-actions .join-btn[hidden] { display: none; }
+
+@media (min-width: 480px) {
+    .onboarding-actions { width: auto; min-width: 20rem; }
+}

@@ -23,6 +23,17 @@
 
     if (!LIVE && banner) banner.hidden = false;
 
+    // ── Industry suggestions ────────────────────────────────────────────
+    (function populateIndustryOptions() {
+        var list = document.getElementById('pf-industry-options');
+        if (!list || !window.ST_INDUSTRIES) return;
+        window.ST_INDUSTRIES.forEach(function (name) {
+            var opt = document.createElement('option');
+            opt.value = name;
+            list.appendChild(opt);
+        });
+    })();
+
     // ── navigation: steps "fly" directionally + the tray height morphs ───────
     function stepEl(step) { return document.querySelector('.join-step[data-step="' + step + '"]'); }
     function stepIndex(step) { return step === 'done' ? 3 : Number(step); }
@@ -546,6 +557,62 @@
             });
         });
     }
+
+    // ── Post-signup onboarding tour (3 slides) ─────────────────────────────────
+    (function () {
+        var overlay = document.getElementById('onboarding-overlay');
+        if (!overlay) return;
+
+        var startBtn = document.getElementById('start-onboarding-btn');
+        var skipBtn = document.getElementById('onboarding-skip');
+        var nextBtn = document.getElementById('onboarding-next');
+        var backBtn = document.getElementById('onboarding-back');
+        var slides = Array.prototype.slice.call(overlay.querySelectorAll('.onboarding-slide'));
+        var dots = Array.prototype.slice.call(overlay.querySelectorAll('.onboarding-dot'));
+        var total = slides.length;
+        var current = 0;
+
+        function goHome() { location.href = ST_SITE.home(); }
+
+        function render() {
+            slides.forEach(function (s, i) {
+                s.hidden = i !== current;
+                s.classList.toggle('is-active', i === current);
+            });
+            dots.forEach(function (d, i) { d.classList.toggle('is-active', i === current); });
+            backBtn.hidden = current === 0;
+            nextBtn.textContent = current === total - 1 ? 'Explore the directory' : 'Next';
+        }
+
+        if (startBtn) {
+            startBtn.addEventListener('click', function () {
+                current = 0;
+                overlay.hidden = false;
+                render();
+            });
+        }
+
+        nextBtn.addEventListener('click', function () {
+            if (current === total - 1) { goHome(); return; }
+            current += 1;
+            render();
+        });
+
+        backBtn.addEventListener('click', function () {
+            if (current === 0) return;
+            current -= 1;
+            render();
+        });
+
+        if (skipBtn) skipBtn.addEventListener('click', goHome);
+
+        document.addEventListener('keydown', function (e) {
+            if (overlay.hidden) return;
+            if (e.key === 'Escape') goHome();
+            if (e.key === 'ArrowRight') nextBtn.click();
+            if (e.key === 'ArrowLeft' && current > 0) backBtn.click();
+        });
+    })();
 
     // ── init ──────────────────────────────────────────────────────────────────
     if (LIVE) {

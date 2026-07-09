@@ -51,6 +51,7 @@ const translations = {
     feature3Desc:      'Turn a quick introduction into a lasting connection.',
     prideTitle:        'Pride',
     prideDesc:         'Show off what you\u2019re building. Organisation badges available for Sarawak\u2019s very own.',
+    industryBrowseHeading: 'Browse by industry',
   },
   ms: {
     heroLine1:         'Bakat Terbaik Sarawak',
@@ -97,6 +98,7 @@ const translations = {
     feature3Desc:      'Jadikan perkenalan ringkas sebagai hubungan yang berkekalan.',
     prideTitle:        'Kebanggaan',
     prideDesc:         'Tunjuk apa yang anda bina. Lencana organisasi tersedia untuk milik Sarawak sendiri.',
+    industryBrowseHeading: 'Cari mengikut industri',
   }
 };
 
@@ -382,11 +384,13 @@ function render() {
     const matchStatus     = selectedStatuses.size    === 0 ||
       (selectedStatuses.has('member')   && isMember) ||
       (selectedStatuses.has('featured') && !isMember);
+    const party = (c.party || '').toLowerCase();
     const matchSearch = !q ||
       c.name.toLowerCase().includes(q) ||
       c.dun.toLowerCase().includes(q)  ||
       c.dun_no.toLowerCase().includes(q) ||
-      c.parliamentary.toLowerCase().includes(q);
+      c.parliamentary.toLowerCase().includes(q) ||
+      (party && (party.includes(q) || q.includes(party)));
     return matchParty && matchParliament && matchStatus && matchSearch;
   });
 
@@ -576,88 +580,6 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 
 Transitions.initAvatarGroup('.hero-proof .t-avatar-group');
 
-// ── Welcome popup ─────────────────────────────────────────────────────
-(() => {
-  const backdrop = document.getElementById('welcome-modal');
-  const card = backdrop.querySelector('.modal-card');
-  const copy = backdrop.querySelector('.t-stagger');
-  const mqReduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-  // Reuses the same canvas + particle approach as join.js's fireConfetti —
-  // kept as a one-off burst for this rare first-visit moment.
-  function fireWelcomeConfetti() {
-    const canvas = document.getElementById('welcome-confetti-canvas');
-    if (!canvas || mqReduce.matches) return;
-    const ctx = canvas.getContext('2d');
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = window.innerWidth * dpr;
-    canvas.height = window.innerHeight * dpr;
-    canvas.style.display = 'block';
-    const colors = ['#14b8a6', '#0d9488', '#f97316', '#3b82f6', '#eab308'];
-    const parts = [];
-    for (let i = 0; i < 130; i++) {
-      parts.push({
-        x: window.innerWidth * 0.5 * dpr + (Math.random() - 0.5) * 90 * dpr,
-        y: window.innerHeight * 0.42 * dpr,
-        vx: (Math.random() - 0.5) * 11 * dpr,
-        vy: (Math.random() * -9 - 4) * dpr,
-        g: 0.26 * dpr,
-        w: (4 + Math.random() * 5) * dpr,
-        h: (6 + Math.random() * 8) * dpr,
-        rot: Math.random() * Math.PI,
-        vr: (Math.random() - 0.5) * 0.32,
-        color: colors[i % colors.length],
-      });
-    }
-    const start = performance.now();
-    (function frame(now) {
-      const t = now - start;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      let alive = false;
-      parts.forEach(p => {
-        p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.vx *= 0.99;
-        const a = t < 1700 ? 1 : Math.max(0, 1 - (t - 1700) / 700);
-        if (p.y < canvas.height + 40 * dpr && a > 0) alive = true;
-        ctx.save();
-        ctx.globalAlpha = a;
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rot);
-        ctx.fillStyle = p.color;
-        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-        ctx.restore();
-      });
-      if (t < 2600 && alive) requestAnimationFrame(frame);
-      else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = 'none'; }
-    })(start);
-  }
-
-  const open = () => {
-    backdrop.classList.add('is-open');
-    card.classList.add('is-open');
-    copy.classList.remove('is-hiding');
-    copy.classList.remove('is-shown');
-    void copy.offsetHeight;
-    copy.classList.add('is-shown');
-  };
-  const close = () => {
-    const wasOpen = backdrop.classList.contains('is-open');
-    backdrop.classList.remove('is-open');
-    card.classList.remove('is-open');
-    copy.classList.add('is-hiding');
-    copy.classList.remove('is-shown');
-    setTimeout(() => copy.classList.remove('is-hiding'), 200);
-    if (wasOpen) fireWelcomeConfetti();
-  };
-  document.getElementById('welcome-modal-close').addEventListener('click', close);
-  backdrop.addEventListener('click', e => { if (e.target === backdrop) close(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-
-  if (!sessionStorage.getItem('st-welcome-seen')) {
-    sessionStorage.setItem('st-welcome-seen', '1');
-    open();
-  }
-})();
-
 // ── Auth entry points ────────────────────────────────────────────────
 // "Get Started" → invite-only join flow. "Log In" → straight to sign-in.
 // For signed-in members these become "Profile" and "Edit profile".
@@ -769,4 +691,39 @@ async function reflectAuthState() {
 
 loadProfiles();
 reflectAuthState();
+
+// ── Browse by industry (homepage quick-pick chips) ─────────────────────
+// Reuses the free-text search (which matches on industry and, now, field/
+// category too) rather than the exact-match multi-select, since industry
+// values are user-typed and won't always line up with the canonical list
+// one-for-one — this will get sharper as more profiles pick from the new
+// industry suggestions in the join/edit form instead of typing free text.
+(() => {
+  const row = document.getElementById('industry-chip-row');
+  if (!row || !window.ST_INDUSTRIES_FEATURED) return;
+
+  window.ST_INDUSTRIES_FEATURED.forEach(name => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'industry-chip';
+    chip.textContent = name;
+    chip.dataset.query = name;
+    row.appendChild(chip);
+  });
+
+  row.addEventListener('click', e => {
+    const chip = e.target.closest('.industry-chip');
+    if (!chip) return;
+    const already = chip.classList.contains('is-active');
+    row.querySelectorAll('.industry-chip').forEach(c => c.classList.remove('is-active'));
+    if (already) {
+      searchInput.value = '';
+    } else {
+      chip.classList.add('is-active');
+      searchInput.value = chip.dataset.query;
+    }
+    render();
+    searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+})();
 

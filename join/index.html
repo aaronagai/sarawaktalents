@@ -191,8 +191,9 @@
                     </div>
 
                     <label class="join-field">
-                        <span class="join-label">Industry <span class="join-optional">(free text)</span></span>
-                        <input id="pf-industry" type="text" class="join-input" placeholder="e.g. Software Development">
+                        <span class="join-label">Industry <span class="join-optional">(pick a suggestion or type your own)</span></span>
+                        <input id="pf-industry" type="text" class="join-input" list="pf-industry-options" placeholder="e.g. Software Development" autocomplete="off">
+                        <datalist id="pf-industry-options"></datalist>
                     </label>
 
                     <label class="join-field">
@@ -253,7 +254,7 @@
                 </div>
                 <h1 class="join-title">You're in.</h1>
                 <p class="join-sub">Your profile is live. Welcome to Sarawak Talents.</p>
-                <a href="../" class="join-btn join-btn--primary">Go to the directory</a>
+                <button type="button" id="start-onboarding-btn" class="join-btn join-btn--primary">Continue</button>
             </section>
             </div>
 
@@ -261,6 +262,80 @@
     </main>
 
     <canvas id="confetti-canvas" class="confetti-canvas" aria-hidden="true"></canvas>
+
+    <!-- Onboarding tour — shown once, right after a new profile goes live -->
+    <div id="onboarding-overlay" class="onboarding-overlay" hidden>
+        <button type="button" id="onboarding-skip" class="onboarding-skip">Skip</button>
+
+        <div class="onboarding-shell">
+            <div class="onboarding-slides">
+
+                <section class="onboarding-slide is-active" data-slide="1">
+                    <div class="onboarding-art">
+                        <div class="onboarding-card-mock">
+                            <img src="../photos/user1.png" alt="" class="onboarding-card-avatar">
+                            <div class="onboarding-card-info">
+                                <strong>Aaron Nagai</strong>
+                                <span>Software Engineer · Kuching</span>
+                            </div>
+                            <span class="onboarding-card-qr" aria-hidden="true">
+                                <re-icon icon="qr" size="20" weight="outline"></re-icon>
+                            </span>
+                        </div>
+                        <span class="onboarding-art-badge onboarding-art-badge--teal" aria-hidden="true">
+                            <re-icon icon="card" size="18" weight="outline"></re-icon>
+                        </span>
+                    </div>
+                    <p class="onboarding-eyebrow">1 of 3</p>
+                    <h2 class="onboarding-title">Your digital name card</h2>
+                    <p class="onboarding-desc">Build your profile once — name, role, industry, socials — and it becomes a shareable card that's always up to date. No more re-typing your info.</p>
+                </section>
+
+                <section class="onboarding-slide" data-slide="2" hidden>
+                    <div class="onboarding-art">
+                        <div class="onboarding-avatar-cluster">
+                            <img src="../photos/user2.png" alt="">
+                            <img src="../photos/user3.png" alt="">
+                            <img src="../photos/user4.png" alt="">
+                        </div>
+                        <span class="onboarding-art-badge onboarding-art-badge--amber" aria-hidden="true">
+                            <re-icon icon="compass" size="18" weight="outline"></re-icon>
+                        </span>
+                    </div>
+                    <p class="onboarding-eyebrow">2 of 3</p>
+                    <h2 class="onboarding-title">Discover Sarawak's talent</h2>
+                    <p class="onboarding-desc">Search and filter the directory by name, field, or industry to find students, founders, creators and more from across the state.</p>
+                </section>
+
+                <section class="onboarding-slide" data-slide="3" hidden>
+                    <div class="onboarding-art">
+                        <span class="onboarding-icon-badge" aria-hidden="true">
+                            <re-icon icon="handshake" size="34" weight="outline"></re-icon>
+                        </span>
+                        <span class="onboarding-art-badge onboarding-art-badge--blue" aria-hidden="true">
+                            <re-icon icon="link" size="18" weight="outline"></re-icon>
+                        </span>
+                    </div>
+                    <p class="onboarding-eyebrow">3 of 3</p>
+                    <h2 class="onboarding-title">Stay connected</h2>
+                    <p class="onboarding-desc">Reach out through the links on someone's profile and turn a quick hello into a lasting connection. You're ready — go explore.</p>
+                </section>
+
+            </div>
+
+            <div class="onboarding-footer">
+                <div class="onboarding-dots" aria-hidden="true">
+                    <span class="onboarding-dot is-active" data-dot="1"></span>
+                    <span class="onboarding-dot" data-dot="2"></span>
+                    <span class="onboarding-dot" data-dot="3"></span>
+                </div>
+                <div class="onboarding-actions">
+                    <button type="button" id="onboarding-back" class="join-btn join-btn--ghost onboarding-back" hidden>Back</button>
+                    <button type="button" id="onboarding-next" class="join-btn join-btn--primary onboarding-next">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Delete profile confirmation -->
     <div id="delete-profile-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
@@ -284,6 +359,7 @@
     </div>
 
     <script src="../site-paths.js"></script>
+    <script src="../industries.js"></script>
     <script src="../config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase-client.js"></script>

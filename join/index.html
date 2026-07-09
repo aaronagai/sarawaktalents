@@ -16,6 +16,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content="https://sarawaktalents.com/photos/linkpreview.jpg">
 
+    <script src="https://unpkg.com/reicon@latest/cdn/reicon.min.js"></script>
     <link rel="stylesheet" href="../tailwind.css">
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="../join.css">
@@ -234,6 +235,13 @@
                     <p id="profile-error" class="join-error" hidden></p>
                     <button type="submit" id="profile-submit" class="join-btn join-btn--primary">Join the directory</button>
                 </form>
+
+                <div id="delete-profile-zone" class="join-danger-zone" hidden>
+                    <button type="button" id="delete-profile-trigger" class="join-link-danger">
+                        <re-icon icon="trash" size="14" weight="outline" aria-hidden="true"></re-icon>
+                        Delete my profile
+                    </button>
+                </div>
             </section>
 
             <!-- DONE -->
@@ -253,6 +261,27 @@
     </main>
 
     <canvas id="confetti-canvas" class="confetti-canvas" aria-hidden="true"></canvas>
+
+    <!-- Delete profile confirmation -->
+    <div id="delete-profile-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+        <div class="modal-wrapper">
+            <button id="delete-modal-close" class="modal-close" aria-label="Close">
+                <re-icon icon="x" size="14" weight="outline"></re-icon>
+            </button>
+            <div class="modal-card t-modal">
+                <div class="p-6 sm:p-8 text-center delete-modal-body">
+                    <re-icon icon="trash" size="22" weight="outline" class="delete-modal-icon" aria-hidden="true"></re-icon>
+                    <h2 id="delete-modal-title" class="delete-modal-title">Delete your profile?</h2>
+                    <p class="delete-modal-sub">This removes your listing from the directory and can't be undone. You'll need a new invite to rejoin.</p>
+                    <p id="delete-modal-error" class="join-error" hidden></p>
+                    <div class="delete-modal-actions">
+                        <button type="button" id="delete-modal-cancel" class="join-btn join-btn--ghost">Cancel</button>
+                        <button type="button" id="delete-modal-confirm" class="join-btn join-btn--danger">Delete profile</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="../site-paths.js"></script>
     <script src="../config.js"></script>

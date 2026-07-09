@@ -21,9 +21,9 @@
         baseAlpha: 0.26,  // opacity at a trough
         peakAlpha: 0.9,   // opacity at a crest
         // Two travelling waves (wavelength px, direction deg, speed rad/s).
-        wave1: { len: 300, angle: 22, speed: 0.55, weight: 0.6 },
-        wave2: { len: 210, angle: -54, speed: -0.8, weight: 0.4 },
-        sway: 1.6,        // gentle positional drift (css px)
+        wave1: { len: 300, angle: 22, speed: 1.2, weight: 0.6 },
+        wave2: { len: 210, angle: -54, speed: -1.7, weight: 0.4 },
+        sway: 3.8,        // positional drift (css px)
         cursorRadius: 150,// cursor influence radius (css px)
         cursorPush: 20    // max outward displacement under the cursor (css px)
     };

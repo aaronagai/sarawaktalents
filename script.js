@@ -51,6 +51,7 @@ const translations = {
     feature3Desc:      'Turn a quick introduction into a lasting connection.',
     prideTitle:        'Pride',
     prideDesc:         'Show off what you\u2019re building. Organisation badges available for Sarawak\u2019s very own.',
+    industryBrowseHeading: 'Browse by industry',
   },
   ms: {
     heroLine1:         'Bakat Terbaik Sarawak',
@@ -97,6 +98,7 @@ const translations = {
     feature3Desc:      'Jadikan perkenalan ringkas sebagai hubungan yang berkekalan.',
     prideTitle:        'Kebanggaan',
     prideDesc:         'Tunjuk apa yang anda bina. Lencana organisasi tersedia untuk milik Sarawak sendiri.',
+    industryBrowseHeading: 'Cari mengikut industri',
   }
 };
 
@@ -382,11 +384,13 @@ function render() {
     const matchStatus     = selectedStatuses.size    === 0 ||
       (selectedStatuses.has('member')   && isMember) ||
       (selectedStatuses.has('featured') && !isMember);
+    const party = (c.party || '').toLowerCase();
     const matchSearch = !q ||
       c.name.toLowerCase().includes(q) ||
       c.dun.toLowerCase().includes(q)  ||
       c.dun_no.toLowerCase().includes(q) ||
-      c.parliamentary.toLowerCase().includes(q);
+      c.parliamentary.toLowerCase().includes(q) ||
+      (party && (party.includes(q) || q.includes(party)));
     return matchParty && matchParliament && matchStatus && matchSearch;
   });
 
@@ -687,4 +691,39 @@ async function reflectAuthState() {
 
 loadProfiles();
 reflectAuthState();
+
+// ── Browse by industry (homepage quick-pick chips) ─────────────────────
+// Reuses the free-text search (which matches on industry and, now, field/
+// category too) rather than the exact-match multi-select, since industry
+// values are user-typed and won't always line up with the canonical list
+// one-for-one — this will get sharper as more profiles pick from the new
+// industry suggestions in the join/edit form instead of typing free text.
+(() => {
+  const row = document.getElementById('industry-chip-row');
+  if (!row || !window.ST_INDUSTRIES_FEATURED) return;
+
+  window.ST_INDUSTRIES_FEATURED.forEach(name => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'industry-chip';
+    chip.textContent = name;
+    chip.dataset.query = name;
+    row.appendChild(chip);
+  });
+
+  row.addEventListener('click', e => {
+    const chip = e.target.closest('.industry-chip');
+    if (!chip) return;
+    const already = chip.classList.contains('is-active');
+    row.querySelectorAll('.industry-chip').forEach(c => c.classList.remove('is-active'));
+    if (already) {
+      searchInput.value = '';
+    } else {
+      chip.classList.add('is-active');
+      searchInput.value = chip.dataset.query;
+    }
+    render();
+    searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+})();
 

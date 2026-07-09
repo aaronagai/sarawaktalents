@@ -716,16 +716,51 @@ input[type="search"]::-webkit-search-results-decoration {
     padding: 1.5rem;
 }
 
-/* ── Feature cards stay static; only the background circles animate —
-   slowly rotating / breathing behind the copy. A soft shadow lifts on hover. */
+/* ── Feature cards stay mostly static; only the background circles animate —
+   slowly rotating / breathing behind the copy. A soft shadow + lift on hover,
+   plus a per-card accent tint to break up what used to be three identical cards. */
 .feature-card {
-    transition: box-shadow 0.35s ease, border-color 0.35s ease;
+    transition: box-shadow 0.35s ease, border-color 0.35s ease, transform 0.35s ease;
 }
 .feature-card:hover {
     box-shadow: 0 20px 45px -14px rgba(17, 24, 39, 0.14);
     border-color: #dcdfe4;
+    transform: translateY(-3px);
 }
 html.dark .feature-card:hover { box-shadow: 0 20px 45px -14px rgba(0, 0, 0, 0.55); border-color: #333; }
+
+@media (prefers-reduced-motion: reduce) {
+    .feature-card:hover { transform: none; }
+}
+
+.feature-card--teal  .feature-pattern { color: rgba(20, 184, 166, 0.12); }
+.feature-card--amber .feature-pattern { color: rgba(245, 158, 11, 0.12); }
+.feature-card--blue  .feature-pattern { color: rgba(59, 130, 246, 0.12); }
+
+.feature-card-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.75rem;
+    margin-bottom: 0.875rem;
+    transition: transform 0.35s ease;
+}
+.feature-card:hover .feature-card-icon {
+    transform: scale(1.08) rotate(-4deg);
+}
+@media (prefers-reduced-motion: reduce) {
+    .feature-card:hover .feature-card-icon { transform: none; }
+}
+
+.feature-card--teal  .feature-card-icon { background: rgba(20, 184, 166, 0.12); color: #0d9488; }
+.feature-card--amber .feature-card-icon { background: rgba(245, 158, 11, 0.14); color: #b45309; }
+.feature-card--blue  .feature-card-icon { background: rgba(59, 130, 246, 0.12); color: #1d4ed8; }
+
+html.dark .feature-card--teal  .feature-card-icon { background: rgba(45, 212, 191, 0.16); color: #5eead4; }
+html.dark .feature-card--amber .feature-card-icon { background: rgba(251, 191, 36, 0.16); color: #fcd34d; }
+html.dark .feature-card--blue  .feature-card-icon { background: rgba(96, 165, 250, 0.16); color: #93c5fd; }
 
 .feature-pattern        { transform-origin: 50% 50%;  animation: featurePatternSpin 28s linear infinite; }
 .feature-pattern--dots  { transform-origin: 50% 50%;  animation: featurePatternPulse 26s ease-in-out infinite; }
@@ -841,6 +876,89 @@ html.dark .feature-card:hover { box-shadow: 0 20px 45px -14px rgba(0, 0, 0, 0.55
     line-height: 1.55;
 }
 
+/* ── Browse by industry ────────────────────────────────────── */
+.industry-browse-section {
+    padding-block: 2rem 1.75rem;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.industry-browse-heading {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #9ca3af;
+    margin-bottom: 0.875rem;
+}
+
+.industry-chip-row {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 0.5rem;
+    padding-bottom: 0.25rem;
+    scrollbar-width: none;
+}
+.industry-chip-row::-webkit-scrollbar { display: none; }
+
+@media (min-width: 768px) {
+    .industry-chip-row { flex-wrap: wrap; }
+}
+
+.industry-chip {
+    flex-shrink: 0;
+    padding: 0.5rem 0.9375rem;
+    border-radius: 9999px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    color: #374151;
+    font-size: 0.8125rem;
+    font-weight: 300;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+.industry-chip:hover {
+    border-color: #99f6e4;
+    color: #0d9488;
+    background: #f0fdfa;
+}
+
+.industry-chip:active {
+    transform: scale(0.97);
+}
+
+.industry-chip.is-active {
+    background: #0d9488;
+    border-color: #0d9488;
+    color: #ffffff;
+}
+
+html.dark .industry-browse-section {
+    background: var(--dm-bg);
+    border-color: #262626;
+}
+html.dark .industry-browse-heading {
+    color: var(--dm-text-muted);
+}
+html.dark .industry-chip {
+    background: #1c1c1e;
+    border-color: #2e2e30;
+    color: var(--dm-text-secondary);
+}
+html.dark .industry-chip:hover {
+    border-color: #2dd4bf;
+    color: #5eead4;
+    background: rgba(45, 212, 191, 0.1);
+}
+html.dark .industry-chip.is-active {
+    background: #0d9488;
+    border-color: #0d9488;
+    color: #ffffff;
+}
+
 /* ── Sticky toolbar (search / filters) ───────────────────── */
 .sticky-toolbar-btn {
     min-width: var(--touch-min);
@@ -951,6 +1069,18 @@ html.dark .feature-card:hover { box-shadow: 0 20px 45px -14px rgba(0, 0, 0, 0.55
 .modal-close:hover {
     background: #f3f4f6;
     color: #111827;
+}
+
+
+/* Confetti overlay, shared canvas element reused across bursts */
+.confetti-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    display: none;
 }
 
 .modal-photo-area {

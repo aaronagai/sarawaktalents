@@ -91,7 +91,7 @@
             <h2 data-i18n="featuresHeading" class="features-heading">Meet the people building Sarawak.</h2>
             <p data-i18n="featuresSubheading" class="features-subheading">From students and entrepreneurs to volunteers and creators, discover the community shaping what's next.</p>
             <div class="features-grid">
-                <article class="feature-card">
+                <article class="feature-card feature-card--teal">
                     <svg class="feature-pattern" viewBox="0 0 360 280" fill="none" aria-hidden="true">
                         <circle cx="60" cy="120" r="130" stroke="currentColor" stroke-width="1"/>
                         <circle cx="60" cy="120" r="100" stroke="currentColor" stroke-width="1"/>
@@ -99,11 +99,12 @@
                         <circle cx="60" cy="120" r="40" stroke="currentColor" stroke-width="1"/>
                     </svg>
                     <div class="feature-card-content">
+                        <span class="feature-card-icon"><re-icon icon="compass" size="20" weight="outline" aria-hidden="true"></re-icon></span>
                         <h3 data-i18n="feature1Title" class="feature-card-title">Discover local talent</h3>
                         <p data-i18n="feature1Desc" class="feature-card-desc">Find inspiring people across different industries and communities.</p>
                     </div>
                 </article>
-                <article class="feature-card">
+                <article class="feature-card feature-card--amber">
                     <svg class="feature-pattern feature-pattern--dots" viewBox="0 0 360 280" fill="none" aria-hidden="true">
                         <circle cx="180" cy="100" r="36" stroke="currentColor" stroke-width="1"/>
                         <circle cx="216" cy="136" r="36" stroke="currentColor" stroke-width="1"/>
@@ -111,11 +112,12 @@
                         <circle cx="144" cy="136" r="36" stroke="currentColor" stroke-width="1"/>
                     </svg>
                     <div class="feature-card-content">
+                        <span class="feature-card-icon"><re-icon icon="card" size="20" weight="outline" aria-hidden="true"></re-icon></span>
                         <h3 data-i18n="feature2Title" class="feature-card-title">Exchange your profile instantly</h3>
                         <p data-i18n="feature2Desc" class="feature-card-desc">A digital name card that's always up to date.</p>
                     </div>
                 </article>
-                <article class="feature-card">
+                <article class="feature-card feature-card--blue">
                     <svg class="feature-pattern feature-pattern--corner" viewBox="0 0 360 280" fill="none" aria-hidden="true">
                         <circle cx="360" cy="0" r="80" stroke="currentColor" stroke-width="1"/>
                         <circle cx="360" cy="0" r="120" stroke="currentColor" stroke-width="1"/>
@@ -123,6 +125,7 @@
                         <circle cx="360" cy="0" r="200" stroke="currentColor" stroke-width="1"/>
                     </svg>
                     <div class="feature-card-content">
+                        <span class="feature-card-icon"><re-icon icon="handshake" size="20" weight="outline" aria-hidden="true"></re-icon></span>
                         <h3 data-i18n="feature3Title" class="feature-card-title">Stay connected</h3>
                         <p data-i18n="feature3Desc" class="feature-card-desc">Turn a quick introduction into a lasting connection.</p>
                     </div>
@@ -153,6 +156,14 @@
                     <p data-i18n="prideDesc" class="pride-card-desc">Show off what you're building. Organisation badges available for Sarawak's very own.</p>
                 </div>
             </article>
+        </div>
+    </section>
+
+    <!-- Browse by industry -->
+    <section class="industry-browse-section">
+        <div class="site-container">
+            <h2 data-i18n="industryBrowseHeading" class="industry-browse-heading">Browse by industry</h2>
+            <div id="industry-chip-row" class="industry-chip-row" role="group" aria-label="Browse by industry"></div>
         </div>
     </section>
 
@@ -323,6 +334,7 @@
     <script src="transitions.js"></script>
     <script src="icons.js"></script>
     <script src="site-paths.js"></script>
+    <script src="industries.js"></script>
     <script src="hero-dots.js"></script>
     <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

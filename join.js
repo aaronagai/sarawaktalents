@@ -194,6 +194,55 @@
     var profileError = document.getElementById('profile-error');
     var submitBtn = document.getElementById('profile-submit');
 
+    // ── Delete profile (edit mode only) ───────────────────────────────────────
+    var deleteZone = document.getElementById('delete-profile-zone');
+    var deleteTrigger = document.getElementById('delete-profile-trigger');
+    var deleteModal = document.getElementById('delete-profile-modal');
+    var deleteModalCard = deleteModal.querySelector('.modal-card');
+    var deleteModalClose = document.getElementById('delete-modal-close');
+    var deleteModalCancel = document.getElementById('delete-modal-cancel');
+    var deleteModalConfirm = document.getElementById('delete-modal-confirm');
+    var deleteModalError = document.getElementById('delete-modal-error');
+
+    function openDeleteModal() {
+        deleteModal.classList.add('is-open');
+        deleteModalCard.classList.add('is-open');
+    }
+    function closeDeleteModal() {
+        deleteModal.classList.remove('is-open');
+        deleteModalCard.classList.remove('is-open');
+        setError(deleteModalError, '');
+    }
+    deleteTrigger.addEventListener('click', openDeleteModal);
+    deleteModalClose.addEventListener('click', closeDeleteModal);
+    deleteModalCancel.addEventListener('click', closeDeleteModal);
+    deleteModal.addEventListener('click', function (e) { if (e.target === deleteModal) closeDeleteModal(); });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && deleteModal.classList.contains('is-open')) closeDeleteModal();
+    });
+
+    deleteModalConfirm.addEventListener('click', function () {
+        setError(deleteModalError, '');
+        if (!LIVE) {                                    // preview: simulate
+            localStorage.removeItem(PENDING_KEY);
+            location.href = ST_SITE.home();
+            return;
+        }
+        deleteModalConfirm.disabled = true;
+        sb.auth.getUser().then(function (u) {
+            var user = u.data && u.data.user;
+            if (!user) { location.href = ST_SITE.home(); return; }
+            sb.from('profiles').delete().eq('id', user.id).then(function (res) {
+                if (res.error) {
+                    deleteModalConfirm.disabled = false;
+                    setError(deleteModalError, res.error.message);
+                    return;
+                }
+                sb.auth.signOut().then(function () { location.href = ST_SITE.home(); });
+            });
+        });
+    });
+
     function syncInitials() {
         var n = (nameEl.value || '').trim();
         avatarInitials.textContent = n ? n.charAt(0).toUpperCase() : '?';
@@ -358,6 +407,7 @@
         if (title) title.textContent = 'Edit your profile';
         if (sub) sub.textContent = 'Update what the community sees.';
         submitBtn.textContent = 'Save changes';
+        deleteZone.hidden = false;
     }
 
     var LINK_KEYS = ['website', 'instagram', 'x', 'linkedin', 'facebook', 'tiktok', 'github', 'whatsapp', 'email'];

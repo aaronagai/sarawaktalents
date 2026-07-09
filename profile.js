@@ -200,6 +200,111 @@
                 setTimeout(function () { btn.textContent = t; }, 1400);
             });
         });
+
+    }
+
+    // ── Save / share the Sarawak Talents QR as a portrait image ─────────────────
+    // v1: a clean branded card (QR + name + handle). Swap drawProfileCard() for a
+    // richer design later to make the "IG-story / wallpaper" version.
+    function loadImage(src) {
+        return new Promise(function (res, rej) {
+            var im = new Image();
+            im.onload = function () { res(im); };
+            im.onerror = rej;
+            im.src = src;
+        });
+    }
+    function roundRect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+    }
+    function qrDataUrl(text) {
+        var qr = qrcode(0, 'M');
+        qr.addData(text);
+        qr.make();
+        return qr.createDataURL(12, 12);
+    }
+    async function drawProfileCard(p) {
+        var W = 1080, H = 1920;
+        var canvas = document.createElement('canvas');
+        canvas.width = W; canvas.height = H;
+        var ctx = canvas.getContext('2d');
+        var F = "-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif";
+        ctx.textAlign = 'center';
+
+        // Background gradient (deep teal → near-black).
+        var g = ctx.createLinearGradient(0, 0, 0, H);
+        g.addColorStop(0, '#0b3b39');
+        g.addColorStop(1, '#0d1117');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+        // Header wordmark + tagline.
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '700 58px ' + F;
+        ctx.fillText('Sarawak Talents', W / 2, 200);
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.font = '400 34px ' + F;
+        ctx.fillText('Where top Sarawakian talents gather', W / 2, 258);
+
+        // White card holding the QR + name.
+        var cardW = 820, cardX = (W - cardW) / 2, cardY = 360, cardH = 1120;
+        roundRect(ctx, cardX, cardY, cardW, cardH, 56);
+        ctx.fillStyle = '#ffffff'; ctx.fill();
+
+        var qrImg = await loadImage(qrDataUrl(profileUrl));
+        var qrSize = 640, qrX = (W - qrSize) / 2, qrY = cardY + 80;
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+        ctx.imageSmoothingEnabled = true;
+
+        ctx.fillStyle = '#111827';
+        ctx.font = '700 62px ' + F;
+        ctx.fillText(p.name || '', W / 2, qrY + qrSize + 130);
+        ctx.fillStyle = '#6b7280';
+        ctx.font = '400 42px ' + F;
+        ctx.fillText('@' + (p.username || ''), W / 2, qrY + qrSize + 196);
+        if (p.role) {
+            ctx.fillStyle = '#7c3aed';
+            ctx.font = '600 40px ' + F;
+            ctx.fillText(p.role, W / 2, qrY + qrSize + 262);
+        }
+
+        // Footer call-to-action.
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.font = '600 44px ' + F;
+        ctx.fillText('Scan to connect', W / 2, cardY + cardH + 140);
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.font = '400 36px ' + F;
+        ctx.fillText('sarawaktalents.com', W / 2, cardY + cardH + 200);
+
+        return new Promise(function (res) { canvas.toBlob(res, 'image/png'); });
+    }
+    async function exportProfileCard(p) {
+        var btn = el('pf-saveqr-btn');
+        var label = btn ? btn.textContent : '';
+        if (btn) { btn.textContent = 'Preparing…'; btn.disabled = true; }
+        try {
+            var blob = await drawProfileCard(p);
+            var file = new File([blob], (p.username || 'sarawaktalents') + '-qr.png', { type: 'image/png' });
+            // Mobile: native share sheet → Save Image / post to IG story / etc.
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], title: (p.name || 'Sarawak Talents') + ' · Sarawak Talents' });
+            } else {
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = file.name;
+                a.click();
+                setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+            }
+        } catch (e) {
+            // Share cancelled or unsupported — ignore.
+        }
+        if (btn) { btn.textContent = label; btn.disabled = false; }
     }
 
     // Interactive QR: a ring of the person's socials around a live QR. Tap a
@@ -209,6 +314,7 @@
         var links = p.links || {};
         var connected = SOCIAL_ORDER.filter(function (k) { return links[k]; });
         var buttons = el('qr-buttons');
+        var openRow = el('qr-open-row');
         var imgs = document.querySelectorAll('.qr-live-img');
         var active = PROFILE_KEY;   // default → the member's own Sarawak Talents card
 
@@ -224,6 +330,35 @@
         // card opens its destination — so no separate "Open" button is needed.
         function activateOrOpen(k) { if (active === k) openTarget(k); else setActive(k); }
 
+        // Explicit "Open" affordance under the QR, so visiting a link is obvious
+        // instead of relying on the hidden "tap the icon again" gesture.
+        function updateOpenRow() {
+            if (!openRow) return;
+            openRow.innerHTML = '';
+            // Sarawak Talents card selected → Save the QR (same slot the socials use to Open).
+            if (active === PROFILE_KEY) {
+                var s = document.createElement('button');
+                s.type = 'button';
+                s.className = 'qr-open-btn';
+                s.id = 'pf-saveqr-btn';
+                s.innerHTML = 'Save QR <span aria-hidden="true">↓</span>';
+                s.addEventListener('click', function () { exportProfileCard(p); });
+                openRow.appendChild(s);
+                var hint = document.createElement('p');
+                hint.className = 'qr-open-hint';
+                hint.textContent = 'Save your card image, or tap an icon to open its link.';
+                openRow.appendChild(hint);
+                return;
+            }
+            var meta = metaFor(active);
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'qr-open-btn';
+            b.innerHTML = 'Open ' + escapeHtml(meta.label) + ' <span aria-hidden="true">↗</span>';
+            b.addEventListener('click', function () { openTarget(active); });
+            openRow.appendChild(b);
+        }
+
         function refresh() {
             var qr = qrcode(0, 'M');
             qr.addData(targetHref());
@@ -233,6 +368,7 @@
             Array.prototype.forEach.call(document.querySelectorAll('.pf-qr-live [data-key]'), function (c) {
                 c.classList.toggle('is-active', c.dataset.key === active);
             });
+            updateOpenRow();
         }
 
         // Sarawak Talents card first, then connected socials + "more soon".

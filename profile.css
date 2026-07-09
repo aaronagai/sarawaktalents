@@ -169,7 +169,16 @@ html.dark .pf-btn--ghost { background: #1c1c1c; color: #d4d4d4; }
 html.dark .pf-rule { border-color: #222; }
 .pf-footnote { font-size: 0.8125rem; color: #9ca3af; }
 
-.pf-footer { text-align: center; padding: 2rem; font-size: 0.8125rem; color: #9ca3af; }
+.pf-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.8125rem;
+    color: #9ca3af;
+}
 
 /* ── Interactive QR (ring of socials) ────────────────────────────── */
 .pf-qr-live { text-align: center; margin: 0.5rem 0 2rem; }

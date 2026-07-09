@@ -24,6 +24,18 @@
     <meta name="theme-color" content="#0d9488">
     <link rel="icon" href="../sslogo.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="../icon-192.png">
+    <script>
+        (function () {
+            var mode = localStorage.getItem('theme-mode');
+            if (!mode) {
+                var legacy = localStorage.getItem('theme');
+                if (legacy === 'dark' || legacy === 'light') mode = legacy;
+                else mode = 'system';
+            }
+            var dark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (dark) document.documentElement.classList.add('dark');
+        })();
+    </script>
 </head>
 <body class="join-body">
 
@@ -371,11 +383,5 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase-client.js"></script>
     <script src="../join.js"></script>
-    <script>
-        (function () {
-            var t = localStorage.getItem('theme');
-            if (t === 'dark') document.documentElement.classList.add('dark');
-        })();
-    </script>
 </body>
 </html>

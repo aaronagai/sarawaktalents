@@ -65,6 +65,23 @@
         if (/^h[aeiou]/.test(w)) return 'an';              // hour, honest, heir…
         return /^[aeiou]/.test(w) ? 'an' : 'a';
     }
+    function profileRoleLabel(p) {
+        return String(p.role || p.dun || p.title || '').trim() || '';
+    }
+    function profileOrgName(p) {
+        var orgs = (p.org_photos && p.org_photos.length) ? p.org_photos : (p.org_photo ? [p.org_photo] : []);
+        for (var i = 0; i < orgs.length; i++) {
+            var name = BADGE_ORGS[orgs[i]];
+            if (name) return name;
+        }
+        return String(p.company || p.organisation || p.organization || p.org || '').trim();
+    }
+    function roleAtOrgLine(p) {
+        var role = profileRoleLabel(p);
+        var org = profileOrgName(p);
+        if (role && org) return role + ' at ' + org;
+        return role || org || '';
+    }
 
     function isUrl(v) { return /^https?:\/\//i.test(v); }
     function urlify(v) { return isUrl(v) ? v : 'https://' + v.replace(/^\/+/, ''); }
@@ -204,8 +221,7 @@
     }
 
     // ── Save / share the Sarawak Talents QR as a portrait image ─────────────────
-    // v1: a clean branded card (QR + name + handle). Swap drawProfileCard() for a
-    // richer design later to make the "IG-story / wallpaper" version.
+    // Branded card: QR + name + "[Role] at [Organisation]" (falls back to @handle).
     function loadImage(src) {
         return new Promise(function (res, rej) {
             var im = new Image();
@@ -265,13 +281,15 @@
         ctx.fillStyle = '#111827';
         ctx.font = '700 62px ' + F;
         ctx.fillText(p.name || '', W / 2, qrY + qrSize + 130);
-        ctx.fillStyle = '#6b7280';
-        ctx.font = '400 42px ' + F;
-        ctx.fillText('@' + (p.username || ''), W / 2, qrY + qrSize + 196);
-        if (p.role) {
+        var roleOrg = roleAtOrgLine(p);
+        if (roleOrg) {
             ctx.fillStyle = '#7c3aed';
-            ctx.font = '600 40px ' + F;
-            ctx.fillText(p.role, W / 2, qrY + qrSize + 262);
+            ctx.font = '600 42px ' + F;
+            ctx.fillText(roleOrg, W / 2, qrY + qrSize + 196);
+        } else {
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '400 42px ' + F;
+            ctx.fillText('@' + (p.username || ''), W / 2, qrY + qrSize + 196);
         }
 
         // Footer call-to-action.

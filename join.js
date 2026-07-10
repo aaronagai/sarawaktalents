@@ -401,6 +401,13 @@
     avatarInput.addEventListener('change', function () {
         var f = avatarInput.files && avatarInput.files[0];
         if (!f) return;
+        if (!f.size) {
+            avatarFile = null;
+            avatarInput.value = '';
+            setError(profileError, 'That photo couldn\'t be read. Try a JPG or PNG, or skip the photo for now.');
+            return;
+        }
+        setError(profileError, '');
         avatarFile = f;
         var reader = new FileReader();
         reader.onload = function (ev) {
@@ -597,7 +604,15 @@
             var user = u.data && u.data.user;
             if (!user) { submitBtn.disabled = false; setError(profileError, 'Session expired — please sign in again.'); showStep(1); return; }
             // Only the avatar is uploaded now; badges are chosen from our set.
-            uploadImage(avatarFile, user.id, 'avatar').then(function (avatarUrl) {
+            // Photo is optional — a failed upload must not block profile creation.
+            var avatarUploadFailed = false;
+            uploadImage(avatarFile, user.id, 'avatar')
+                .catch(function (err) {
+                    avatarUploadFailed = true;
+                    console.warn('[join] avatar upload failed:', err);
+                    return null;
+                })
+                .then(function (avatarUrl) {
                 var payload = collectProfile(user.id);   // includes org_photos / org_photo
                 if (avatarUrl) payload.avatar_url = avatarUrl;   // don't wipe existing on edit
                 return sb.from('profiles').upsert(payload).select().single();
@@ -614,19 +629,28 @@
                     return;
                 }
                 localStorage.removeItem(PENDING_KEY);
+                if (avatarUploadFailed) {
+                    setError(profileError, 'Profile saved — your photo didn\'t upload. You can add one from Edit profile.');
+                }
                 finish();
             }).catch(function (ex) {
                 submitBtn.disabled = false;
-                setError(profileError, (ex && ex.message) || 'Something went wrong.');
+                var msg = (ex && ex.message) || 'Something went wrong.';
+                if (/no content provided/i.test(msg)) {
+                    msg = 'That photo couldn\'t be uploaded. Try a JPG or PNG, or submit without a photo.';
+                }
+                setError(profileError, msg);
             });
         });
     }
 
     function uploadImage(file, uid, key) {
-        if (!file) return Promise.resolve(null);
+        if (!file || !file.size) return Promise.resolve(null);
         var ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
         var path = uid + '/' + key + '.' + ext;
-        return sb.storage.from('avatars').upload(path, file, { upsert: true })
+        var opts = { upsert: true };
+        if (file.type) opts.contentType = file.type;
+        return sb.storage.from('avatars').upload(path, file, opts)
             .then(function (res) {
                 if (res.error) throw res.error;
                 // cache-bust so a re-upload shows immediately

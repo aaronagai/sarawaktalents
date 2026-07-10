@@ -108,8 +108,13 @@
                         </label>
                     </div>
 
+                    <label class="join-field">
+                        <span class="join-label">Organisation <span class="join-optional">(optional)</span></span>
+                        <input id="pf-organisation" type="text" class="join-input" placeholder="e.g. Sarawak Energy, UNIMAS, Self-employed">
+                    </label>
+
                     <div class="join-field">
-                        <span class="join-label">Organisation <span class="join-optional">(optional — pick one)</span></span>
+                        <span class="join-label">Organisation badge <span class="join-optional">(optional — pick one)</span></span>
                         <div class="join-badge-picker" id="badge-picker"></div>
                         <span class="join-optional" id="badge-hint" style="font-size:0.75rem;">Select from the official badges. The first shows next to your name in the directory.</span>
                     </div>
@@ -134,6 +139,8 @@
                         <span class="join-label">Job title <em>*</em> <span class="join-optional">what you do — a person, not a field</span></span>
                         <input id="pf-role" type="text" class="join-input" required placeholder="e.g. Lawyer, Software Engineer, Student, Founder">
                     </label>
+
+                    <p id="pf-role-org-preview" class="join-preview join-preview--org" aria-live="polite" hidden></p>
 
                     <div class="join-grid-2">
                         <label class="join-field">

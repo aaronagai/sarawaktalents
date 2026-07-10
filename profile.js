@@ -69,12 +69,14 @@
         return String(p.role || p.dun || p.title || '').trim() || '';
     }
     function profileOrgName(p) {
+        var textOrg = String(p.organisation || p.company || p.organization || p.org || '').trim();
+        if (textOrg) return textOrg;
         var orgs = (p.org_photos && p.org_photos.length) ? p.org_photos : (p.org_photo ? [p.org_photo] : []);
         for (var i = 0; i < orgs.length; i++) {
             var name = BADGE_ORGS[orgs[i]];
             if (name) return name;
         }
-        return String(p.company || p.organisation || p.organization || p.org || '').trim();
+        return '';
     }
     function roleAtOrgLine(p) {
         var role = profileRoleLabel(p);
@@ -127,6 +129,15 @@
 
         el('pf-name').textContent = p.name || '';
         el('pf-loc').textContent = p.location ? p.location + ', Sarawak' : 'Sarawak';
+
+        var roleOrgLine = roleAtOrgLine(p);
+        var roleOrgEl = el('pf-role-org');
+        if (roleOrgLine && roleOrgEl) {
+            roleOrgEl.textContent = roleOrgLine;
+            roleOrgEl.hidden = false;
+        } else if (roleOrgEl) {
+            roleOrgEl.hidden = true;
+        }
 
         // Organisation marks (inline, next to the name) — one or more badges.
         // Hover (desktop) or tap (mobile) reveals an "affiliate of" tooltip.
@@ -416,7 +427,9 @@
     function buildVCard(p) {
         var L = ['BEGIN:VCARD', 'VERSION:3.0', 'FN:' + (p.name || '')];
         if (p.role) L.push('TITLE:' + p.role);
-        if (p.category) L.push('ORG:' + p.category);
+        var org = profileOrgName(p);
+        if (org) L.push('ORG:' + org);
+        else if (p.category) L.push('ORG:' + p.category);
         L.push('URL:' + profileUrl);
         var links = p.links || {};
         if (links.email) L.push('EMAIL:' + links.email);

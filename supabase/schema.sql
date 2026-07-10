@@ -51,6 +51,7 @@ create table if not exists public.profiles (
     id         uuid primary key references auth.users(id) on delete cascade,
     name       text not null,
     role       text,                    -- headline, e.g. "Software Engineer"
+    organisation text,                  -- employer / org name (free text)
     category   text,                    -- Tech / Arts / Business / Science ...
     location   text,                    -- Kuching, Miri, Sibu ...
     industry   text,                    -- free text, e.g. "Software Development"

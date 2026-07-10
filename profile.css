@@ -101,6 +101,8 @@ html.dark .pf-org-tip::after { border-top-color: #d1d5db; }
 html.dark .pf-badge { background: #141414; border-color: #2a2a2a; }
 .pf-loc { font-size: 0.9375rem; color: #6b7280; margin-top: 0.15rem; }
 html.dark .pf-loc { color: #888; }
+.pf-role-org { font-size: 0.9375rem; font-weight: 500; color: #7c3aed; margin-top: 0.2rem; }
+html.dark .pf-role-org { color: #a78bfa; }
 
 /* Organisation logos */
 .pf-orgs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }

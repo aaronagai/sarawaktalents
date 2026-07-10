@@ -27,6 +27,7 @@
     var industrySelect = document.getElementById('pf-industry-select');
     var industryOther = document.getElementById('pf-industry'); // holds the "Other" value
     var previewEl = document.getElementById('pf-preview');
+    var roleOrgPreviewEl = document.getElementById('pf-role-org-preview');
 
     (function populateIndustryOptions() {
         if (!industrySelect || !window.ST_INDUSTRIES) return;
@@ -83,6 +84,43 @@
         var line = buildLead(nameEl ? nameEl.value : '', roleEl ? roleEl.value : '', currentIndustry());
         if (line) { previewEl.textContent = 'Preview: ' + line; previewEl.hidden = false; }
         else { previewEl.hidden = true; }
+        updateRoleOrgPreview();
+    }
+    function badgeOrgName(src) {
+        var map = {
+            'photos/badges/sarawak-talents.svg': 'Sarawak Talents',
+            'photos/badges/sarawak-energy-icon.svg': 'Sarawak Energy',
+            'photos/badges/petros-icon.svg': 'Petros',
+            'photos/badges/air-borneo-icon.svg': 'AirBorneo',
+            'photos/badges/sarawakmetro-icon.svg': 'Sarawak Metro',
+            'photos/badges/sswff-icon.svg': 'Sarawak Future Fund',
+            'photos/badges/petrolprice-icon.svg': 'PetrolPrice',
+            'photos/badges/timogah-icon.svg': 'Timogah'
+        };
+        return map[src] || '';
+    }
+    function currentOrgName() {
+        var textEl = document.getElementById('pf-organisation');
+        var textOrg = textEl ? textEl.value.trim() : '';
+        if (textOrg) return textOrg;
+        for (var i = 0; i < selectedBadges.length; i++) {
+            var name = badgeOrgName(selectedBadges[i]);
+            if (name) return name;
+        }
+        return '';
+    }
+    function updateRoleOrgPreview() {
+        if (!roleOrgPreviewEl) return;
+        var roleEl = document.getElementById('pf-role');
+        var role = roleEl ? roleEl.value.trim() : '';
+        var org = currentOrgName();
+        var line = (role && org) ? role + ' at ' + org : (role || org || '');
+        if (line) {
+            roleOrgPreviewEl.textContent = 'Card line: ' + line;
+            roleOrgPreviewEl.hidden = false;
+        } else {
+            roleOrgPreviewEl.hidden = true;
+        }
     }
 
     if (industrySelect) {
@@ -96,7 +134,7 @@
             updatePreview();
         });
     }
-    ['pf-name', 'pf-role'].forEach(function (id) {
+    ['pf-name', 'pf-role', 'pf-organisation'].forEach(function (id) {
         var e = document.getElementById(id);
         if (e) e.addEventListener('input', updatePreview);
     });
@@ -438,6 +476,7 @@
         else if (selectedBadges.length < maxBadges) selectedBadges.push(src);
         else selectedBadges = selectedBadges.slice(0, maxBadges - 1).concat(src);  // at cap → replace last
         renderBadgePicker();
+        updateRoleOrgPreview();
     }
 
     renderBadgePicker();
@@ -448,6 +487,8 @@
         nameEl.value = p.name || '';
         usernameEl.value = p.username || '';
         document.getElementById('pf-role').value = p.role || '';
+        var orgEl = document.getElementById('pf-organisation');
+        if (orgEl) orgEl.value = p.organisation || '';
         document.getElementById('pf-category').value = p.category || '';
         document.getElementById('pf-location').value = p.location || '';
         setIndustry(p.industry || '');
@@ -477,6 +518,7 @@
         usernameOk = true;
         setUserStatus('is-ok', 'Your current handle');
         syncInitials();
+        updatePreview();
     }
 
     // Retitle the profile step for editing
@@ -503,6 +545,7 @@
             username: usernameEl.value.trim().toLowerCase(),
             name: nameEl.value.trim(),
             role: document.getElementById('pf-role').value.trim(),
+            organisation: (document.getElementById('pf-organisation').value || '').trim() || null,
             category: document.getElementById('pf-category').value,
             location: document.getElementById('pf-location').value,
             industry: currentIndustry() || null,

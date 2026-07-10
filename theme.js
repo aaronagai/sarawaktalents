@@ -1,6 +1,6 @@
 /**
  * Theme mode — system | light | dark (localStorage: theme-mode).
- * Shared by index, profile, and any page with #theme-toggle.
+ * Pages without #theme-toggle still apply the saved mode via init().
  */
 const Theme = (() => {
   const STORAGE_KEY = 'theme-mode';
@@ -130,8 +130,8 @@ const Theme = (() => {
 
   function init() {
     initThemeSystemListener();
-    initThemeToggle();
     applyThemeMode(getStoredThemeMode(), { persist: false });
+    initThemeToggle();
   }
 
   return { init, initSlidingTabs, applyThemeMode, getStoredThemeMode };

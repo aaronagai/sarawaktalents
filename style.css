@@ -1600,6 +1600,16 @@ html.dark [data-id] .bg-gray-100 {
     background-color: #262626;
 }
 
+/* Directory talent cards — the card face is a hardcoded bg-white utility, so it
+   stays white in dark mode without these overrides. Match the feature/pride
+   cards' dark surface + border, and lift the name/subtitle text off it. */
+html.dark .talent-card {
+    background-color: var(--dm-surface);
+    border-color: var(--dm-border);
+}
+html.dark .talent-card .text-gray-900 { color: var(--dm-text); }
+html.dark .talent-card .talent-sub { color: var(--dm-text-muted); }
+
 html.dark #empty-state h3,
 html.dark #empty-state .text-gray-900 {
     color: var(--dm-text);

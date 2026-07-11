@@ -62,7 +62,10 @@
         }
     };
 
+    var currentLang = 'en';
+
     function applyLang(lang) {
+        currentLang = (lang === 'ms') ? 'ms' : 'en';
         var t = translations[lang] || translations.en;
         document.querySelectorAll('[data-i18n]').forEach(function (el) {
             var key = el.getAttribute('data-i18n');
@@ -104,10 +107,6 @@
         document.querySelectorAll('.hero-nav-btn--login').forEach(function (b) {
             b.addEventListener('click', function () { window.location.href = login; });
         });
-        var findMore = document.getElementById('find-more-talents');
-        if (findMore) {
-            findMore.addEventListener('click', function () { window.location.href = appUrl('/join/'); });
-        }
     }
 
     // ── Talent preview ────────────────────────────────────────────────
@@ -137,6 +136,19 @@
         return div;
     }
 
+    // The last grid cell is the CTA itself — leads to onboarding (same as
+    // "Get Started"), so the full directory stays behind signup.
+    function findMoreCard() {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'talent-card talent-card--cta flex items-center justify-center gap-2 p-3 sm:p-4 rounded-xl border';
+        btn.innerHTML =
+            '<re-icon icon="compass" size="20" weight="outline" aria-hidden="true"></re-icon>' +
+            '<span data-i18n="findMoreTalents">' + escapeHtml(translations[currentLang].findMoreTalents) + '</span>';
+        btn.addEventListener('click', function () { window.location.href = appUrl('/join/'); });
+        return btn;
+    }
+
     async function loadTalentPreview() {
         var grid = document.getElementById('talent-preview-grid');
         var section = document.querySelector('.talents-preview-section');
@@ -148,11 +160,12 @@
                 .from('profiles')
                 .select('id, username, name, role, avatar_url, created_at')
                 .order('created_at', { ascending: true })
-                .limit(10);
+                .limit(9);
             var data = res && res.data;
             if (res.error || !data || !data.length) { hide(); return; }
             var frag = document.createDocumentFragment();
             data.forEach(function (p) { frag.appendChild(talentCard(p)); });
+            frag.appendChild(findMoreCard());
             grid.classList.remove('talent-preview-empty');
             grid.appendChild(frag);
         } catch (e) {

@@ -1,0 +1,31 @@
+{
+  "name": "Sarawak Talents",
+  "short_name": "Sarawak Talents",
+  "description": "Where top Sarawakian talents gather",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d9488",
+  "theme_color": "#0d9488",
+  "icons": [
+    {
+      "src": "sslogo.png",
+      "sizes": "134x142",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x204",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x543",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

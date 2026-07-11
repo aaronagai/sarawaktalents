@@ -9,7 +9,7 @@ window.ST_CONFIG = {
     // Share link for WhatsApp / social previews (Supabase Edge Function).
     SHARE_FUNCTION: 'https://zedeqvbsuljgxapkoihg.supabase.co/functions/v1/share',
     // Edge-cached directory endpoint (workers/directory-cache.js). Leave empty
-    // to query Supabase directly. Set to 'https://sarawaktalents.com/api/directory'
+    // to query Supabase directly. Set to 'https://app.sarawaktalents.com/api/directory'
     // AFTER deploying the worker to serve the public list from Cloudflare's edge.
     DIRECTORY_API: ''
 };

@@ -163,6 +163,22 @@ html.dark .site-header.is-scrolled {
     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
+/* ── App home (directory) — no marketing hero, so the header is a solid
+   sticky bar that occupies layout space instead of floating transparently
+   over a photo. Scoped to .directory-page so the landing's hero overlay
+   (transparent fixed header) is unaffected. ── */
+body.directory-page .site-header {
+    position: sticky;
+    background: rgba(255, 255, 255, 0.82);
+    -webkit-backdrop-filter: saturate(1.4) blur(14px);
+    backdrop-filter: saturate(1.4) blur(14px);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+}
+html.dark body.directory-page .site-header {
+    background: rgba(17, 17, 17, 0.72);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
 .hero-nav {
     display: flex;
     align-items: center;

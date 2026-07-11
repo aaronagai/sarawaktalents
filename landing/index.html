@@ -25,6 +25,7 @@
     <link rel="stylesheet" href="tailwind.css">
     <link rel="stylesheet" href="transitions/index.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="landing.css">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0d9488">
     <script>
@@ -169,6 +170,17 @@
             </article>
         </div>
     </section>
+
+    <!-- Talent preview — a taste of the directory; the full list is behind onboarding -->
+    <section class="talents-preview-section">
+        <div class="site-container">
+            <h2 data-i18n="talentsPreviewHeading" class="features-heading talents-preview-heading">Meet some of our talents.</h2>
+            <div id="talent-preview-grid" class="talent-preview-empty grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4" aria-label="Featured talents"></div>
+            <div class="talents-preview-cta">
+                <button type="button" id="find-more-talents" class="hero-nav-btn hero-nav-btn--get-started" data-i18n="findMoreTalents">Find more talents</button>
+            </div>
+        </div>
+    </section>
     </main>
 
     <footer class="bg-gray-100 border-t border-gray-200 mt-auto">
@@ -192,6 +204,9 @@
 
     <script src="hero-dots.js"></script>
     <script src="theme.js"></script>
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
     <script src="landing.js"></script>
 </body>
 </html>

@@ -1,0 +1,32 @@
+/* ── Landing-only additions (marketing apex) ──────────────────────────
+   The landing reuses the app's style.css/tailwind.css copies; anything
+   specific to the marketing page lives here so those stay a clean snapshot.
+   -------------------------------------------------------------------- */
+
+.talents-preview-section {
+    padding-block: 1rem 3.5rem;
+}
+
+.talents-preview-heading {
+    margin-bottom: 1.5rem;
+}
+
+/* Preview cards are a teaser — not individually clickable (the full,
+   explorable directory lives behind onboarding). */
+#talent-preview-grid .talent-card {
+    cursor: default;
+}
+
+.talent-preview-empty {
+    min-height: 4rem;
+}
+
+.talents-preview-cta {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.talents-preview-cta .hero-nav-btn {
+    padding-inline: 2rem;
+}

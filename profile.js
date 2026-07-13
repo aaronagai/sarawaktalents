@@ -216,13 +216,13 @@
         }
         var lead;
         if (role && org) {
-            lead = displayName + ' is ' + articleBefore(role) + ' <b>' + escapeHtml(role) + '</b> at ' + escapeHtml(org) + '.';
+            lead = displayName + ' is ' + articleBefore(role) + ' <b>' + escapeHtml(role) + '</b> at ' + escapeHtml(org);
         } else if (role) {
-            lead = displayName + ' is ' + articleBefore(role) + ' <b>' + escapeHtml(role) + '</b>.';
+            lead = displayName + ' is ' + articleBefore(role) + ' <b>' + escapeHtml(role) + '</b>';
         } else if (org) {
-            lead = displayName + ' is at <b>' + escapeHtml(org) + '</b>.';
+            lead = displayName + ' is at <b>' + escapeHtml(org) + '</b>';
         } else {
-            lead = displayName + '.';
+            lead = displayName;
         }
         el('pf-lead').innerHTML = lead;
 

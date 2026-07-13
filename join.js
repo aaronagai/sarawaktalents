@@ -126,13 +126,13 @@
     }
 
     // Grammar-proof profile line — mirrors the renderer in profile.js.
-    // Format: "Name is a/an Role at Organisation."
+    // Format: "Name is a/an Role at Organisation"
     function leadArticle(word) { return /^[aeiou]/i.test((word || '').trim()) ? 'an' : 'a'; }
     function buildLead(name, role, org) {
         var displayName = (name || '').trim() || 'Name';
         role = (role || '').trim() || 'Role';
         org = (org || '').trim() || 'Organisation';
-        return displayName + ' is ' + leadArticle(role) + ' ' + role + ' at ' + org + '.';
+        return displayName + ' is ' + leadArticle(role) + ' ' + role + ' at ' + org;
     }
     function badgeOrgName(src) {
         var map = {

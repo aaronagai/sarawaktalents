@@ -700,7 +700,6 @@ function resetSignedOutNav() {
 async function reflectAuthState() {
   if (!window.ST_CONFIGURED || !window.stSupabase) return;
   var sb = window.stSupabase;
-  var navBooted = false;
 
   async function applyFromSession(session) {
     if (!session) { resetSignedOutNav(); return; }
@@ -710,18 +709,16 @@ async function reflectAuthState() {
     applySignedInNav(prof);
   }
 
-  function bootNav(session) {
-    if (navBooted) return;
-    navBooted = true;
-    applyFromSession(session);
-  }
-
-  sb.auth.onAuthStateChange(function (event, session) {
-    if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') bootNav(session);
-    if (event === 'SIGNED_OUT') applyFromSession(null);
-  });
   const { data: { session } } = await sb.auth.getSession();
-  bootNav(session);
+  await applyFromSession(session);
+
+  // Keep nav in sync, but never call DB/auth APIs directly inside the callback
+  // (that deadlocks supabase-js's auth lock and can strand the session).
+  sb.auth.onAuthStateChange(function (event, session) {
+    if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+      setTimeout(function () { applyFromSession(session); }, 0);
+    }
+  });
 }
 
 loadProfiles();

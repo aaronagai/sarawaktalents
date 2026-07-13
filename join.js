@@ -21,26 +21,31 @@
     var avatarFile = null;
     var JOIN_MODE_KEY = 'st_join_mode';
     var currentUsername = null;      // the signed-in user's existing handle (edit mode)
+    var authRouted = false;          // true once we've left the "checking session" state
 
     // mode=edit can be lost across the Google OAuth round-trip (redirectTo used to
-    // drop the query string). Persist it so returning members still land in edit.
+    // drop the query string). Persist in localStorage so it survives the redirect
+    // even if the return URL is stripped to /join/.
     function joinMode() {
         var m = params.get('mode');
         if (m) return m;
-        try { return sessionStorage.getItem(JOIN_MODE_KEY) || ''; } catch (e) { return ''; }
+        try { return localStorage.getItem(JOIN_MODE_KEY) || ''; } catch (e) { return ''; }
     }
     function isEditMode() { return joinMode() === 'edit'; }
     function persistJoinMode() {
-        var m = params.get('mode');
+        var m = params.get('mode') || joinMode();
         if (m === 'edit' || m === 'login') {
-            try { sessionStorage.setItem(JOIN_MODE_KEY, m); } catch (e) {}
+            try { localStorage.setItem(JOIN_MODE_KEY, m); } catch (e) {}
         }
     }
     function clearJoinMode() {
-        try { sessionStorage.removeItem(JOIN_MODE_KEY); } catch (e) {}
+        try { localStorage.removeItem(JOIN_MODE_KEY); } catch (e) {}
     }
     function oauthRedirectTo() {
-        return location.origin + location.pathname + (location.search || '');
+        var mode = joinMode();
+        var url = location.origin + location.pathname;
+        if (mode === 'edit' || mode === 'login') url += '?mode=' + encodeURIComponent(mode);
+        return url;
     }
 
     var editMode = isEditMode();
@@ -782,36 +787,59 @@
         if (!LIVE) return;
         var mode = joinMode();
         var editing = mode === 'edit';
+        authRouted = true;
 
-        function proceed(sess) {
-            if (!sess) {
-                if (mode === 'login' || mode === 'edit') showStep(1);
-                else showStep(0);
-                return;
-            }
-            clearJoinMode();
-            var uid = sess.user.id;
-            sb.from('profiles').select('*').eq('id', uid).maybeSingle().then(function (p) {
-                if (p.data) {
-                    if (editing) { applyEditChrome(); prefillProfile(p.data); showStep(2); return; }
-                    location.href = ST_SITE.home(); return;  // already a member → directory
-                }
-                if (editing) { showStep(0); return; }  // nothing to edit yet
-                var code = localStorage.getItem(PENDING_KEY);
-                if (!code) { showStep(0); return; }    // need an invite
-                sb.rpc('claim_invite', { p_code: code }).then(function (c) {
-                    if (c.error) { setError(inviteError, c.error.message); showStep(0); return; }
-                    showStep(2); syncInitials();
-                });
-            });
-        }
-
-        if (session !== undefined) {
-            proceed(session);
+        if (!session) {
+            if (mode === 'login' || mode === 'edit') showStep(1);
+            else showStep(0);
             return;
         }
-        sb.auth.getSession().then(function (res) {
-            proceed(res.data && res.data.session);
+
+        var uid = session.user.id;
+        sb.from('profiles').select('*').eq('id', uid).maybeSingle().then(function (p) {
+            if (p.data) {
+                if (editing) {
+                    clearJoinMode();
+                    applyEditChrome();
+                    prefillProfile(p.data);
+                    showStep(2);
+                    return;
+                }
+                clearJoinMode();
+                location.href = ST_SITE.home(); return;  // already a member → directory
+            }
+            if (editing) { showStep(0); return; }  // nothing to edit yet
+            var code = localStorage.getItem(PENDING_KEY);
+            if (!code) { showStep(0); return; }    // need an invite
+            sb.rpc('claim_invite', { p_code: code }).then(function (c) {
+                if (c.error) { setError(inviteError, c.error.message); showStep(0); return; }
+                clearJoinMode();
+                showStep(2); syncInitials();
+            });
+        });
+    }
+
+    // Resolve the session without racing a null getSession() against INITIAL_SESSION,
+    // and without calling other auth/DB APIs inside onAuthStateChange (deadlocks the lock).
+    function resolveSession() {
+        return sb.auth.getSession().then(function (res) {
+            var session = res.data && res.data.session;
+            if (session) return session;
+            // Late restore / token refresh — brief retry before treating as signed out.
+            return new Promise(function (resolve) {
+                setTimeout(function () {
+                    sb.auth.getSession().then(function (res2) {
+                        var s2 = res2.data && res2.data.session;
+                        if (s2) { resolve(s2); return; }
+                        sb.auth.getUser().then(function (u) {
+                            if (!(u.data && u.data.user)) { resolve(null); return; }
+                            sb.auth.getSession().then(function (res3) {
+                                resolve(res3.data && res3.data.session);
+                            });
+                        }).catch(function () { resolve(null); });
+                    });
+                }, 150);
+            });
         });
     }
 
@@ -872,20 +900,24 @@
     })();
 
     // ── init ──────────────────────────────────────────────────────────────────
-    // Wait for Supabase to finish restoring the session from storage / OAuth URL
-    // before routing — getSession() alone can return null on the first tick.
     if (LIVE) {
-        var authBooted = false;
-        function bootAuth(session) {
-            if (authBooted) return;
-            authBooted = true;
+        // Defer routing until session restore finishes. Never lock onto a null
+        // session from a racing first tick — that was sending signed-in members
+        // to "Continue with Google" on every Edit profile click.
+        resolveSession().then(function (session) {
             resumeFromSession(session);
-        }
-        sb.auth.onAuthStateChange(function (event, session) {
-            if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') bootAuth(session);
         });
-        sb.auth.getSession().then(function (res) {
-            bootAuth(res.data && res.data.session);
+
+        // After Google OAuth returns, SIGNED_IN can arrive after our first resolve.
+        // Defer out of the auth callback before touching DB (avoids auth deadlocks).
+        sb.auth.onAuthStateChange(function (event, session) {
+            if (event !== 'SIGNED_IN' || !session) return;
+            setTimeout(function () {
+                var mode = joinMode();
+                if (mode === 'edit' || mode === 'login' || currentStep === '1' || !authRouted) {
+                    resumeFromSession(session);
+                }
+            }, 0);
         });
     } else {
         if (editMode) { applyEditChrome(); showStep(2); }

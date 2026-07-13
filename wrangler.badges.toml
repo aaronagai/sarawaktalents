@@ -1,0 +1,10 @@
+name = "sarawaktalents-badge-scheduler"
+main = "workers/badge-scheduler.js"
+compatibility_date = "2024-08-01"
+
+# Runs Pioneer/Anniversary/Explorer/Rising Star checks daily via
+# run_scheduled_badge_checks() (see supabase/migrations/012_badges_scheduled.sql).
+# Deploy:  wrangler deploy -c wrangler.badges.toml
+# Secret:  wrangler secret put SUPABASE_SERVICE_ROLE_KEY -c wrangler.badges.toml
+[triggers]
+crons = ["0 18 * * *"]

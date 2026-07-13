@@ -440,6 +440,83 @@ begin
 end; $$;
 grant execute on function public.admin_mark_verified(uuid) to authenticated;
 
+-- ── scheduled badge checks (see migration 012) ───────────────────────────────
+--  Reachable only via the service_role key — explicitly revoked from
+--  anon/authenticated below (unlike is_admin()-style helpers, Postgres grants
+--  EXECUTE to PUBLIC by default on CREATE FUNCTION).
+create or replace function public.run_pioneer_backfill()
+returns void language sql security definer set search_path = public as $$
+    insert into public.user_badges (user_id, badge_id)
+    select t.id, (select id from public.badges where slug = 'pioneer')
+    from (select id from public.profiles order by created_at asc limit 100) t
+    on conflict (user_id, badge_id) do nothing;
+$$;
+
+create or replace function public.run_anniversary_check()
+returns void language sql security definer set search_path = public as $$
+    insert into public.user_badges (user_id, badge_id)
+    select p.id, (select id from public.badges where slug = 'anniversary')
+    from public.profiles p
+    where p.status = 'active' and p.created_at <= now() - interval '1 year'
+    on conflict (user_id, badge_id) do nothing;
+$$;
+
+create or replace function public.run_explorer_check()
+returns void language plpgsql security definer set search_path = public as $$
+declare v_zones text[] := array['Kuching','Miri','Sibu','Bintulu','Sri Aman','Limbang'];
+begin
+    insert into public.user_badges (user_id, badge_id)
+    select v.viewer_id, (select id from public.badges where slug = 'explorer')
+    from (
+        select pv.viewer_id, count(distinct pr.location) as zones_seen
+        from public.profile_views pv
+        join public.profiles pr on pr.id = pv.viewed_profile_id
+        where pv.viewer_id is not null and pr.status = 'active' and pr.location = any (v_zones)
+        group by pv.viewer_id
+        having count(distinct pr.location) >= array_length(v_zones, 1)
+    ) v
+    on conflict (user_id, badge_id) do nothing;
+end; $$;
+
+create or replace function public.run_rising_star_recompute()
+returns void language plpgsql security definer set search_path = public as $$
+declare v_badge_id uuid; v_top_count bigint;
+begin
+    select id into v_badge_id from public.badges where slug = 'rising-star';
+    delete from public.user_badges where badge_id = v_badge_id;
+
+    select max(view_count) into v_top_count from (
+        select pv.viewed_profile_id, count(*) as view_count
+        from public.profile_views pv join public.profiles pr on pr.id = pv.viewed_profile_id
+        where pr.status = 'active' and pv.created_at >= date_trunc('month', now())
+        group by pv.viewed_profile_id
+    ) t;
+    if v_top_count is null or v_top_count = 0 then return; end if;
+
+    insert into public.user_badges (user_id, badge_id)
+    select pv.viewed_profile_id, v_badge_id
+    from public.profile_views pv join public.profiles pr on pr.id = pv.viewed_profile_id
+    where pr.status = 'active' and pv.created_at >= date_trunc('month', now())
+    group by pv.viewed_profile_id
+    having count(*) = v_top_count
+    on conflict (user_id, badge_id) do nothing;
+end; $$;
+
+create or replace function public.run_scheduled_badge_checks()
+returns void language plpgsql security definer set search_path = public as $$
+begin
+    begin perform public.run_pioneer_backfill();   exception when others then raise warning 'pioneer backfill failed: %', sqlerrm; end;
+    begin perform public.run_anniversary_check();  exception when others then raise warning 'anniversary check failed: %', sqlerrm; end;
+    begin perform public.run_explorer_check();     exception when others then raise warning 'explorer check failed: %', sqlerrm; end;
+    begin perform public.run_rising_star_recompute(); exception when others then raise warning 'rising star recompute failed: %', sqlerrm; end;
+end; $$;
+
+revoke execute on function public.run_pioneer_backfill()       from public, anon, authenticated;
+revoke execute on function public.run_anniversary_check()      from public, anon, authenticated;
+revoke execute on function public.run_explorer_check()         from public, anon, authenticated;
+revoke execute on function public.run_rising_star_recompute()  from public, anon, authenticated;
+revoke execute on function public.run_scheduled_badge_checks() from public, anon, authenticated;
+
 -- ============================================================================
 --  Done. Next: create some invites, e.g.
 --    insert into public.invites (code, note) values ('SARAWAK-001', 'first batch');

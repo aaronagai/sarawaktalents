@@ -369,6 +369,23 @@ html.dark .delete-modal-sub { color: var(--dm-text-muted); }
 html.dark .join-username-status.is-ok { color: #4ade80; }
 html.dark .join-username-status.is-bad { color: #f87171; }
 
+/* Prefixed social inputs (Instagram/X @, LinkedIn, Facebook) */
+.join-affix-wrap { position: relative; display: flex; align-items: center; width: 100%; }
+.join-affix {
+    position: absolute;
+    left: 0.875rem;
+    font-size: 0.9375rem;
+    font-weight: 400;
+    color: #9ca3af;
+    pointer-events: none;
+    white-space: nowrap;
+}
+.join-affix--long { font-size: 0.75rem; letter-spacing: -0.01em; }
+.join-input--affix-sm { padding-left: 1.75rem; }
+.join-input--affix-md { padding-left: 6.75rem; }
+.join-input--affix-lg { padding-left: 9.75rem; }
+html.dark .join-affix { color: #6b7280; }
+
 /* Avatar upload */
 .join-avatar-row { display: flex; align-items: flex-start; gap: 1rem; }
 .join-avatar-upload-col { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; }

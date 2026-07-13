@@ -498,7 +498,7 @@
         var links = p.links || {};
         LINK_KEYS.forEach(function (k) {
             var el = document.getElementById('pf-link-' + k);
-            if (el) el.value = links[k] || '';
+            if (el) el.value = stripLinkInput(k, links[k] || '');
         });
         if (p.avatar_url) {
             avatarImg.src = p.avatar_url;
@@ -535,11 +535,40 @@
 
     var LINK_KEYS = ['website', 'instagram', 'x', 'linkedin', 'facebook', 'tiktok', 'github', 'whatsapp', 'email'];
 
+    // Prefixed social fields: UI shows the fixed part; store values profile.js can open.
+    function stripLinkInput(key, raw) {
+        var v = String(raw || '').trim();
+        if (!v) return '';
+        if (key === 'instagram' || key === 'x') {
+            v = v.replace(/^https?:\/\/(www\.)?(instagram\.com|x\.com|twitter\.com)\//i, '');
+            return v.replace(/^@+/, '').replace(/\/+$/, '');
+        }
+        if (key === 'linkedin') {
+            v = v.replace(/^https?:\/\//i, '').replace(/^www\./i, '');
+            v = v.replace(/^linkedin\.com\/in\//i, '');
+            return v.replace(/^\/+|\/+$/g, '').split(/[?#]/)[0];
+        }
+        if (key === 'facebook') {
+            v = v.replace(/^https?:\/\//i, '').replace(/^www\./i, '');
+            v = v.replace(/^facebook\.com\/(?:profile\.php\?id=)?/i, '');
+            return v.replace(/^@+/, '').replace(/^\/+|\/+$/g, '').split(/[?#]/)[0];
+        }
+        return v;
+    }
+
+    function collectLinkValue(key, raw) {
+        var slug = stripLinkInput(key, raw);
+        if (!slug) return '';
+        if (key === 'instagram' || key === 'x' || key === 'facebook') return slug;
+        if (key === 'linkedin') return 'https://www.linkedin.com/in/' + slug;
+        return String(raw || '').trim();
+    }
+
     function collectProfile(uid) {
         var links = {};
         LINK_KEYS.forEach(function (k) {
             var el = document.getElementById('pf-link-' + k);
-            var v = el ? el.value.trim() : '';
+            var v = el ? collectLinkValue(k, el.value) : '';
             if (v) links[k] = v;
         });
         return {

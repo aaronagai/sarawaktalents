@@ -228,13 +228,25 @@
                         <label class="join-field"><span class="join-label">Website</span>
                             <input id="pf-link-website" type="text" class="join-input" placeholder="yoursite.com"></label>
                         <label class="join-field"><span class="join-label">Instagram</span>
-                            <input id="pf-link-instagram" type="text" class="join-input" placeholder="@handle"></label>
+                            <div class="join-affix-wrap">
+                                <span class="join-affix" aria-hidden="true">@</span>
+                                <input id="pf-link-instagram" type="text" class="join-input join-input--affix-sm"
+                                       placeholder="handle" autocomplete="off" spellcheck="false"></div></label>
                         <label class="join-field"><span class="join-label">X (Twitter)</span>
-                            <input id="pf-link-x" type="text" class="join-input" placeholder="@handle"></label>
+                            <div class="join-affix-wrap">
+                                <span class="join-affix" aria-hidden="true">@</span>
+                                <input id="pf-link-x" type="text" class="join-input join-input--affix-sm"
+                                       placeholder="handle" autocomplete="off" spellcheck="false"></div></label>
                         <label class="join-field"><span class="join-label">LinkedIn</span>
-                            <input id="pf-link-linkedin" type="text" class="join-input" placeholder="linkedin.com/in/…"></label>
+                            <div class="join-affix-wrap">
+                                <span class="join-affix join-affix--long" aria-hidden="true">www.linkedin.com/in/</span>
+                                <input id="pf-link-linkedin" type="text" class="join-input join-input--affix-lg"
+                                       placeholder="your-name" autocomplete="off" spellcheck="false"></div></label>
                         <label class="join-field"><span class="join-label">Facebook</span>
-                            <input id="pf-link-facebook" type="text" class="join-input" placeholder="facebook.com/…"></label>
+                            <div class="join-affix-wrap">
+                                <span class="join-affix join-affix--long" aria-hidden="true">facebook.com/</span>
+                                <input id="pf-link-facebook" type="text" class="join-input join-input--affix-md"
+                                       placeholder="your.page" autocomplete="off" spellcheck="false"></div></label>
                         <label class="join-field"><span class="join-label">TikTok</span>
                             <input id="pf-link-tiktok" type="text" class="join-input" placeholder="@handle"></label>
                         <label class="join-field"><span class="join-label">GitHub</span>
@@ -375,6 +387,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase-client.js"></script>
     <script src="../badge-toast.js"></script>
-    <script src="../join.js?v=20260714-nofield"></script>
+    <script src="../join.js?v=20260714-socialaffix"></script>
 </body>
 </html>

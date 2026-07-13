@@ -96,8 +96,15 @@
             case 'x': return isUrl(v) ? v : 'https://x.com/' + v.replace(/^@/, '');
             case 'tiktok': return isUrl(v) ? v : 'https://tiktok.com/@' + v.replace(/^@/, '');
             case 'github': return isUrl(v) ? v : 'https://github.com/' + v.replace(/^@/, '');
-            case 'facebook': return isUrl(v) ? v : 'https://facebook.com/' + v.replace(/^@/, '');
-            default: return urlify(v);   // website, linkedin
+            case 'facebook':
+                if (isUrl(v)) return v;
+                v = v.replace(/^(?:www\.)?facebook\.com\//i, '').replace(/^@/, '');
+                return 'https://facebook.com/' + v;
+            case 'linkedin':
+                if (isUrl(v)) return v;
+                v = v.replace(/^(?:www\.)?linkedin\.com\/in\//i, '');
+                return 'https://www.linkedin.com/in/' + v.replace(/^\/+/, '');
+            default: return urlify(v);   // website
         }
     }
 

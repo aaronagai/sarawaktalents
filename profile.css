@@ -321,6 +321,7 @@ html.dark .qr-social-btn--soon { color: #666; }
 /* Open row under the QR: a hint by default, a clear "Open <platform>" button
    once a social is selected — so opening the link no longer needs a hidden gesture. */
 .qr-open-row { margin-top: 0.5rem; min-height: 2.75rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; }
+.qr-open-actions { display: flex; flex-wrap: wrap; gap: 0.625rem; justify-content: center; align-items: center; }
 .qr-open-hint { margin: 0; font-size: 0.8125rem; line-height: 1.35; color: #6b7280; text-align: center; max-width: 22rem; }
 .qr-open-hint b { color: #7c3aed; font-weight: 600; }
 html.dark .qr-open-hint { color: #9ca3af; }
@@ -337,6 +338,14 @@ html.dark .qr-open-hint b { color: #a78bfa; }
 .qr-open-btn:active { transform: scale(0.97); }
 html.dark .qr-open-btn { background: #7c3aed; }
 html.dark .qr-open-btn:hover { background: #8b5cf6; }
+.qr-open-btn--ghost {
+    background: #fff;
+    color: #111827;
+    border: 1.5px solid #e5e7eb;
+}
+.qr-open-btn--ghost:hover { background: #f9fafb; }
+html.dark .qr-open-btn--ghost { background: #141414; color: #fff; border-color: #2a2a2a; }
+html.dark .qr-open-btn--ghost:hover { background: #1c1c1c; }
 
 /* Phone: socials collapse to a centred grid of circular icons (5 per row).
    Tap selects (QR retargets); tap again opens. */

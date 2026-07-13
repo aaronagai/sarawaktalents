@@ -20,7 +20,7 @@ const SUPABASE_URL = 'https://zedeqvbsuljgxapkoihg.supabase.co';
 
 // Must stay in sync with the select in script.js → loadProfiles().
 const SELECT =
-  'id,username,name,role,category,location,industry,background,avatar_url,org_photo,org_photos,created_at';
+  'id,username,name,role,category,location,industry,industries,background,avatar_url,org_photo,org_photos,created_at';
 
 const TTL = 60;                 // seconds the edge serves a cached copy
 const STALE = 300;              // seconds it may serve stale while revalidating

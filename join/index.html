@@ -19,7 +19,7 @@
     <script src="https://unpkg.com/reicon@latest/cdn/reicon.min.js"></script>
     <link rel="stylesheet" href="../tailwind.css">
     <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="../join.css">
+    <link rel="stylesheet" href="../join.css?v=20260714-indmulti">
     <link rel="stylesheet" href="../badge-toast.css">
     <link rel="manifest" href="../manifest.json">
     <meta name="theme-color" content="#0d9488">
@@ -112,11 +112,6 @@
                         </div>
                     </div>
 
-                    <label class="join-field">
-                        <span class="join-label">Organisation <span class="join-optional">(optional)</span></span>
-                        <input id="pf-organisation" type="text" class="join-input" placeholder="e.g. Sarawak Energy, UNIMAS, Self-employed">
-                    </label>
-
                     <div class="join-field">
                         <span class="join-label">Organisation badge <span class="join-optional">(optional — pick one)</span></span>
                         <div class="join-badge-picker" id="badge-picker"></div>
@@ -140,107 +135,82 @@
                     </label>
 
                     <label class="join-field">
-                        <span class="join-label">Job title <em>*</em> <span class="join-optional">what you do — a person, not a field</span></span>
+                        <span class="join-label">Job title <em>*</em> <span class="join-optional">what you do</span></span>
                         <input id="pf-role" type="text" class="join-input" required placeholder="e.g. Lawyer, Software Engineer, Student, Founder">
                     </label>
 
-                    <p id="pf-role-org-preview" class="join-preview join-preview--org" aria-live="polite" hidden></p>
-
-                    <div class="join-grid-2">
-                        <label class="join-field">
-                            <span class="join-label">Field <em>*</em></span>
-                            <select id="pf-category" class="join-input" required>
-                                <option value="" disabled selected>Choose one</option>
-                                <option>Tech</option>
-                                <option>Arts</option>
-                                <option>Business</option>
-                                <option>Science</option>
-                                <option>Community</option>
-                                <option>Other</option>
-                            </select>
-                        </label>
-                        <label class="join-field">
-                            <span class="join-label">Location <em>*</em></span>
-                            <select id="pf-location" class="join-input" required>
-                                <option value="" disabled selected>Choose one</option>
-                                <option>Asajaya</option>
-                                <option>Bau</option>
-                                <option>Belaga</option>
-                                <option>Beluru</option>
-                                <option>Betong</option>
-                                <option>Bintulu</option>
-                                <option>Bukit Mabong</option>
-                                <option>Dalat</option>
-                                <option>Daro</option>
-                                <option>Gedong</option>
-                                <option>Julau</option>
-                                <option>Kabong</option>
-                                <option>Kanowit</option>
-                                <option>Kapit</option>
-                                <option>Kuching</option>
-                                <option>Lawas</option>
-                                <option>Limbang</option>
-                                <option>Lingga</option>
-                                <option>Lubok Antu</option>
-                                <option>Lundu</option>
-                                <option>Marudi</option>
-                                <option>Matu</option>
-                                <option>Meradong</option>
-                                <option>Miri</option>
-                                <option>Mukah</option>
-                                <option>Pakan</option>
-                                <option>Pantu</option>
-                                <option>Pusa</option>
-                                <option>Samarahan</option>
-                                <option>Saratok</option>
-                                <option>Sarikei</option>
-                                <option>Sebauh</option>
-                                <option>Sebuyau</option>
-                                <option>Selangau</option>
-                                <option>Serian</option>
-                                <option>Sibu</option>
-                                <option>Siburan</option>
-                                <option>Simunjan</option>
-                                <option>Song</option>
-                                <option>Sri Aman</option>
-                                <option>Subis</option>
-                                <option>Tanjung Manis</option>
-                                <option>Tatau</option>
-                                <option>Tebedu</option>
-                                <option>Telang Usan</option>
-                                <option>Outside Sarawak</option>
-                            </select>
-                        </label>
-                    </div>
-
                     <label class="join-field">
-                        <span class="join-label">Industry <em>*</em></span>
-                        <select id="pf-industry-select" class="join-input" required>
-                            <option value="" disabled selected>Choose your industry</option>
-                            <!-- industry options injected from ST_INDUSTRIES in join.js -->
-                            <option value="__other">Other (type your own)</option>
-                        </select>
-                        <input id="pf-industry" type="text" class="join-input join-industry-other" placeholder="Your industry" autocomplete="off" hidden>
+                        <span class="join-label">Organisation <span class="join-optional">(optional)</span></span>
+                        <input id="pf-organisation" type="text" class="join-input" placeholder="e.g. Sarawak Energy, UNIMAS, Self-employed">
                     </label>
 
-                    <!-- Live preview of the profile line so people catch awkward combos before saving -->
-                    <p id="pf-preview" class="join-preview" aria-live="polite" hidden></p>
+                    <p id="pf-role-org-preview" class="join-preview join-preview--org" aria-live="polite">
+                        Preview: <span class="join-preview-example">Name</span> is a <span class="join-preview-example">Role</span> at <span class="join-preview-example">Organisation</span>
+                    </p>
+
+                    <label class="join-field">
+                        <span class="join-label">Location <em>*</em></span>
+                        <select id="pf-location" class="join-input" required>
+                            <option value="" disabled selected>Choose one</option>
+                            <option>Asajaya</option>
+                            <option>Bau</option>
+                            <option>Belaga</option>
+                            <option>Beluru</option>
+                            <option>Betong</option>
+                            <option>Bintulu</option>
+                            <option>Bukit Mabong</option>
+                            <option>Dalat</option>
+                            <option>Daro</option>
+                            <option>Gedong</option>
+                            <option>Julau</option>
+                            <option>Kabong</option>
+                            <option>Kanowit</option>
+                            <option>Kapit</option>
+                            <option>Kuching</option>
+                            <option>Lawas</option>
+                            <option>Limbang</option>
+                            <option>Lingga</option>
+                            <option>Lubok Antu</option>
+                            <option>Lundu</option>
+                            <option>Marudi</option>
+                            <option>Matu</option>
+                            <option>Meradong</option>
+                            <option>Miri</option>
+                            <option>Mukah</option>
+                            <option>Pakan</option>
+                            <option>Pantu</option>
+                            <option>Pusa</option>
+                            <option>Samarahan</option>
+                            <option>Saratok</option>
+                            <option>Sarikei</option>
+                            <option>Sebauh</option>
+                            <option>Sebuyau</option>
+                            <option>Selangau</option>
+                            <option>Serian</option>
+                            <option>Sibu</option>
+                            <option>Siburan</option>
+                            <option>Simunjan</option>
+                            <option>Song</option>
+                            <option>Sri Aman</option>
+                            <option>Subis</option>
+                            <option>Tanjung Manis</option>
+                            <option>Tatau</option>
+                            <option>Tebedu</option>
+                            <option>Telang Usan</option>
+                            <option>Outside Sarawak</option>
+                        </select>
+                    </label>
 
                     <div class="join-field">
-                        <span class="join-label">Also skilled in <span class="join-optional">(optional — pick a couple more)</span></span>
-                        <div class="join-tag-picker" id="tag-picker"></div>
+                        <span class="join-label">Industry <em>*</em> <span class="join-optional">(pick up to 3)</span></span>
+                        <div class="join-industry-picker" id="industry-picker" role="group" aria-label="Industries"></div>
+                        <span class="join-optional" id="industry-hint" style="font-size:0.75rem;">Select one or more industries that fit you.</span>
                     </div>
 
                     <label class="join-field">
                         <span class="join-label">Short bio <span class="join-optional">(optional)</span></span>
                         <textarea id="pf-bio" class="join-input join-textarea" rows="3" maxlength="240"
                                   placeholder="One or two lines about what you do and what you're looking for."></textarea>
-                    </label>
-
-                    <label class="join-field">
-                        <span class="join-label">Bio (Bahasa Malaysia) <span class="join-optional">(optional)</span></span>
-                        <textarea id="pf-bio-bm" class="join-input join-textarea" rows="3" maxlength="240"
-                                  placeholder="Bio ringkas dalam Bahasa Malaysia."></textarea>
                     </label>
 
                     <div class="join-grid-2">
@@ -250,28 +220,57 @@
                             <input id="pf-edu-school" type="text" class="join-input" placeholder="e.g. UNIMAS"></label>
                     </div>
 
-                    <div class="join-field">
-                        <span class="join-label">Socials &amp; links <span class="join-optional">(all optional — used for your QR card)</span></span>
-                    </div>
-                    <div class="join-grid-2 join-socials">
-                        <label class="join-field"><span class="join-label">Website</span>
-                            <input id="pf-link-website" type="text" class="join-input" placeholder="yoursite.com"></label>
-                        <label class="join-field"><span class="join-label">Instagram</span>
-                            <input id="pf-link-instagram" type="text" class="join-input" placeholder="@handle"></label>
-                        <label class="join-field"><span class="join-label">X (Twitter)</span>
-                            <input id="pf-link-x" type="text" class="join-input" placeholder="@handle"></label>
-                        <label class="join-field"><span class="join-label">LinkedIn</span>
-                            <input id="pf-link-linkedin" type="text" class="join-input" placeholder="linkedin.com/in/…"></label>
-                        <label class="join-field"><span class="join-label">Facebook</span>
-                            <input id="pf-link-facebook" type="text" class="join-input" placeholder="facebook.com/…"></label>
-                        <label class="join-field"><span class="join-label">TikTok</span>
-                            <input id="pf-link-tiktok" type="text" class="join-input" placeholder="@handle"></label>
-                        <label class="join-field"><span class="join-label">GitHub</span>
-                            <input id="pf-link-github" type="text" class="join-input" placeholder="@handle"></label>
-                        <label class="join-field"><span class="join-label">WhatsApp</span>
-                            <input id="pf-link-whatsapp" type="tel" class="join-input" placeholder="60123456789"></label>
-                        <label class="join-field"><span class="join-label">Email</span>
-                            <input id="pf-link-email" type="email" class="join-input" placeholder="you@email.com"></label>
+                    <div class="join-social-accordion" id="social-accordion">
+                        <button type="button" class="join-social-tab" id="social-tab" aria-expanded="false" aria-controls="social-panel">
+                            <span class="join-social-tab-copy">
+                                <span class="join-social-tab-title">Socials &amp; links</span>
+                                <span class="join-social-tab-hint">optional — used for your QR card</span>
+                            </span>
+                            <span class="join-social-tab-meta">
+                                <span class="join-social-tab-count" id="social-tab-count" hidden></span>
+                                <span class="join-social-tab-chevron" aria-hidden="true">▾</span>
+                            </span>
+                        </button>
+                        <div class="join-social-panel" id="social-panel" hidden>
+                            <div class="join-grid-2 join-socials">
+                                <label class="join-field"><span class="join-label">Website</span>
+                                    <input id="pf-link-website" type="text" class="join-input" placeholder="yoursite.com"></label>
+                                <label class="join-field"><span class="join-label">Instagram</span>
+                                    <div class="join-affix-wrap">
+                                        <span class="join-affix" aria-hidden="true">@</span>
+                                        <input id="pf-link-instagram" type="text" class="join-input"
+                                               placeholder="handle" autocomplete="off" spellcheck="false"></div></label>
+                                <label class="join-field"><span class="join-label">X (Twitter)</span>
+                                    <div class="join-affix-wrap">
+                                        <span class="join-affix" aria-hidden="true">@</span>
+                                        <input id="pf-link-x" type="text" class="join-input"
+                                               placeholder="handle" autocomplete="off" spellcheck="false"></div></label>
+                                <label class="join-field join-field--wide"><span class="join-label">LinkedIn</span>
+                                    <div class="join-affix-wrap">
+                                        <span class="join-affix join-affix--long" aria-hidden="true">www.linkedin.com/in/</span>
+                                        <input id="pf-link-linkedin" type="text" class="join-input"
+                                               placeholder="your-name" autocomplete="off" spellcheck="false"></div></label>
+                                <label class="join-field join-field--wide"><span class="join-label">Facebook</span>
+                                    <div class="join-affix-wrap">
+                                        <span class="join-affix join-affix--long" aria-hidden="true">facebook.com/</span>
+                                        <input id="pf-link-facebook" type="text" class="join-input"
+                                               placeholder="your.page" autocomplete="off" spellcheck="false"></div></label>
+                                <label class="join-field"><span class="join-label">TikTok</span>
+                                    <div class="join-affix-wrap">
+                                        <span class="join-affix" aria-hidden="true">@</span>
+                                        <input id="pf-link-tiktok" type="text" class="join-input"
+                                               placeholder="handle" autocomplete="off" spellcheck="false"></div></label>
+                                <label class="join-field"><span class="join-label">GitHub</span>
+                                    <div class="join-affix-wrap">
+                                        <span class="join-affix" aria-hidden="true">@</span>
+                                        <input id="pf-link-github" type="text" class="join-input"
+                                               placeholder="handle" autocomplete="off" spellcheck="false"></div></label>
+                                <label class="join-field"><span class="join-label">WhatsApp</span>
+                                    <input id="pf-link-whatsapp" type="tel" class="join-input" placeholder="60123456789"></label>
+                                <label class="join-field"><span class="join-label">Email</span>
+                                    <input id="pf-link-email" type="email" class="join-input" placeholder="you@email.com"></label>
+                            </div>
+                        </div>
                     </div>
 
                     <p id="profile-error" class="join-error" hidden></p>
@@ -405,6 +404,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase-client.js"></script>
     <script src="../badge-toast.js"></script>
-    <script src="../join.js"></script>
+    <script src="../join.js?v=20260714-indmulti"></script>
 </body>
 </html>

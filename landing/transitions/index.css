@@ -210,6 +210,8 @@ html.dark {
     filter var(--acc-collapse) var(--acc-ease);
 }
 .t-acc[data-open="true"] .t-acc-panel-inner {
+  /* Let nested absolute menus (filter dropdowns) escape the accordion clip. */
+  overflow: visible;
   opacity: 1;
   filter: blur(0);
   transition:

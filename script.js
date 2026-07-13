@@ -141,7 +141,7 @@ function applyLang(lang) {
 
 const candidates = [
   { id: 1, dun_no: "T01", name: "Aaron Nagai",     dun: "Software Engineer", party: "Tech",     zone: "Kuching", parliamentary: "Software Development",    orgPhoto: "photos/badges/sarawak-energy-icon.svg" },
-  { id: 2, dun_no: "T02", name: "Raden Hollywood", dun: "Musician",          party: "Arts",     zone: "Miri",    parliamentary: "Performing Arts",         orgPhoto: "photos/badges/air-borneo-icon.svg" },
+  { id: 2, dun_no: "T02", name: "Raden Hollywood", dun: "Musician",          party: "Arts",     zone: "Miri",    parliamentary: "Performing Arts" },
   { id: 3, dun_no: "T03", name: "Andrea Livlo",    dun: "Entrepreneur",      party: "Business", zone: "Sibu",    parliamentary: "Startups & Commerce",     orgPhoto: "photos/badges/petros-icon.svg" },
   { id: 4, dun_no: "T04", name: "Aniq Ashwin",     dun: "Researcher",        party: "Science",  zone: "Bintulu", parliamentary: "Research & Innovation",   orgPhoto: "photos/badges/sarawakmetro-icon.svg" },
 ];
@@ -416,6 +416,10 @@ function render() {
   });
 
   filtered.sort((a, b) => {
+    // Verified (photo-uploaded) talents always float to the top.
+    const aVerified = showVerifiedBadge(a) ? 0 : 1;
+    const bVerified = showVerifiedBadge(b) ? 0 : 1;
+    if (aVerified !== bVerified) return aVerified - bVerified;
     if (currentSort === 'name')  return a.name.localeCompare(b.name);
     if (currentSort === 'party') return (partyOrder[a.party] ?? 99) - (partyOrder[b.party] ?? 99) || seqOf(a) - seqOf(b);
     if (currentSort === 'zone')  return a.zone.localeCompare(b.zone) || seqOf(a) - seqOf(b);
@@ -595,7 +599,9 @@ function mapProfile(p, i) {
     dun: p.role || '',
     party: p.category || 'Other',
     zone: p.location || '',
-    parliamentary: p.industry || '',
+    parliamentary: Array.isArray(p.industries) && p.industries.length
+      ? p.industries.join(' · ')
+      : (p.industry || ''),
     orgPhoto: p.org_photo || '',
     orgPhotos: (p.org_photos && p.org_photos.length) ? p.org_photos : (p.org_photo ? [p.org_photo] : []),
     avatar_url: p.avatar_url || '',
@@ -625,7 +631,7 @@ async function loadProfiles() {
     if (!data) {
       const res = await window.stSupabase
         .from('profiles')
-        .select('id, username, name, role, category, location, industry, background, avatar_url, org_photo, org_photos, created_at')
+        .select('id, username, name, role, category, location, industry, industries, background, avatar_url, org_photo, org_photos, created_at')
         .eq('status', 'active')
         .order('created_at', { ascending: true });
       if (res.error) { console.warn('[directory] load failed:', res.error.message); return; }
@@ -669,13 +675,7 @@ async function loadAchievementBadges() {
 }
 
 // Signed-in members: "Log In" → "Edit profile", "Get Started" → "Profile".
-async function reflectAuthState() {
-  if (!window.ST_CONFIGURED || !window.stSupabase) return;
-  const { data: { session } } = await window.stSupabase.auth.getSession();
-  if (!session) return;
-  const { data: prof } = await window.stSupabase
-    .from('profiles').select('id, username').eq('id', session.user.id).maybeSingle();
-  if (!prof) return;
+function applySignedInNav(prof) {
   loginTarget = ST_SITE.join('mode=edit');
   document.querySelectorAll('.hero-nav-btn--login').forEach(btn => {
     btn.setAttribute('data-i18n', 'editProfile');
@@ -688,6 +688,43 @@ async function reflectAuthState() {
       btn.textContent = (translations[currentLang] || translations.en).profile;
     });
   }
+}
+
+function resetSignedOutNav() {
+  loginTarget = ST_SITE.join('mode=login');
+  getStartedTarget = ST_SITE.join();
+  document.querySelectorAll('.hero-nav-btn--login').forEach(btn => {
+    btn.setAttribute('data-i18n', 'logIn');
+    btn.textContent = (translations[currentLang] || translations.en).logIn;
+  });
+  document.querySelectorAll('.hero-nav-btn--get-started').forEach(btn => {
+    btn.setAttribute('data-i18n', 'getStarted');
+    btn.textContent = (translations[currentLang] || translations.en).getStarted;
+  });
+}
+
+async function reflectAuthState() {
+  if (!window.ST_CONFIGURED || !window.stSupabase) return;
+  var sb = window.stSupabase;
+
+  async function applyFromSession(session) {
+    if (!session) { resetSignedOutNav(); return; }
+    const { data: prof } = await sb
+      .from('profiles').select('id, username').eq('id', session.user.id).maybeSingle();
+    if (!prof) { resetSignedOutNav(); return; }
+    applySignedInNav(prof);
+  }
+
+  const { data: { session } } = await sb.auth.getSession();
+  await applyFromSession(session);
+
+  // Keep nav in sync, but never call DB/auth APIs directly inside the callback
+  // (that deadlocks supabase-js's auth lock and can strand the session).
+  sb.auth.onAuthStateChange(function (event, session) {
+    if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+      setTimeout(function () { applyFromSession(session); }, 0);
+    }
+  });
 }
 
 loadProfiles();

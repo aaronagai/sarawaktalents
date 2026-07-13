@@ -96,8 +96,15 @@
             case 'x': return isUrl(v) ? v : 'https://x.com/' + v.replace(/^@/, '');
             case 'tiktok': return isUrl(v) ? v : 'https://tiktok.com/@' + v.replace(/^@/, '');
             case 'github': return isUrl(v) ? v : 'https://github.com/' + v.replace(/^@/, '');
-            case 'facebook': return isUrl(v) ? v : 'https://facebook.com/' + v.replace(/^@/, '');
-            default: return urlify(v);   // website, linkedin
+            case 'facebook':
+                if (isUrl(v)) return v;
+                v = v.replace(/^(?:www\.)?facebook\.com\//i, '').replace(/^@/, '');
+                return 'https://facebook.com/' + v;
+            case 'linkedin':
+                if (isUrl(v)) return v;
+                v = v.replace(/^(?:www\.)?linkedin\.com\/in\//i, '');
+                return 'https://www.linkedin.com/in/' + v.replace(/^\/+/, '');
+            default: return urlify(v);   // website
         }
     }
 
@@ -125,14 +132,6 @@
     }
 
     function updateSaveQrUI(p) {
-        var actionBtn = el('pf-save-wallpaper-btn');
-        if (!actionBtn) return;
-        if (isOwnProfile(p)) {
-            actionBtn.hidden = false;
-            actionBtn.onclick = function () { exportProfileCard(p); };
-        } else {
-            actionBtn.hidden = true;
-        }
         if (refreshQrOpenRow) refreshQrOpenRow();
     }
 
@@ -207,28 +206,37 @@
             oi.hidden = false;
         }
 
-        // Lead line — grammar-proof for any combination of title / industry.
-        var first = escapeHtml((p.name || '').split(/\s+/)[0]);
+        // Lead line — "Name is a/an Role at Organisation."
+        var displayName = escapeHtml((p.name || '').trim() || 'Name');
         var role = (p.role || '').trim();
-        var industry = (p.industry || '').trim();
-        var sameRI = role && industry && role.toLowerCase() === industry.toLowerCase();
+        var org = String(p.organisation || p.company || p.organization || p.org || '').trim();
+        if (!org) {
+            var orgPhotos = (p.org_photos && p.org_photos.length) ? p.org_photos : (p.org_photo ? [p.org_photo] : []);
+            if (orgPhotos.length) org = BADGE_ORGS[orgPhotos[0]] || '';
+        }
         var lead;
-        if (role && industry && !sameRI) {
-            lead = first + ' is ' + articleBefore(role) + ' <b>' + escapeHtml(role) + '</b> in ' + escapeHtml(industry) + '.';
-        } else if (sameRI || (industry && !role)) {
-            lead = first + ' works in <b>' + escapeHtml(industry) + '</b>.';
+        if (role && org) {
+            lead = displayName + ' is ' + articleBefore(role) + ' <b>' + escapeHtml(role) + '</b> at ' + escapeHtml(org);
         } else if (role) {
-            lead = first + ' is ' + articleBefore(role) + ' <b>' + escapeHtml(role) + '</b>.';
+            lead = displayName + ' is ' + articleBefore(role) + ' <b>' + escapeHtml(role) + '</b>';
+        } else if (org) {
+            lead = displayName + ' is at <b>' + escapeHtml(org) + '</b>';
         } else {
-            lead = first + '.';
+            lead = displayName;
         }
         el('pf-lead').innerHTML = lead;
 
         if (p.bio) { el('pf-bio').textContent = p.bio; el('pf-bio').hidden = false; }
 
-        // Tags (dedupe case-insensitively so category/industry don't repeat).
+        // Tags — show all industries (plus legacy category if present).
         var seenTag = {};
-        var tags = [p.category, p.industry].filter(function (t) {
+        var industryTags = [];
+        if (Array.isArray(p.industries) && p.industries.length) {
+            industryTags = p.industries;
+        } else if (p.industry) {
+            industryTags = [p.industry];
+        }
+        var tags = [p.category].concat(industryTags).filter(function (t) {
             if (!t) return false;
             var k = String(t).toLowerCase();
             if (seenTag[k]) return false;
@@ -284,7 +292,7 @@
         wireAchievements(p);
     }
 
-    // ── achievements: view log, Connect, referral link, badge list ──────────────
+    // ── achievements: view log, badge list ─────────────────────────────────────
     function wireAchievements(p) {
         var isOwn = !!currentUser && currentUser === p.id;
 
@@ -294,38 +302,6 @@
         // viewer_id is null for anonymous visitors, which the RLS policy allows.
         if (!isOwn) {
             sb.from('profile_views').insert({ viewer_id: currentUser, viewed_profile_id: p.id });
-        }
-
-        var connectBtn = el('pf-connect-btn');
-        if (currentUser && !isOwn) {
-            connectBtn.hidden = false;
-            sb.from('connections').select('id').eq('user_id', currentUser).eq('connected_user_id', p.id).maybeSingle()
-                .then(function (r) {
-                    if (r.data) { connectBtn.textContent = 'Connected'; connectBtn.disabled = true; }
-                });
-            connectBtn.addEventListener('click', function () {
-                connectBtn.disabled = true;
-                sb.from('connections').insert({ user_id: currentUser, connected_user_id: p.id }).then(function (r) {
-                    if (r.error) { connectBtn.disabled = false; return; }
-                    connectBtn.textContent = 'Connected';
-                    sb.rpc('check_and_award_badges', { p_user_id: currentUser }).then(function (br) {
-                        if (br.data && br.data.length && window.BadgeToast) BadgeToast.show(br.data);
-                    });
-                });
-            });
-        }
-
-        var referBtn = el('pf-refer-btn');
-        if (isOwn && p.username) {
-            referBtn.hidden = false;
-            referBtn.addEventListener('click', function () {
-                var link = location.origin + ST_SITE.join('ref=' + encodeURIComponent(p.username));
-                navigator.clipboard.writeText(link).then(function () {
-                    var t = referBtn.textContent;
-                    referBtn.textContent = 'Copied!';
-                    setTimeout(function () { referBtn.textContent = t; }, 1400);
-                });
-            });
         }
 
         renderBadgesSection(p, isOwn);
@@ -483,7 +459,7 @@
     }
     async function exportProfileCard(p) {
         if (!isOwnProfile(p)) return;
-        var btn = el('pf-saveqr-btn') || el('pf-save-wallpaper-btn');
+        var btn = el('pf-saveqr-btn');
         var label = btn ? btn.textContent : '';
         if (btn) { btn.textContent = 'Preparing…'; btn.disabled = true; }
         try {
@@ -536,16 +512,25 @@
             // Sarawak Talents card selected → owners can save their wallpaper QR.
             if (active === PROFILE_KEY) {
                 if (isOwnProfile(p)) {
-                    var s = document.createElement('button');
-                    s.type = 'button';
-                    s.className = 'qr-open-btn';
-                    s.id = 'pf-saveqr-btn';
-                    s.innerHTML = 'Save QR <span aria-hidden="true">↓</span>';
-                    s.addEventListener('click', function () { exportProfileCard(p); });
-                    openRow.appendChild(s);
+                    var actions = document.createElement('div');
+                    actions.className = 'qr-open-actions';
+                    var openBtn = document.createElement('button');
+                    openBtn.type = 'button';
+                    openBtn.className = 'qr-open-btn';
+                    openBtn.innerHTML = 'Open Sarawak Talents <span aria-hidden="true">↗</span>';
+                    openBtn.addEventListener('click', function () { openTarget(PROFILE_KEY); });
+                    var saveBtn = document.createElement('button');
+                    saveBtn.type = 'button';
+                    saveBtn.className = 'qr-open-btn qr-open-btn--ghost';
+                    saveBtn.id = 'pf-saveqr-btn';
+                    saveBtn.innerHTML = 'Save QR wallpaper <span aria-hidden="true">↓</span>';
+                    saveBtn.addEventListener('click', function () { exportProfileCard(p); });
+                    actions.appendChild(openBtn);
+                    actions.appendChild(saveBtn);
+                    openRow.appendChild(actions);
                     var hint = document.createElement('p');
                     hint.className = 'qr-open-hint';
-                    hint.textContent = 'Save your wallpaper, or tap an icon to open its link.';
+                    hint.textContent = 'Tap an icon to retarget the QR, then open its link.';
                     openRow.appendChild(hint);
                 } else {
                     var b = document.createElement('button');

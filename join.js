@@ -19,8 +19,37 @@
     var params = new URLSearchParams(location.search);
 
     var avatarFile = null;
-    var editMode = params.get('mode') === 'edit';
+    var JOIN_MODE_KEY = 'st_join_mode';
     var currentUsername = null;      // the signed-in user's existing handle (edit mode)
+    var authRouted = false;          // true once we've left the "checking session" state
+
+    // mode=edit can be lost across the Google OAuth round-trip (redirectTo used to
+    // drop the query string). Persist in localStorage so it survives the redirect
+    // even if the return URL is stripped to /join/.
+    function joinMode() {
+        var m = params.get('mode');
+        if (m) return m;
+        try { return localStorage.getItem(JOIN_MODE_KEY) || ''; } catch (e) { return ''; }
+    }
+    function isEditMode() { return joinMode() === 'edit'; }
+    function persistJoinMode() {
+        var m = params.get('mode') || joinMode();
+        if (m === 'edit' || m === 'login') {
+            try { localStorage.setItem(JOIN_MODE_KEY, m); } catch (e) {}
+        }
+    }
+    function clearJoinMode() {
+        try { localStorage.removeItem(JOIN_MODE_KEY); } catch (e) {}
+    }
+    function oauthRedirectTo() {
+        var mode = joinMode();
+        var url = location.origin + location.pathname;
+        if (mode === 'edit' || mode === 'login') url += '?mode=' + encodeURIComponent(mode);
+        return url;
+    }
+
+    var editMode = isEditMode();
+    persistJoinMode();
 
     // Persist a referral (?ref=<username>) across the Google OAuth round-trip,
     // same idea as PENDING_KEY for invite codes. Only meaningful for a brand
@@ -30,68 +59,79 @@
 
     if (!LIVE && banner) banner.hidden = false;
 
-    // ── Industry dropdown + live profile-line preview ───────────────────
-    var industrySelect = document.getElementById('pf-industry-select');
-    var industryOther = document.getElementById('pf-industry'); // holds the "Other" value
-    var previewEl = document.getElementById('pf-preview');
-    var roleOrgPreviewEl = document.getElementById('pf-role-org-preview');
+    // ── Industry multi-select (chips) + live profile-line preview ───────
+    var INDUSTRY_MAX = 3;
+    var selectedIndustries = [];
+    var industryPicker = document.getElementById('industry-picker');
+    var industryHint = document.getElementById('industry-hint');
+    var previewEl = document.getElementById('pf-role-org-preview');
 
-    (function populateIndustryOptions() {
-        if (!industrySelect || !window.ST_INDUSTRIES) return;
-        var otherOpt = industrySelect.querySelector('option[value="__other"]');
-        window.ST_INDUSTRIES.forEach(function (name) {
-            var opt = document.createElement('option');
-            opt.value = name;
-            opt.textContent = name;
-            industrySelect.insertBefore(opt, otherOpt);
-        });
-    })();
+    function normalizeIndustries(val) {
+        if (Array.isArray(val)) {
+            return val.map(function (v) { return String(v || '').trim(); }).filter(Boolean);
+        }
+        if (val == null || val === '') return [];
+        if (typeof val === 'string') {
+            try {
+                var parsed = JSON.parse(val);
+                if (Array.isArray(parsed)) return normalizeIndustries(parsed);
+            } catch (e) {}
+            return val.split(/\s*[·,|]\s*/).map(function (v) { return v.trim(); }).filter(Boolean);
+        }
+        return [];
+    }
 
-    // The single source of truth for the chosen industry (dropdown or "Other").
+    function currentIndustries() {
+        return selectedIndustries.slice();
+    }
     function currentIndustry() {
-        if (!industrySelect) return industryOther ? industryOther.value.trim() : '';
-        if (industrySelect.value === '__other') return industryOther ? industryOther.value.trim() : '';
-        return industrySelect.value || '';
+        return selectedIndustries[0] || '';
     }
     function setIndustry(val) {
-        val = (val || '').trim();
-        if (!industrySelect) { if (industryOther) industryOther.value = val; return; }
-        var opt = Array.prototype.filter.call(industrySelect.options, function (o) {
-            return o.value !== '__other' && o.value.toLowerCase() === val.toLowerCase();
-        })[0];
-        if (val && opt) {
-            industrySelect.value = opt.value;
-            if (industryOther) { industryOther.hidden = true; industryOther.value = ''; industryOther.required = false; }
-        } else if (val) {
-            industrySelect.value = '__other';
-            if (industryOther) { industryOther.hidden = false; industryOther.value = val; industryOther.required = true; }
-        } else {
-            industrySelect.selectedIndex = 0;
-            if (industryOther) { industryOther.hidden = true; industryOther.value = ''; industryOther.required = false; }
-        }
-        updatePreview();
+        selectedIndustries = normalizeIndustries(val).slice(0, INDUSTRY_MAX);
+        renderIndustryPicker();
     }
 
-    // Grammar-proof profile line — mirrors the renderer in profile.js.
-    function leadArticle(word) { return /^[aeiou]/i.test((word || '').trim()) ? 'an' : 'a'; }
-    function buildLead(name, role, industry) {
-        var first = (name || '').trim().split(/\s+/)[0] || 'You';
-        role = (role || '').trim();
-        industry = (industry || '').trim();
-        var same = role && industry && role.toLowerCase() === industry.toLowerCase();
-        if (role && industry && !same) return first + ' is ' + leadArticle(role) + ' ' + role + ' in ' + industry + '.';
-        if (same || (industry && !role)) return first + ' works in ' + industry + '.';
-        if (role) return first + ' is ' + leadArticle(role) + ' ' + role + '.';
-        return '';
+    function renderIndustryPicker() {
+        if (!industryPicker || !window.ST_INDUSTRIES) return;
+        industryPicker.innerHTML = '';
+        window.ST_INDUSTRIES.forEach(function (name) {
+            var sel = selectedIndustries.indexOf(name) >= 0;
+            var chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'join-industry-chip' + (sel ? ' is-selected' : '');
+            chip.textContent = name;
+            chip.setAttribute('aria-pressed', sel ? 'true' : 'false');
+            chip.addEventListener('click', function () { toggleIndustry(name); });
+            industryPicker.appendChild(chip);
+        });
+        if (industryHint) {
+            industryHint.textContent = selectedIndustries.length
+                ? selectedIndustries.length + ' of ' + INDUSTRY_MAX + ' selected'
+                : 'Select one or more industries that fit you.';
+        }
     }
-    function updatePreview() {
-        if (!previewEl) return;
-        var nameEl = document.getElementById('pf-name');
-        var roleEl = document.getElementById('pf-role');
-        var line = buildLead(nameEl ? nameEl.value : '', roleEl ? roleEl.value : '', currentIndustry());
-        if (line) { previewEl.textContent = 'Preview: ' + line; previewEl.hidden = false; }
-        else { previewEl.hidden = true; }
-        updateRoleOrgPreview();
+
+    function toggleIndustry(name) {
+        var i = selectedIndustries.indexOf(name);
+        if (i >= 0) selectedIndustries.splice(i, 1);
+        else if (selectedIndustries.length < INDUSTRY_MAX) selectedIndustries.push(name);
+        else {
+            selectedIndustries = selectedIndustries.slice(0, INDUSTRY_MAX - 1).concat(name);
+        }
+        renderIndustryPicker();
+    }
+
+    renderIndustryPicker();
+
+    // Grammar-proof profile line — mirrors the renderer in profile.js.
+    // Format: "Name is a/an Role at Organisation"
+    function leadArticle(word) { return /^[aeiou]/i.test((word || '').trim()) ? 'an' : 'a'; }
+    function buildLead(name, role, org) {
+        var displayName = (name || '').trim() || 'Name';
+        role = (role || '').trim() || 'Role';
+        org = (org || '').trim() || 'Organisation';
+        return displayName + ' is ' + leadArticle(role) + ' ' + role + ' at ' + org;
     }
     function badgeOrgName(src) {
         var map = {
@@ -110,42 +150,35 @@
         var textEl = document.getElementById('pf-organisation');
         var textOrg = textEl ? textEl.value.trim() : '';
         if (textOrg) return textOrg;
-        for (var i = 0; i < selectedBadges.length; i++) {
-            var name = badgeOrgName(selectedBadges[i]);
+        var badges = (typeof selectedBadges !== 'undefined' && selectedBadges) ? selectedBadges : [];
+        for (var i = 0; i < badges.length; i++) {
+            var name = badgeOrgName(badges[i]);
             if (name) return name;
         }
         return '';
     }
-    function updateRoleOrgPreview() {
-        if (!roleOrgPreviewEl) return;
+    function updatePreview() {
+        if (!previewEl) return;
+        var nameEl = document.getElementById('pf-name');
         var roleEl = document.getElementById('pf-role');
+        var name = nameEl ? nameEl.value.trim() : '';
         var role = roleEl ? roleEl.value.trim() : '';
         var org = currentOrgName();
-        var line = (role && org) ? role + ' at ' + org : (role || org || '');
-        if (line) {
-            roleOrgPreviewEl.textContent = 'Card line: ' + line;
-            roleOrgPreviewEl.hidden = false;
+        var line = buildLead(name, role, org);
+        var hasReal = !!(name || role || org);
+        previewEl.hidden = false;
+        if (hasReal) {
+            previewEl.textContent = 'Preview: ' + line;
         } else {
-            roleOrgPreviewEl.hidden = true;
+            previewEl.innerHTML = 'Preview: <span class="join-preview-example">Name</span> is a <span class="join-preview-example">Role</span> at <span class="join-preview-example">Organisation</span>';
         }
     }
 
-    if (industrySelect) {
-        industrySelect.addEventListener('change', function () {
-            var other = industrySelect.value === '__other';
-            if (industryOther) {
-                industryOther.hidden = !other;
-                industryOther.required = other;
-                if (other) industryOther.focus(); else industryOther.value = '';
-            }
-            updatePreview();
-        });
-    }
     ['pf-name', 'pf-role', 'pf-organisation'].forEach(function (id) {
         var e = document.getElementById(id);
         if (e) e.addEventListener('input', updatePreview);
     });
-    if (industryOther) industryOther.addEventListener('input', updatePreview);
+    updatePreview();
 
     // ── navigation: steps "fly" directionally + the tray height morphs ───────
     function stepEl(step) { return document.querySelector('.join-step[data-step="' + step + '"]'); }
@@ -299,9 +332,10 @@
             return;
         }
         googleBtn.disabled = true;
+        persistJoinMode();
         sb.auth.signInWithOAuth({
             provider: 'google',
-            options: { redirectTo: location.origin + location.pathname }
+            options: { redirectTo: oauthRedirectTo() }
         });
     });
 
@@ -490,44 +524,10 @@
         else if (selectedBadges.length < maxBadges) selectedBadges.push(src);
         else selectedBadges = selectedBadges.slice(0, maxBadges - 1).concat(src);  // at cap → replace last
         renderBadgePicker();
-        updateRoleOrgPreview();
+        updatePreview();
     }
 
     renderBadgePicker();
-
-    // ── achievement tags ("Also skilled in...") — separate from the primary
-    // Field/Industry selects above, purely for the Multi-Talented badge. Uses
-    // the same source list as Industry (window.ST_INDUSTRIES) so it reads
-    // against a familiar vocabulary, but never touches category/industry
-    // themselves — those stay single-value scalars the directory's filter/
-    // sort/search relies on. ─────────────────────────────────────────────────
-    var ACHV_TAG_MAX = 6;
-    var selectedTags = [];
-    var tagPicker = document.getElementById('tag-picker');
-
-    function renderTagPicker() {
-        if (!tagPicker || !window.ST_INDUSTRIES) return;
-        tagPicker.innerHTML = '';
-        window.ST_INDUSTRIES.forEach(function (name) {
-            var sel = selectedTags.indexOf(name) >= 0;
-            var chip = document.createElement('button');
-            chip.type = 'button';
-            chip.className = 'join-tag-chip' + (sel ? ' is-selected' : '');
-            chip.textContent = name;
-            chip.addEventListener('click', function () { toggleTag(name); });
-            tagPicker.appendChild(chip);
-        });
-    }
-
-    function toggleTag(name) {
-        var i = selectedTags.indexOf(name);
-        if (i >= 0) selectedTags.splice(i, 1);
-        else if (selectedTags.length < ACHV_TAG_MAX) selectedTags.push(name);
-        else selectedTags = selectedTags.slice(0, ACHV_TAG_MAX - 1).concat(name);
-        renderTagPicker();
-    }
-
-    renderTagPicker();
 
     // Pre-fill the form from an existing profile (edit mode)
     function prefillProfile(p) {
@@ -537,22 +537,16 @@
         document.getElementById('pf-role').value = p.role || '';
         var orgEl = document.getElementById('pf-organisation');
         if (orgEl) orgEl.value = p.organisation || '';
-        document.getElementById('pf-category').value = p.category || '';
         document.getElementById('pf-location').value = p.location || '';
-        setIndustry(p.industry || '');
+        setIndustry(p.industries && p.industries.length ? p.industries : (p.industry || ''));
         document.getElementById('pf-bio').value = p.bio || '';
-        var bioBmEl = document.getElementById('pf-bio-bm');
-        if (bioBmEl) bioBmEl.value = p.bio_bm || '';
-        if (LIVE) {
-            sb.from('profile_tags').select('tag').eq('profile_id', p.id).then(function (res) {
-                if (res.data) { selectedTags = res.data.map(function (r) { return r.tag; }); renderTagPicker(); }
-            });
-        }
         var links = p.links || {};
         LINK_KEYS.forEach(function (k) {
             var el = document.getElementById('pf-link-' + k);
-            if (el) el.value = links[k] || '';
+            if (el) el.value = stripLinkInput(k, links[k] || '');
         });
+        refreshSocialTabCount();
+        if (filledSocialCount() > 0) setSocialAccordionOpen(true);
         if (p.avatar_url) {
             avatarImg.src = p.avatar_url;
             avatarImg.hidden = false;
@@ -588,11 +582,86 @@
 
     var LINK_KEYS = ['website', 'instagram', 'x', 'linkedin', 'facebook', 'tiktok', 'github', 'whatsapp', 'email'];
 
+    // Prefixed social fields: UI shows the fixed part; store values profile.js can open.
+    function stripLinkInput(key, raw) {
+        var v = String(raw || '').trim();
+        if (!v) return '';
+        if (key === 'instagram' || key === 'x' || key === 'tiktok' || key === 'github') {
+            v = v.replace(/^https?:\/\/(www\.)?(instagram\.com|x\.com|twitter\.com|tiktok\.com\/@?|github\.com)\//i, '');
+            return v.replace(/^@+/, '').replace(/\/+$/, '');
+        }
+        if (key === 'linkedin') {
+            v = v.replace(/^https?:\/\//i, '').replace(/^www\./i, '');
+            v = v.replace(/^linkedin\.com\/in\//i, '');
+            return v.replace(/^\/+|\/+$/g, '').split(/[?#]/)[0];
+        }
+        if (key === 'facebook') {
+            v = v.replace(/^https?:\/\//i, '').replace(/^www\./i, '');
+            v = v.replace(/^facebook\.com\/(?:profile\.php\?id=)?/i, '');
+            return v.replace(/^@+/, '').replace(/^\/+|\/+$/g, '').split(/[?#]/)[0];
+        }
+        return v;
+    }
+
+    function collectLinkValue(key, raw) {
+        var slug = stripLinkInput(key, raw);
+        if (!slug) return '';
+        if (key === 'instagram' || key === 'x' || key === 'facebook' || key === 'tiktok' || key === 'github') return slug;
+        if (key === 'linkedin') return 'https://www.linkedin.com/in/' + slug;
+        return String(raw || '').trim();
+    }
+
+    // Socials accordion — collapsed by default; opens on click / when editing filled links.
+    var socialTab = document.getElementById('social-tab');
+    var socialPanel = document.getElementById('social-panel');
+    var socialTabCount = document.getElementById('social-tab-count');
+    var socialAccordion = document.getElementById('social-accordion');
+
+    function filledSocialCount() {
+        var n = 0;
+        LINK_KEYS.forEach(function (k) {
+            var el = document.getElementById('pf-link-' + k);
+            if (el && el.value.trim()) n += 1;
+        });
+        return n;
+    }
+
+    function refreshSocialTabCount() {
+        if (!socialTabCount) return;
+        var n = filledSocialCount();
+        if (n > 0) {
+            socialTabCount.hidden = false;
+            socialTabCount.textContent = n + (n === 1 ? ' added' : ' added');
+        } else {
+            socialTabCount.hidden = true;
+            socialTabCount.textContent = '';
+        }
+    }
+
+    function setSocialAccordionOpen(open) {
+        if (!socialTab || !socialPanel || !socialAccordion) return;
+        socialTab.setAttribute('aria-expanded', open ? 'true' : 'false');
+        socialPanel.hidden = !open;
+        socialAccordion.classList.toggle('is-open', !!open);
+    }
+
+    if (socialTab) {
+        socialTab.addEventListener('click', function () {
+            var open = socialTab.getAttribute('aria-expanded') !== 'true';
+            setSocialAccordionOpen(open);
+        });
+    }
+    LINK_KEYS.forEach(function (k) {
+        var el = document.getElementById('pf-link-' + k);
+        if (el) el.addEventListener('input', refreshSocialTabCount);
+    });
+    refreshSocialTabCount();
+
     function collectProfile(uid) {
         var links = {};
         LINK_KEYS.forEach(function (k) {
             var el = document.getElementById('pf-link-' + k);
-            var v = el ? el.value.trim() : '';
+            var v = el ? collectLinkValue(k, el.value) : '';
             if (v) links[k] = v;
         });
         return {
@@ -601,12 +670,12 @@
             name: nameEl.value.trim(),
             role: document.getElementById('pf-role').value.trim(),
             organisation: (document.getElementById('pf-organisation').value || '').trim() || null,
-            category: document.getElementById('pf-category').value,
+            category: null,
             location: document.getElementById('pf-location').value,
             industry: currentIndustry() || null,
+            industries: currentIndustries(),
             background: null,
             bio: document.getElementById('pf-bio').value.trim() || null,
-            bio_bm: (document.getElementById('pf-bio-bm').value || '').trim() || null,
             links: links,
             education: collectEducation(),
             org_photos: selectedBadges.slice(0, maxBadges),
@@ -628,7 +697,7 @@
         if (!/^[a-z0-9_]{3,20}$/.test(usernameEl.value)) return 'Pick a username (3–20 letters, numbers, _).';
         if (!usernameOk) return 'That username isn\'t available — try another.';
         if (!document.getElementById('pf-role').value.trim()) return 'Please enter your role.';
-        if (!document.getElementById('pf-category').value) return 'Please choose a field.';
+        if (!currentIndustries().length) return 'Please choose at least one industry.';
         if (!document.getElementById('pf-location').value) return 'Please choose a location.';
         return null;
     }
@@ -707,27 +776,17 @@
         });
     }
 
-    // Replaces this profile's achievement tags with the current picker
-    // selection, then re-checks real-time badges for this user AND (if this
-    // profile was referred by someone) for the referrer — a referred
-    // profile becoming complete is what makes Ambassador progress, and that
-    // save happens in the REFERRED person's session, not the referrer's.
-    // Doesn't block the "You're in" screen; the toast can land a beat later.
+    // Re-checks real-time badges after a profile save. Doesn't block the
+    // "You're in" screen; the toast can land a beat later. If this profile was
+    // referred by someone, also re-check the referrer (Ambassador progress).
     function syncAchievementBadges(profile) {
         var uid = profile.id;
-        sb.from('profile_tags').delete().eq('profile_id', uid).then(function () {
-            var insert = selectedTags.length
-                ? sb.from('profile_tags').insert(selectedTags.map(function (t) { return { profile_id: uid, tag: t }; }))
-                : Promise.resolve(null);
-            insert.then(function () {
-                sb.rpc('check_and_award_badges', { p_user_id: uid }).then(function (r) {
-                    if (r.data && r.data.length && window.BadgeToast) BadgeToast.show(r.data);
-                });
-                if (profile.referred_by) {
-                    sb.rpc('check_and_award_badges', { p_user_id: profile.referred_by });
-                }
-            });
+        sb.rpc('check_and_award_badges', { p_user_id: uid }).then(function (r) {
+            if (r.data && r.data.length && window.BadgeToast) BadgeToast.show(r.data);
         });
+        if (profile.referred_by) {
+            sb.rpc('check_and_award_badges', { p_user_id: profile.referred_by });
+        }
     }
 
     function uploadImage(file, uid, key) {
@@ -753,28 +812,62 @@
     }
 
     // ── returning from Google OAuth (live mode) ────────────────────────────────
-    function resumeFromSession() {
+    function resumeFromSession(session) {
         if (!LIVE) return;
-        sb.auth.getSession().then(function (res) {
-            var session = res.data && res.data.session;
-            if (!session) {                            // not signed in yet
-                var m = params.get('mode');
-                if (m === 'login' || m === 'edit') showStep(1);
-                return;
-            }
-            var uid = session.user.id;
-            sb.from('profiles').select('*').eq('id', uid).maybeSingle().then(function (p) {
-                if (p.data) {
-                    if (editMode) { applyEditChrome(); prefillProfile(p.data); showStep(2); return; }
-                    location.href = ST_SITE.home(); return;  // already a member → directory
+        var mode = joinMode();
+        var editing = mode === 'edit';
+        authRouted = true;
+
+        if (!session) {
+            if (mode === 'login' || mode === 'edit') showStep(1);
+            else showStep(0);
+            return;
+        }
+
+        var uid = session.user.id;
+        sb.from('profiles').select('*').eq('id', uid).maybeSingle().then(function (p) {
+            if (p.data) {
+                if (editing) {
+                    clearJoinMode();
+                    applyEditChrome();
+                    prefillProfile(p.data);
+                    showStep(2);
+                    return;
                 }
-                if (editMode) { showStep(0); return; }  // nothing to edit yet
-                var code = localStorage.getItem(PENDING_KEY);
-                if (!code) { showStep(0); return; }    // need an invite
-                sb.rpc('claim_invite', { p_code: code }).then(function (c) {
-                    if (c.error) { setError(inviteError, c.error.message); showStep(0); return; }
-                    showStep(2); syncInitials();
-                });
+                clearJoinMode();
+                location.href = ST_SITE.home(); return;  // already a member → directory
+            }
+            if (editing) { showStep(0); return; }  // nothing to edit yet
+            var code = localStorage.getItem(PENDING_KEY);
+            if (!code) { showStep(0); return; }    // need an invite
+            sb.rpc('claim_invite', { p_code: code }).then(function (c) {
+                if (c.error) { setError(inviteError, c.error.message); showStep(0); return; }
+                clearJoinMode();
+                showStep(2); syncInitials();
+            });
+        });
+    }
+
+    // Resolve the session without racing a null getSession() against INITIAL_SESSION,
+    // and without calling other auth/DB APIs inside onAuthStateChange (deadlocks the lock).
+    function resolveSession() {
+        return sb.auth.getSession().then(function (res) {
+            var session = res.data && res.data.session;
+            if (session) return session;
+            // Late restore / token refresh — brief retry before treating as signed out.
+            return new Promise(function (resolve) {
+                setTimeout(function () {
+                    sb.auth.getSession().then(function (res2) {
+                        var s2 = res2.data && res2.data.session;
+                        if (s2) { resolve(s2); return; }
+                        sb.auth.getUser().then(function (u) {
+                            if (!(u.data && u.data.user)) { resolve(null); return; }
+                            sb.auth.getSession().then(function (res3) {
+                                resolve(res3.data && res3.data.session);
+                            });
+                        }).catch(function () { resolve(null); });
+                    });
+                }, 150);
             });
         });
     }
@@ -837,9 +930,24 @@
 
     // ── init ──────────────────────────────────────────────────────────────────
     if (LIVE) {
-        resumeFromSession();
-        var m0 = params.get('mode');
-        if (m0 !== 'login' && m0 !== 'edit') showStep(0);
+        // Defer routing until session restore finishes. Never lock onto a null
+        // session from a racing first tick — that was sending signed-in members
+        // to "Continue with Google" on every Edit profile click.
+        resolveSession().then(function (session) {
+            resumeFromSession(session);
+        });
+
+        // After Google OAuth returns, SIGNED_IN can arrive after our first resolve.
+        // Defer out of the auth callback before touching DB (avoids auth deadlocks).
+        sb.auth.onAuthStateChange(function (event, session) {
+            if (event !== 'SIGNED_IN' || !session) return;
+            setTimeout(function () {
+                var mode = joinMode();
+                if (mode === 'edit' || mode === 'login' || currentStep === '1' || !authRouted) {
+                    resumeFromSession(session);
+                }
+            }, 0);
+        });
     } else {
         if (editMode) { applyEditChrome(); showStep(2); }
         else showStep(params.get('mode') === 'login' ? 1 : 0);

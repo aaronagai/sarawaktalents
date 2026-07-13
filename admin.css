@@ -37,9 +37,11 @@ html.dark .admin-row { background: #161616; border-color: rgba(255,255,255,0.08)
 .admin-pill--open { background: #dcfce7; color: #15803d; }
 .admin-pill--used { background: #f3f4f6; color: #6b7280; }
 .admin-pill--hidden { background: #fee2e2; color: #b91c1c; }
+.admin-pill--verified { background: #f0fdfa; color: #0d9488; }
 html.dark .admin-pill--open { background: rgba(34,197,94,0.15); color: #4ade80; }
 html.dark .admin-pill--used { background: #262626; color: #888; }
 html.dark .admin-pill--hidden { background: rgba(239,68,68,0.15); color: #f87171; }
+html.dark .admin-pill--verified { background: rgba(45,212,191,0.15); color: #5eead4; }
 
 .admin-btn-sm {
     font-size: 0.8125rem; font-weight: 500; padding: 0.4rem 0.75rem; border-radius: 0.625rem;

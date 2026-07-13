@@ -102,10 +102,25 @@
                 row.innerHTML = img +
                     '<div class="admin-row-main">' +
                         '<div class="admin-row-title">' + escapeHtml(p.name || '') +
-                            (hidden ? ' <span class="admin-pill admin-pill--hidden">hidden</span>' : '') + '</div>' +
+                            (hidden ? ' <span class="admin-pill admin-pill--hidden">hidden</span>' : '') +
+                            (p.verified ? ' <span class="admin-pill admin-pill--verified">verified</span>' : '') + '</div>' +
                         '<div class="admin-row-sub">' + (p.username ? '@' + escapeHtml(p.username) + ' · ' : '') +
                             escapeHtml(p.role || '') + '</div>' +
                     '</div>';
+                if (!p.verified) {
+                    var verify = document.createElement('button');
+                    verify.className = 'admin-btn-sm';
+                    verify.textContent = 'Mark Verified';
+                    verify.addEventListener('click', function () {
+                        verify.disabled = true;
+                        sb.rpc('admin_mark_verified', { p_user_id: p.id }).then(function (r) {
+                            verify.disabled = false;
+                            if (r.error) { alert(r.error.message); return; }
+                            loadMembers();
+                        });
+                    });
+                    row.appendChild(verify);
+                }
                 var toggle = document.createElement('button');
                 toggle.className = 'admin-btn-sm';
                 toggle.textContent = hidden ? 'Unhide' : 'Hide';

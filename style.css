@@ -1596,6 +1596,30 @@ html.dark .talent-org-badge {
     border-color: #404040;
 }
 
+/* Achievement badges — a second row under the role line, distinct from the
+   org-affiliation badges (.talent-org-badge) that sit next to the name. */
+.talent-achv-badges {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.2rem;
+}
+
+.talent-achv-badge {
+    font-size: 0.8125rem;
+    line-height: 1;
+}
+
+.talent-achv-badge--more {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: #9ca3af;
+}
+
+html.dark .talent-achv-badge--more {
+    color: #6b7280;
+}
+
 html.dark [data-id] .bg-gray-100 {
     background-color: #262626;
 }

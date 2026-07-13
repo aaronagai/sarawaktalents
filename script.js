@@ -364,9 +364,24 @@ function buildCard(c) {
         ${(c.orgPhotos && c.orgPhotos.length ? c.orgPhotos : (c.orgPhoto ? [c.orgPhoto] : [])).slice(0, 3).map(b => `<span class="talent-org-badge shrink-0" aria-hidden="true"><img src="${ST_SITE.asset(b)}" alt="" loading="lazy" /></span>`).join('')}
       </div>
       <p class="talent-sub text-xs sm:text-sm text-gray-500 mt-0.5 truncate">${c.dun}</p>
+      ${c.achvBadges && c.achvBadges.length ? `<div class="talent-achv-badges">${achvBadgesHtml(c.achvBadges)}</div>` : ''}
     </div>
   `;
   return card;
+}
+
+// Achievement badges (distinct from the org-affiliation badges in the name
+// row above) — capped so a heavily-badged member doesn't blow out card height.
+const TALENT_ACHV_CAP = 4;
+function escapeAttr(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function achvBadgesHtml(list) {
+  const shown = list.slice(0, TALENT_ACHV_CAP);
+  const extra = list.length - shown.length;
+  let html = shown.map(b => `<span class="talent-achv-badge" title="${escapeAttr(b.name)}" aria-hidden="true">${b.icon}</span>`).join('');
+  if (extra > 0) html += `<span class="talent-achv-badge talent-achv-badge--more" aria-hidden="true">+${extra}</span>`;
+  return html;
 }
 
 let currentSort = 'dun';
@@ -616,8 +631,34 @@ async function loadProfiles() {
     members.clear();
     populateFilters();
     render();
+    loadAchievementBadges();   // progressive: fetch + re-render once badges arrive
   } catch (e) {
     console.warn('[directory] load error:', e);
+  }
+}
+
+// Batched fetch of every visible candidate's earned achievement badges, merged
+// onto `candidates` and re-rendered. Separate call (not part of the main
+// `profiles` select) so the directory paints immediately without waiting on it.
+async function loadAchievementBadges() {
+  if (!window.stSupabase || !candidates.length) return;
+  const ids = candidates.map(c => c.id).filter(Boolean);
+  if (!ids.length) return;
+  try {
+    const { data, error } = await window.stSupabase
+      .from('user_badges')
+      .select('user_id, badges(icon, name)')
+      .in('user_id', ids);
+    if (error || !data) return;
+    const byUser = {};
+    data.forEach(row => {
+      if (!row.badges) return;
+      (byUser[row.user_id] = byUser[row.user_id] || []).push(row.badges);
+    });
+    candidates.forEach(c => { c.achvBadges = byUser[c.id] || []; });
+    render();
+  } catch (e) {
+    console.warn('[directory] achievement badges load error:', e);
   }
 }
 

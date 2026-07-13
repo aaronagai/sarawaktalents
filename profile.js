@@ -125,14 +125,6 @@
     }
 
     function updateSaveQrUI(p) {
-        var actionBtn = el('pf-save-wallpaper-btn');
-        if (!actionBtn) return;
-        if (isOwnProfile(p)) {
-            actionBtn.hidden = false;
-            actionBtn.onclick = function () { exportProfileCard(p); };
-        } else {
-            actionBtn.hidden = true;
-        }
         if (refreshQrOpenRow) refreshQrOpenRow();
     }
 
@@ -284,7 +276,7 @@
         wireAchievements(p);
     }
 
-    // ── achievements: view log, Connect, referral link, badge list ──────────────
+    // ── achievements: view log, Connect, badge list ─────────────────────────────
     function wireAchievements(p) {
         var isOwn = !!currentUser && currentUser === p.id;
 
@@ -311,19 +303,6 @@
                     sb.rpc('check_and_award_badges', { p_user_id: currentUser }).then(function (br) {
                         if (br.data && br.data.length && window.BadgeToast) BadgeToast.show(br.data);
                     });
-                });
-            });
-        }
-
-        var referBtn = el('pf-refer-btn');
-        if (isOwn && p.username) {
-            referBtn.hidden = false;
-            referBtn.addEventListener('click', function () {
-                var link = location.origin + ST_SITE.join('ref=' + encodeURIComponent(p.username));
-                navigator.clipboard.writeText(link).then(function () {
-                    var t = referBtn.textContent;
-                    referBtn.textContent = 'Copied!';
-                    setTimeout(function () { referBtn.textContent = t; }, 1400);
                 });
             });
         }
@@ -483,7 +462,7 @@
     }
     async function exportProfileCard(p) {
         if (!isOwnProfile(p)) return;
-        var btn = el('pf-saveqr-btn') || el('pf-save-wallpaper-btn');
+        var btn = el('pf-saveqr-btn');
         var label = btn ? btn.textContent : '';
         if (btn) { btn.textContent = 'Preparing…'; btn.disabled = true; }
         try {
@@ -536,16 +515,25 @@
             // Sarawak Talents card selected → owners can save their wallpaper QR.
             if (active === PROFILE_KEY) {
                 if (isOwnProfile(p)) {
-                    var s = document.createElement('button');
-                    s.type = 'button';
-                    s.className = 'qr-open-btn';
-                    s.id = 'pf-saveqr-btn';
-                    s.innerHTML = 'Save QR <span aria-hidden="true">↓</span>';
-                    s.addEventListener('click', function () { exportProfileCard(p); });
-                    openRow.appendChild(s);
+                    var actions = document.createElement('div');
+                    actions.className = 'qr-open-actions';
+                    var openBtn = document.createElement('button');
+                    openBtn.type = 'button';
+                    openBtn.className = 'qr-open-btn';
+                    openBtn.innerHTML = 'Open Sarawak Talents <span aria-hidden="true">↗</span>';
+                    openBtn.addEventListener('click', function () { openTarget(PROFILE_KEY); });
+                    var saveBtn = document.createElement('button');
+                    saveBtn.type = 'button';
+                    saveBtn.className = 'qr-open-btn qr-open-btn--ghost';
+                    saveBtn.id = 'pf-saveqr-btn';
+                    saveBtn.innerHTML = 'Save QR wallpaper <span aria-hidden="true">↓</span>';
+                    saveBtn.addEventListener('click', function () { exportProfileCard(p); });
+                    actions.appendChild(openBtn);
+                    actions.appendChild(saveBtn);
+                    openRow.appendChild(actions);
                     var hint = document.createElement('p');
                     hint.className = 'qr-open-hint';
-                    hint.textContent = 'Save your wallpaper, or tap an icon to open its link.';
+                    hint.textContent = 'Tap an icon to retarget the QR, then open its link.';
                     openRow.appendChild(hint);
                 } else {
                     var b = document.createElement('button');

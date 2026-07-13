@@ -492,7 +492,6 @@
         document.getElementById('pf-role').value = p.role || '';
         var orgEl = document.getElementById('pf-organisation');
         if (orgEl) orgEl.value = p.organisation || '';
-        document.getElementById('pf-category').value = p.category || '';
         document.getElementById('pf-location').value = p.location || '';
         setIndustry(p.industry || '');
         document.getElementById('pf-bio').value = p.bio || '';
@@ -549,7 +548,7 @@
             name: nameEl.value.trim(),
             role: document.getElementById('pf-role').value.trim(),
             organisation: (document.getElementById('pf-organisation').value || '').trim() || null,
-            category: document.getElementById('pf-category').value,
+            category: null,
             location: document.getElementById('pf-location').value,
             industry: currentIndustry() || null,
             background: null,
@@ -575,7 +574,7 @@
         if (!/^[a-z0-9_]{3,20}$/.test(usernameEl.value)) return 'Pick a username (3–20 letters, numbers, _).';
         if (!usernameOk) return 'That username isn\'t available — try another.';
         if (!document.getElementById('pf-role').value.trim()) return 'Please enter your role.';
-        if (!document.getElementById('pf-category').value) return 'Please choose a field.';
+        if (!currentIndustry()) return 'Please enter your industry.';
         if (!document.getElementById('pf-location').value) return 'Please choose a location.';
         return null;
     }

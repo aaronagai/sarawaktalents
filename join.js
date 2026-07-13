@@ -71,15 +71,13 @@
     }
 
     // Grammar-proof profile line — mirrors the renderer in profile.js.
+    // Format: "Name is a/an Role at Organisation."
     function leadArticle(word) { return /^[aeiou]/i.test((word || '').trim()) ? 'an' : 'a'; }
     function buildLead(name, role, org) {
-        var first = (name || '').trim().split(/\s+/)[0] || 'You';
-        role = (role || '').trim();
-        org = (org || '').trim();
-        if (role && org) return first + ' is ' + leadArticle(role) + ' ' + role + ' at ' + org + '.';
-        if (role) return first + ' is ' + leadArticle(role) + ' ' + role + '.';
-        if (org) return first + ' is at ' + org + '.';
-        return '';
+        var displayName = (name || '').trim() || 'Name';
+        role = (role || '').trim() || 'Role';
+        org = (org || '').trim() || 'Organisation';
+        return displayName + ' is ' + leadArticle(role) + ' ' + role + ' at ' + org + '.';
     }
     function badgeOrgName(src) {
         var map = {
@@ -98,8 +96,9 @@
         var textEl = document.getElementById('pf-organisation');
         var textOrg = textEl ? textEl.value.trim() : '';
         if (textOrg) return textOrg;
-        for (var i = 0; i < selectedBadges.length; i++) {
-            var name = badgeOrgName(selectedBadges[i]);
+        var badges = (typeof selectedBadges !== 'undefined' && selectedBadges) ? selectedBadges : [];
+        for (var i = 0; i < badges.length; i++) {
+            var name = badgeOrgName(badges[i]);
             if (name) return name;
         }
         return '';
@@ -108,15 +107,24 @@
         if (!previewEl) return;
         var nameEl = document.getElementById('pf-name');
         var roleEl = document.getElementById('pf-role');
-        var line = buildLead(nameEl ? nameEl.value : '', roleEl ? roleEl.value : '', currentOrgName());
-        if (line) { previewEl.textContent = 'Preview: ' + line; previewEl.hidden = false; }
-        else { previewEl.hidden = true; }
+        var name = nameEl ? nameEl.value.trim() : '';
+        var role = roleEl ? roleEl.value.trim() : '';
+        var org = currentOrgName();
+        var line = buildLead(name, role, org);
+        var hasReal = !!(name || role || org);
+        previewEl.hidden = false;
+        if (hasReal) {
+            previewEl.textContent = 'Preview: ' + line;
+        } else {
+            previewEl.innerHTML = 'Preview: <span class="join-preview-example">Name</span> is a <span class="join-preview-example">Role</span> at <span class="join-preview-example">Organisation</span>';
+        }
     }
 
     ['pf-name', 'pf-role', 'pf-organisation'].forEach(function (id) {
         var e = document.getElementById(id);
         if (e) e.addEventListener('input', updatePreview);
     });
+    updatePreview();
 
     // ── navigation: steps "fly" directionally + the tray height morphs ───────
     function stepEl(step) { return document.querySelector('.join-step[data-step="' + step + '"]'); }

@@ -207,7 +207,7 @@
         }
 
         // Lead line — "Name is a/an Role at Organisation."
-        var first = escapeHtml((p.name || '').split(/\s+/)[0]);
+        var displayName = escapeHtml((p.name || '').trim() || 'Name');
         var role = (p.role || '').trim();
         var org = String(p.organisation || p.company || p.organization || p.org || '').trim();
         if (!org) {
@@ -216,13 +216,13 @@
         }
         var lead;
         if (role && org) {
-            lead = first + ' is ' + articleBefore(role) + ' <b>' + escapeHtml(role) + '</b> at ' + escapeHtml(org) + '.';
+            lead = displayName + ' is ' + articleBefore(role) + ' <b>' + escapeHtml(role) + '</b> at ' + escapeHtml(org) + '.';
         } else if (role) {
-            lead = first + ' is ' + articleBefore(role) + ' <b>' + escapeHtml(role) + '</b>.';
+            lead = displayName + ' is ' + articleBefore(role) + ' <b>' + escapeHtml(role) + '</b>.';
         } else if (org) {
-            lead = first + ' is at <b>' + escapeHtml(org) + '</b>.';
+            lead = displayName + ' is at <b>' + escapeHtml(org) + '</b>.';
         } else {
-            lead = first + '.';
+            lead = displayName + '.';
         }
         el('pf-lead').innerHTML = lead;
 

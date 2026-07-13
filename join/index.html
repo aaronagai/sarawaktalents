@@ -138,7 +138,9 @@
                         <input id="pf-organisation" type="text" class="join-input" placeholder="e.g. Sarawak Energy, UNIMAS, Self-employed">
                     </label>
 
-                    <p id="pf-role-org-preview" class="join-preview join-preview--org" aria-live="polite" hidden></p>
+                    <p id="pf-role-org-preview" class="join-preview join-preview--org" aria-live="polite">
+                        Preview: <span class="join-preview-example">Name</span> is a <span class="join-preview-example">Role</span> at <span class="join-preview-example">Organisation</span>
+                    </p>
 
                     <div class="join-field">
                         <span class="join-label">Organisation badge <span class="join-optional">(optional — pick one)</span></span>
@@ -374,6 +376,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase-client.js"></script>
     <script src="../badge-toast.js"></script>
-    <script src="../join.js?v=20260714-socialdd"></script>
+    <script src="../join.js?v=20260714-preview2"></script>
 </body>
 </html>

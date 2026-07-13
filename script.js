@@ -595,7 +595,9 @@ function mapProfile(p, i) {
     dun: p.role || '',
     party: p.category || 'Other',
     zone: p.location || '',
-    parliamentary: p.industry || '',
+    parliamentary: Array.isArray(p.industries) && p.industries.length
+      ? p.industries.join(' · ')
+      : (p.industry || ''),
     orgPhoto: p.org_photo || '',
     orgPhotos: (p.org_photos && p.org_photos.length) ? p.org_photos : (p.org_photo ? [p.org_photo] : []),
     avatar_url: p.avatar_url || '',
@@ -625,7 +627,7 @@ async function loadProfiles() {
     if (!data) {
       const res = await window.stSupabase
         .from('profiles')
-        .select('id, username, name, role, category, location, industry, background, avatar_url, org_photo, org_photos, created_at')
+        .select('id, username, name, role, category, location, industry, industries, background, avatar_url, org_photo, org_photos, created_at')
         .eq('status', 'active')
         .order('created_at', { ascending: true });
       if (res.error) { console.warn('[directory] load failed:', res.error.message); return; }

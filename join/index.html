@@ -19,7 +19,7 @@
     <script src="https://unpkg.com/reicon@latest/cdn/reicon.min.js"></script>
     <link rel="stylesheet" href="../tailwind.css">
     <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="../join.css?v=20260714-socialtab">
+    <link rel="stylesheet" href="../join.css?v=20260714-indmulti">
     <link rel="stylesheet" href="../badge-toast.css">
     <link rel="manifest" href="../manifest.json">
     <meta name="theme-color" content="#0d9488">
@@ -201,15 +201,11 @@
                         </select>
                     </label>
 
-                    <label class="join-field">
-                        <span class="join-label">Industry <em>*</em></span>
-                        <select id="pf-industry-select" class="join-input" required>
-                            <option value="" disabled selected>Choose your industry</option>
-                            <!-- options injected from ST_INDUSTRIES -->
-                            <option value="__other">Other (type your own)</option>
-                        </select>
-                        <input id="pf-industry" type="text" class="join-input join-industry-other" placeholder="Your industry" autocomplete="off" maxlength="80" hidden>
-                    </label>
+                    <div class="join-field">
+                        <span class="join-label">Industry <em>*</em> <span class="join-optional">(pick up to 3)</span></span>
+                        <div class="join-industry-picker" id="industry-picker" role="group" aria-label="Industries"></div>
+                        <span class="join-optional" id="industry-hint" style="font-size:0.75rem;">Select one or more industries that fit you.</span>
+                    </div>
 
                     <label class="join-field">
                         <span class="join-label">Short bio <span class="join-optional">(optional)</span></span>
@@ -408,6 +404,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase-client.js"></script>
     <script src="../badge-toast.js"></script>
-    <script src="../join.js?v=20260714-socialtab"></script>
+    <script src="../join.js?v=20260714-indmulti"></script>
 </body>
 </html>

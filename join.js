@@ -59,71 +59,70 @@
 
     if (!LIVE && banner) banner.hidden = false;
 
-    // ── Industry dropdown (+ Other free text) + live profile-line preview ─
-    var industrySelect = document.getElementById('pf-industry-select');
-    var industryOther = document.getElementById('pf-industry');
+    // ── Industry multi-select (chips) + live profile-line preview ───────
+    var INDUSTRY_MAX = 3;
+    var selectedIndustries = [];
+    var industryPicker = document.getElementById('industry-picker');
+    var industryHint = document.getElementById('industry-hint');
     var previewEl = document.getElementById('pf-role-org-preview');
 
-    (function populateIndustryOptions() {
-        if (!industrySelect || !window.ST_INDUSTRIES) return;
-        var otherOpt = industrySelect.querySelector('option[value="__other"]');
-        window.ST_INDUSTRIES.forEach(function (name) {
-            var opt = document.createElement('option');
-            opt.value = name;
-            opt.textContent = name;
-            industrySelect.insertBefore(opt, otherOpt);
-        });
-    })();
+    function normalizeIndustries(val) {
+        if (Array.isArray(val)) {
+            return val.map(function (v) { return String(v || '').trim(); }).filter(Boolean);
+        }
+        if (val == null || val === '') return [];
+        if (typeof val === 'string') {
+            try {
+                var parsed = JSON.parse(val);
+                if (Array.isArray(parsed)) return normalizeIndustries(parsed);
+            } catch (e) {}
+            return val.split(/\s*[·,|]\s*/).map(function (v) { return v.trim(); }).filter(Boolean);
+        }
+        return [];
+    }
 
+    function currentIndustries() {
+        return selectedIndustries.slice();
+    }
     function currentIndustry() {
-        if (!industrySelect) return industryOther ? industryOther.value.trim() : '';
-        if (industrySelect.value === '__other') return industryOther ? industryOther.value.trim() : '';
-        return industrySelect.value || '';
+        return selectedIndustries[0] || '';
     }
     function setIndustry(val) {
-        val = (val || '').trim();
-        if (!industrySelect) {
-            if (industryOther) industryOther.value = val;
-            return;
-        }
-        var match = Array.prototype.filter.call(industrySelect.options, function (o) {
-            return o.value !== '__other' && o.value && o.value.toLowerCase() === val.toLowerCase();
-        })[0];
-        if (val && match) {
-            industrySelect.value = match.value;
-            if (industryOther) {
-                industryOther.hidden = true;
-                industryOther.value = '';
-                industryOther.required = false;
-            }
-        } else if (val) {
-            industrySelect.value = '__other';
-            if (industryOther) {
-                industryOther.hidden = false;
-                industryOther.value = val;
-                industryOther.required = true;
-            }
-        } else {
-            industrySelect.selectedIndex = 0;
-            if (industryOther) {
-                industryOther.hidden = true;
-                industryOther.value = '';
-                industryOther.required = false;
-            }
+        selectedIndustries = normalizeIndustries(val).slice(0, INDUSTRY_MAX);
+        renderIndustryPicker();
+    }
+
+    function renderIndustryPicker() {
+        if (!industryPicker || !window.ST_INDUSTRIES) return;
+        industryPicker.innerHTML = '';
+        window.ST_INDUSTRIES.forEach(function (name) {
+            var sel = selectedIndustries.indexOf(name) >= 0;
+            var chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'join-industry-chip' + (sel ? ' is-selected' : '');
+            chip.textContent = name;
+            chip.setAttribute('aria-pressed', sel ? 'true' : 'false');
+            chip.addEventListener('click', function () { toggleIndustry(name); });
+            industryPicker.appendChild(chip);
+        });
+        if (industryHint) {
+            industryHint.textContent = selectedIndustries.length
+                ? selectedIndustries.length + ' of ' + INDUSTRY_MAX + ' selected'
+                : 'Select one or more industries that fit you.';
         }
     }
 
-    if (industrySelect) {
-        industrySelect.addEventListener('change', function () {
-            var other = industrySelect.value === '__other';
-            if (industryOther) {
-                industryOther.hidden = !other;
-                industryOther.required = other;
-                if (other) industryOther.focus();
-                else industryOther.value = '';
-            }
-        });
+    function toggleIndustry(name) {
+        var i = selectedIndustries.indexOf(name);
+        if (i >= 0) selectedIndustries.splice(i, 1);
+        else if (selectedIndustries.length < INDUSTRY_MAX) selectedIndustries.push(name);
+        else {
+            selectedIndustries = selectedIndustries.slice(0, INDUSTRY_MAX - 1).concat(name);
+        }
+        renderIndustryPicker();
     }
+
+    renderIndustryPicker();
 
     // Grammar-proof profile line — mirrors the renderer in profile.js.
     // Format: "Name is a/an Role at Organisation"
@@ -539,7 +538,7 @@
         var orgEl = document.getElementById('pf-organisation');
         if (orgEl) orgEl.value = p.organisation || '';
         document.getElementById('pf-location').value = p.location || '';
-        setIndustry(p.industry || '');
+        setIndustry(p.industries && p.industries.length ? p.industries : (p.industry || ''));
         document.getElementById('pf-bio').value = p.bio || '';
         var links = p.links || {};
         LINK_KEYS.forEach(function (k) {
@@ -674,6 +673,7 @@
             category: null,
             location: document.getElementById('pf-location').value,
             industry: currentIndustry() || null,
+            industries: currentIndustries(),
             background: null,
             bio: document.getElementById('pf-bio').value.trim() || null,
             links: links,
@@ -697,7 +697,7 @@
         if (!/^[a-z0-9_]{3,20}$/.test(usernameEl.value)) return 'Pick a username (3–20 letters, numbers, _).';
         if (!usernameOk) return 'That username isn\'t available — try another.';
         if (!document.getElementById('pf-role').value.trim()) return 'Please enter your role.';
-        if (!currentIndustry()) return 'Please choose your industry.';
+        if (!currentIndustries().length) return 'Please choose at least one industry.';
         if (!document.getElementById('pf-location').value) return 'Please choose a location.';
         return null;
     }

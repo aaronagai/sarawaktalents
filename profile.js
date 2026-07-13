@@ -228,9 +228,15 @@
 
         if (p.bio) { el('pf-bio').textContent = p.bio; el('pf-bio').hidden = false; }
 
-        // Tags (dedupe case-insensitively so category/industry don't repeat).
+        // Tags — show all industries (plus legacy category if present).
         var seenTag = {};
-        var tags = [p.category, p.industry].filter(function (t) {
+        var industryTags = [];
+        if (Array.isArray(p.industries) && p.industries.length) {
+            industryTags = p.industries;
+        } else if (p.industry) {
+            industryTags = [p.industry];
+        }
+        var tags = [p.category].concat(industryTags).filter(function (t) {
             if (!t) return false;
             var k = String(t).toLowerCase();
             if (seenTag[k]) return false;

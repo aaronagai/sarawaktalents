@@ -54,7 +54,8 @@ create table if not exists public.profiles (
     organisation text,                  -- employer / org name (free text)
     category   text,                    -- Tech / Arts / Business / Science ...
     location   text,                    -- Kuching, Miri, Sibu ...
-    industry   text,                    -- free text, e.g. "Software Development"
+    industry   text,                    -- primary industry (first of industries[])
+    industries jsonb not null default '[]'::jsonb,  -- multi-select list
     background text,                    -- optional (Iban, Malay, Chinese ...)
     bio        text,
     links      jsonb not null default '{}'::jsonb,   -- {website, x, linkedin, ...}

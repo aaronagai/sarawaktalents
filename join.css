@@ -162,6 +162,46 @@ html.dark .join-label em { color: #a78bfa; }
 /* "Other" industry free-text input, revealed under the dropdown. */
 .join-industry-other { margin-top: 0.5rem; }
 
+/* Industry multi-select chips */
+.join-industry-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.join-industry-chip {
+    appearance: none;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    color: #374151;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.2;
+    padding: 0.5rem 0.75rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.join-industry-chip:hover { border-color: #c4b5fd; background: #faf5ff; }
+.join-industry-chip.is-selected {
+    border-color: #7c3aed;
+    background: #7c3aed;
+    color: #fff;
+}
+html.dark .join-industry-chip {
+    background: #141414;
+    border-color: #2a2a2a;
+    color: #e5e7eb;
+}
+html.dark .join-industry-chip:hover {
+    border-color: #5b21b6;
+    background: #1a1025;
+}
+html.dark .join-industry-chip.is-selected {
+    border-color: #8b5cf6;
+    background: #7c3aed;
+    color: #fff;
+}
+
 /* Live preview of the profile line as the user types. */
 .join-preview {
     margin-top: -0.25rem;

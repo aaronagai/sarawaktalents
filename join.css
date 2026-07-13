@@ -393,17 +393,15 @@ html.dark .join-username-status.is-bad { color: #f87171; }
 }
 .join-affix {
     flex: 0 0 auto;
-    padding: 0 0.125rem 0 0.875rem;
-    font-size: 0.8125rem;
-    font-weight: 400;
+    padding: 0 0 0 0.875rem;
+    font-size: 0.9375rem;
+    font-weight: 300;
     color: #9ca3af;
     white-space: nowrap;
     pointer-events: none;
-    max-width: 55%;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.25;
 }
-.join-affix--long { font-size: 0.75rem; letter-spacing: -0.015em; max-width: 65%; }
+.join-affix--long { font-size: 0.9375rem; letter-spacing: 0; }
 .join-affix-wrap .join-input {
     flex: 1 1 auto;
     min-width: 0;
@@ -411,7 +409,7 @@ html.dark .join-username-status.is-bad { color: #f87171; }
     border: 0 !important;
     box-shadow: none !important;
     border-radius: 0;
-    padding-left: 0.25rem;
+    padding-left: 0;
     background: transparent;
 }
 html.dark .join-affix-wrap {

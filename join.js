@@ -478,11 +478,12 @@
         document.getElementById('pf-location').value = p.location || '';
         setIndustry(p.industry || '');
         document.getElementById('pf-bio').value = p.bio || '';
+        selectedLinks = {};
         var links = p.links || {};
         LINK_KEYS.forEach(function (k) {
-            var el = document.getElementById('pf-link-' + k);
-            if (el) el.value = stripLinkInput(k, links[k] || '');
+            if (links[k]) selectedLinks[k] = collectLinkValue(k, links[k]);
         });
+        renderSocialList();
         if (p.avatar_url) {
             avatarImg.src = p.avatar_url;
             avatarImg.hidden = false;
@@ -517,13 +518,32 @@
     }
 
     var LINK_KEYS = ['website', 'instagram', 'x', 'linkedin', 'facebook', 'tiktok', 'github', 'whatsapp', 'email'];
+    var selectedLinks = {};
+    var SOCIAL_META = {
+        website:   { label: 'Website',   affix: '',                        affixClass: '', placeholder: 'yoursite.com', type: 'url' },
+        instagram: { label: 'Instagram', affix: '@',                       affixClass: 'sm', placeholder: 'handle', type: 'text' },
+        x:         { label: 'X (Twitter)', affix: '@',                     affixClass: 'sm', placeholder: 'handle', type: 'text' },
+        linkedin:  { label: 'LinkedIn',  affix: 'www.linkedin.com/in/',    affixClass: 'lg', placeholder: 'your-name', type: 'text' },
+        facebook:  { label: 'Facebook',  affix: 'facebook.com/',           affixClass: 'md', placeholder: 'your.page', type: 'text' },
+        tiktok:    { label: 'TikTok',    affix: '@',                       affixClass: 'sm', placeholder: 'handle', type: 'text' },
+        github:    { label: 'GitHub',    affix: '@',                       affixClass: 'sm', placeholder: 'handle', type: 'text' },
+        whatsapp:  { label: 'WhatsApp',  affix: '',                        affixClass: '', placeholder: '60123456789', type: 'tel' },
+        email:     { label: 'Email',     affix: '',                        affixClass: '', placeholder: 'you@email.com', type: 'email' }
+    };
+
+    var socialListEl = document.getElementById('social-list');
+    var socialPlatformEl = document.getElementById('social-platform');
+    var socialValueRow = document.getElementById('social-value-row');
+    var socialAffixEl = document.getElementById('social-affix');
+    var socialValueEl = document.getElementById('social-value');
+    var socialAddBtn = document.getElementById('social-add-btn');
 
     // Prefixed social fields: UI shows the fixed part; store values profile.js can open.
     function stripLinkInput(key, raw) {
         var v = String(raw || '').trim();
         if (!v) return '';
-        if (key === 'instagram' || key === 'x') {
-            v = v.replace(/^https?:\/\/(www\.)?(instagram\.com|x\.com|twitter\.com)\//i, '');
+        if (key === 'instagram' || key === 'x' || key === 'tiktok' || key === 'github') {
+            v = v.replace(/^https?:\/\/(www\.)?(instagram\.com|x\.com|twitter\.com|tiktok\.com\/@?|github\.com)\//i, '');
             return v.replace(/^@+/, '').replace(/\/+$/, '');
         }
         if (key === 'linkedin') {
@@ -542,17 +562,126 @@
     function collectLinkValue(key, raw) {
         var slug = stripLinkInput(key, raw);
         if (!slug) return '';
-        if (key === 'instagram' || key === 'x' || key === 'facebook') return slug;
+        if (key === 'instagram' || key === 'x' || key === 'facebook' || key === 'tiktok' || key === 'github') return slug;
         if (key === 'linkedin') return 'https://www.linkedin.com/in/' + slug;
         return String(raw || '').trim();
     }
 
+    function displayLinkValue(key, stored) {
+        var slug = stripLinkInput(key, stored);
+        var meta = SOCIAL_META[key];
+        if (!meta) return stored;
+        if (meta.affix === '@') return '@' + slug;
+        if (key === 'linkedin') return 'www.linkedin.com/in/' + slug;
+        if (key === 'facebook') return 'facebook.com/' + slug;
+        return stored;
+    }
+
+    function refreshSocialPlatformOptions() {
+        if (!socialPlatformEl) return;
+        var current = socialPlatformEl.value;
+        Array.prototype.forEach.call(socialPlatformEl.options, function (opt) {
+            if (!opt.value) return;
+            opt.hidden = !!selectedLinks[opt.value];
+            opt.disabled = !!selectedLinks[opt.value];
+        });
+        if (current && selectedLinks[current]) {
+            socialPlatformEl.value = '';
+            syncSocialInputChrome();
+        }
+    }
+
+    function syncSocialInputChrome() {
+        if (!socialPlatformEl || !socialValueRow || !socialValueEl || !socialAffixEl) return;
+        var key = socialPlatformEl.value;
+        var meta = SOCIAL_META[key];
+        if (!meta) {
+            socialValueRow.hidden = true;
+            socialValueEl.value = '';
+            return;
+        }
+        socialValueRow.hidden = false;
+        socialValueEl.type = meta.type || 'text';
+        socialValueEl.placeholder = meta.placeholder || '';
+        socialValueEl.className = 'join-input';
+        if (meta.affix) {
+            socialAffixEl.hidden = false;
+            socialAffixEl.textContent = meta.affix;
+            socialAffixEl.className = 'join-affix' + (meta.affixClass === 'lg' || meta.affixClass === 'md' ? ' join-affix--long' : '');
+            socialValueEl.classList.add(
+                meta.affixClass === 'lg' ? 'join-input--affix-lg' :
+                meta.affixClass === 'md' ? 'join-input--affix-md' : 'join-input--affix-sm'
+            );
+        } else {
+            socialAffixEl.hidden = true;
+            socialAffixEl.textContent = '';
+        }
+        socialValueEl.focus();
+    }
+
+    function renderSocialList() {
+        if (!socialListEl) return;
+        socialListEl.innerHTML = '';
+        var keys = LINK_KEYS.filter(function (k) { return !!selectedLinks[k]; });
+        socialListEl.hidden = keys.length === 0;
+        keys.forEach(function (key) {
+            var meta = SOCIAL_META[key] || { label: key };
+            var li = document.createElement('li');
+            li.className = 'join-social-item';
+            li.innerHTML =
+                '<div class="join-social-item-meta">' +
+                    '<span class="join-social-item-label"></span>' +
+                    '<span class="join-social-item-value"></span>' +
+                '</div>' +
+                '<button type="button" class="join-social-remove">Remove</button>';
+            li.querySelector('.join-social-item-label').textContent = meta.label;
+            li.querySelector('.join-social-item-value').textContent = displayLinkValue(key, selectedLinks[key]);
+            li.querySelector('.join-social-remove').addEventListener('click', function () {
+                delete selectedLinks[key];
+                renderSocialList();
+                refreshSocialPlatformOptions();
+            });
+            socialListEl.appendChild(li);
+        });
+        refreshSocialPlatformOptions();
+    }
+
+    function addSelectedSocial() {
+        if (!socialPlatformEl || !socialValueEl) return;
+        var key = socialPlatformEl.value;
+        if (!key || !SOCIAL_META[key]) return;
+        var stored = collectLinkValue(key, socialValueEl.value);
+        if (!stored) {
+            socialValueEl.focus();
+            return;
+        }
+        selectedLinks[key] = stored;
+        socialValueEl.value = '';
+        socialPlatformEl.value = '';
+        syncSocialInputChrome();
+        renderSocialList();
+    }
+
+    if (socialPlatformEl) {
+        socialPlatformEl.addEventListener('change', syncSocialInputChrome);
+    }
+    if (socialAddBtn) {
+        socialAddBtn.addEventListener('click', addSelectedSocial);
+    }
+    if (socialValueEl) {
+        socialValueEl.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addSelectedSocial();
+            }
+        });
+    }
+    renderSocialList();
+
     function collectProfile(uid) {
         var links = {};
         LINK_KEYS.forEach(function (k) {
-            var el = document.getElementById('pf-link-' + k);
-            var v = el ? collectLinkValue(k, el.value) : '';
-            if (v) links[k] = v;
+            if (selectedLinks[k]) links[k] = selectedLinks[k];
         });
         return {
             id: uid,

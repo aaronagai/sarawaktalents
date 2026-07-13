@@ -219,39 +219,29 @@
                     </div>
 
                     <div class="join-field">
-                        <span class="join-label">Socials &amp; links <span class="join-optional">(all optional — used for your QR card)</span></span>
-                    </div>
-                    <div class="join-grid-2 join-socials">
-                        <label class="join-field"><span class="join-label">Website</span>
-                            <input id="pf-link-website" type="text" class="join-input" placeholder="yoursite.com"></label>
-                        <label class="join-field"><span class="join-label">Instagram</span>
-                            <div class="join-affix-wrap">
-                                <span class="join-affix" aria-hidden="true">@</span>
-                                <input id="pf-link-instagram" type="text" class="join-input join-input--affix-sm"
-                                       placeholder="handle" autocomplete="off" spellcheck="false"></div></label>
-                        <label class="join-field"><span class="join-label">X (Twitter)</span>
-                            <div class="join-affix-wrap">
-                                <span class="join-affix" aria-hidden="true">@</span>
-                                <input id="pf-link-x" type="text" class="join-input join-input--affix-sm"
-                                       placeholder="handle" autocomplete="off" spellcheck="false"></div></label>
-                        <label class="join-field"><span class="join-label">LinkedIn</span>
-                            <div class="join-affix-wrap">
-                                <span class="join-affix join-affix--long" aria-hidden="true">www.linkedin.com/in/</span>
-                                <input id="pf-link-linkedin" type="text" class="join-input join-input--affix-lg"
-                                       placeholder="your-name" autocomplete="off" spellcheck="false"></div></label>
-                        <label class="join-field"><span class="join-label">Facebook</span>
-                            <div class="join-affix-wrap">
-                                <span class="join-affix join-affix--long" aria-hidden="true">facebook.com/</span>
-                                <input id="pf-link-facebook" type="text" class="join-input join-input--affix-md"
-                                       placeholder="your.page" autocomplete="off" spellcheck="false"></div></label>
-                        <label class="join-field"><span class="join-label">TikTok</span>
-                            <input id="pf-link-tiktok" type="text" class="join-input" placeholder="@handle"></label>
-                        <label class="join-field"><span class="join-label">GitHub</span>
-                            <input id="pf-link-github" type="text" class="join-input" placeholder="@handle"></label>
-                        <label class="join-field"><span class="join-label">WhatsApp</span>
-                            <input id="pf-link-whatsapp" type="tel" class="join-input" placeholder="60123456789"></label>
-                        <label class="join-field"><span class="join-label">Email</span>
-                            <input id="pf-link-email" type="email" class="join-input" placeholder="you@email.com"></label>
+                        <span class="join-label">Socials &amp; links <span class="join-optional">(optional — used for your QR card)</span></span>
+                        <ul id="social-list" class="join-social-list" hidden></ul>
+                        <div class="join-social-add">
+                            <select id="social-platform" class="join-input join-social-platform" aria-label="Choose a platform">
+                                <option value="">Add a link…</option>
+                                <option value="website">Website</option>
+                                <option value="instagram">Instagram</option>
+                                <option value="x">X (Twitter)</option>
+                                <option value="linkedin">LinkedIn</option>
+                                <option value="facebook">Facebook</option>
+                                <option value="tiktok">TikTok</option>
+                                <option value="github">GitHub</option>
+                                <option value="whatsapp">WhatsApp</option>
+                                <option value="email">Email</option>
+                            </select>
+                            <div id="social-value-row" class="join-social-value-row" hidden>
+                                <div class="join-affix-wrap join-social-value-wrap">
+                                    <span id="social-affix" class="join-affix" hidden aria-hidden="true"></span>
+                                    <input id="social-value" type="text" class="join-input" placeholder="" autocomplete="off" spellcheck="false">
+                                </div>
+                                <button type="button" id="social-add-btn" class="join-btn join-btn--primary join-social-add-btn">Add</button>
+                            </div>
+                        </div>
                     </div>
 
                     <p id="profile-error" class="join-error" hidden></p>
@@ -384,6 +374,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase-client.js"></script>
     <script src="../badge-toast.js"></script>
-    <script src="../join.js?v=20260714-lead"></script>
+    <script src="../join.js?v=20260714-socialdd"></script>
 </body>
 </html>

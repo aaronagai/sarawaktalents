@@ -386,6 +386,75 @@ html.dark .join-username-status.is-bad { color: #f87171; }
 .join-input--affix-lg { padding-left: 9.75rem; }
 html.dark .join-affix { color: #6b7280; }
 
+/* Social links dropdown + added list */
+.join-social-list {
+    list-style: none;
+    margin: 0 0 0.625rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.join-social-item {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    background: #fff;
+}
+html.dark .join-social-item {
+    background: #141414;
+    border-color: #2a2a2a;
+}
+.join-social-item-meta { flex: 1; min-width: 0; }
+.join-social-item-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+html.dark .join-social-item-label { color: #9ca3af; }
+.join-social-item-value {
+    display: block;
+    font-size: 0.875rem;
+    color: #111827;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+html.dark .join-social-item-value { color: #f3f4f6; }
+.join-social-remove {
+    flex-shrink: 0;
+    border: 0;
+    background: transparent;
+    color: #9ca3af;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0.25rem 0.375rem;
+    border-radius: 0.375rem;
+}
+.join-social-remove:hover { color: #dc2626; background: #fef2f2; }
+html.dark .join-social-remove:hover { color: #f87171; background: #2a1515; }
+.join-social-add { display: flex; flex-direction: column; gap: 0.5rem; }
+.join-social-value-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: stretch;
+}
+.join-social-value-wrap { flex: 1; min-width: 0; }
+.join-social-add-btn {
+    flex-shrink: 0;
+    width: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    white-space: nowrap;
+}
+
 /* Avatar upload */
 .join-avatar-row { display: flex; align-items: flex-start; gap: 1rem; }
 .join-avatar-upload-col { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; }

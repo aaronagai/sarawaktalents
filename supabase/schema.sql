@@ -245,6 +245,202 @@ create policy avatars_delete on storage.objects
     );
 
 -- ============================================================================
+--  BADGES / ACHIEVEMENTS  (see migrations 009-011 for full history/comments)
+-- ============================================================================
+create type public.badge_criteria_type as enum (
+    'manual', 'connector', 'pioneer', 'explorer', 'verified',
+    'complete_profile', 'ambassador', 'multi_talented', 'rising_star',
+    'local_voice', 'anniversary'
+);
+
+create table if not exists public.badges (
+    id            uuid primary key default gen_random_uuid(),
+    slug          text unique not null,
+    name          text not null,
+    description   text not null,
+    icon          text not null,
+    criteria_type public.badge_criteria_type not null,
+    created_at    timestamptz not null default now()
+);
+
+create table if not exists public.user_badges (
+    id        uuid primary key default gen_random_uuid(),
+    user_id   uuid not null references auth.users(id) on delete cascade,
+    badge_id  uuid not null references public.badges(id) on delete cascade,
+    earned_at timestamptz not null default now(),
+    unique (user_id, badge_id)
+);
+create index if not exists user_badges_user_idx  on public.user_badges (user_id);
+create index if not exists user_badges_badge_idx on public.user_badges (badge_id);
+
+alter table public.badges      enable row level security;
+alter table public.user_badges enable row level security;
+
+drop policy if exists badges_read on public.badges;
+create policy badges_read on public.badges for select using (true);
+drop policy if exists badges_admin_write on public.badges;
+create policy badges_admin_write on public.badges for all using ((select public.is_admin())) with check ((select public.is_admin()));
+
+drop policy if exists user_badges_read on public.user_badges;
+create policy user_badges_read on public.user_badges for select using (true);
+drop policy if exists user_badges_admin_write on public.user_badges;
+create policy user_badges_admin_write on public.user_badges for all using ((select public.is_admin())) with check ((select public.is_admin()));
+
+insert into public.badges (slug, name, description, icon, criteria_type) values
+    ('connector',        'Connector',        'Connected with 10+ different people on the platform',                '🤝', 'connector'),
+    ('pioneer',           'Pioneer',          'One of the first 100 users to join',                                  '🌱', 'pioneer'),
+    ('explorer',          'Explorer',         'Viewed/interacted with profiles from all major Sarawak zones',       '🧭', 'explorer'),
+    ('verified-talent',   'Verified Talent',  'Profile reviewed and verified by an admin',                           '✅', 'verified'),
+    ('complete-profile',  'Complete Profile', 'Filled out 100% of profile fields',                                   '📸', 'complete_profile'),
+    ('ambassador',        'Ambassador',       'Referred 5+ people who signed up and completed their profile',       '🗣️', 'ambassador'),
+    ('multi-talented',    'Multi-Talented',   'Tagged under 2+ different fields/industries',                         '🎨', 'multi_talented'),
+    ('rising-star',       'Rising Star',      'Most profile views/endorsements this month',                          '🔥', 'rising_star'),
+    ('local-voice',       'Local Voice',      'Profile filled out in both EN and BM',                                '🏛️', 'local_voice'),
+    ('anniversary',       'Anniversary',      'Active member for 1+ year',                                           '🎂', 'anniversary')
+on conflict (slug) do nothing;
+
+-- ── supporting data (connections, views, tags, referral/bilingual/verified) ─
+alter table public.profiles add column if not exists referred_by uuid references public.profiles(id) on delete set null;
+alter table public.profiles add column if not exists bio_bm      text;
+alter table public.profiles add column if not exists verified    boolean not null default false;
+alter table public.profiles add column if not exists verified_at timestamptz;
+
+alter table public.profiles drop constraint if exists profiles_no_self_referral;
+alter table public.profiles add constraint profiles_no_self_referral
+    check (referred_by is null or referred_by <> id);
+
+create or replace function public.lock_referred_by()
+returns trigger language plpgsql as $$
+begin
+    if not (select public.is_admin()) and new.referred_by is distinct from old.referred_by then
+        new.referred_by := old.referred_by;
+    end if;
+    return new;
+end; $$;
+
+drop trigger if exists profiles_lock_referred_by on public.profiles;
+create trigger profiles_lock_referred_by before update on public.profiles
+    for each row execute function public.lock_referred_by();
+
+create table if not exists public.profile_tags (
+    id         uuid primary key default gen_random_uuid(),
+    profile_id uuid not null references public.profiles(id) on delete cascade,
+    tag        text not null,
+    created_at timestamptz not null default now(),
+    unique (profile_id, tag)
+);
+create index if not exists profile_tags_profile_idx on public.profile_tags (profile_id);
+alter table public.profile_tags enable row level security;
+drop policy if exists profile_tags_read on public.profile_tags;
+create policy profile_tags_read on public.profile_tags for select using (true);
+drop policy if exists profile_tags_write on public.profile_tags;
+create policy profile_tags_write on public.profile_tags for all
+    using (profile_id = (select auth.uid())) with check (profile_id = (select auth.uid()));
+
+create table if not exists public.connections (
+    id                 uuid primary key default gen_random_uuid(),
+    user_id            uuid not null references public.profiles(id) on delete cascade,
+    connected_user_id  uuid not null references public.profiles(id) on delete cascade,
+    created_at         timestamptz not null default now(),
+    unique (user_id, connected_user_id)
+);
+alter table public.connections drop constraint if exists connections_no_self_connect;
+alter table public.connections add constraint connections_no_self_connect check (user_id <> connected_user_id);
+create index if not exists connections_user_idx      on public.connections (user_id);
+create index if not exists connections_connected_idx on public.connections (connected_user_id);
+alter table public.connections enable row level security;
+drop policy if exists connections_read on public.connections;
+create policy connections_read on public.connections for select using (true);
+drop policy if exists connections_insert on public.connections;
+create policy connections_insert on public.connections for insert to authenticated
+    with check (user_id = (select auth.uid()));
+
+create table if not exists public.profile_views (
+    id                 uuid primary key default gen_random_uuid(),
+    viewer_id          uuid references public.profiles(id) on delete set null,
+    viewed_profile_id  uuid not null references public.profiles(id) on delete cascade,
+    created_at         timestamptz not null default now()
+);
+create index if not exists profile_views_viewed_created_idx on public.profile_views (viewed_profile_id, created_at);
+create index if not exists profile_views_created_viewed_idx on public.profile_views (created_at, viewed_profile_id);
+create index if not exists profile_views_viewer_idx         on public.profile_views (viewer_id);
+alter table public.profile_views enable row level security;
+drop policy if exists profile_views_insert on public.profile_views;
+create policy profile_views_insert on public.profile_views for insert to anon, authenticated
+    with check (viewer_id is null or viewer_id = (select auth.uid()));
+drop policy if exists profile_views_admin_read on public.profile_views;
+create policy profile_views_admin_read on public.profile_views for select using ((select public.is_admin()));
+
+-- ── real-time awarding functions ─────────────────────────────────────────────
+create or replace function public.is_profile_complete(p public.profiles)
+returns boolean language sql immutable as $$
+    select p.avatar_url is not null and p.avatar_url <> ''
+       and p.bio        is not null and p.bio <> ''
+       and p.category   is not null and p.category <> ''
+       and p.industry   is not null and p.industry <> ''
+       and p.links       <> '{}'::jsonb
+       and p.education   <> '{}'::jsonb
+$$;
+
+create or replace function public._try_award(p_user_id uuid, p_slug text)
+returns boolean language plpgsql security definer set search_path = public as $$
+declare v_badge_id uuid; v_inserted uuid;
+begin
+    select id into v_badge_id from public.badges where slug = p_slug;
+    if v_badge_id is null then raise exception 'Unknown badge slug: %', p_slug; end if;
+    insert into public.user_badges (user_id, badge_id) values (p_user_id, v_badge_id)
+    on conflict (user_id, badge_id) do nothing returning badge_id into v_inserted;
+    return v_inserted is not null;
+end; $$;
+
+create or replace function public.check_and_award_badges(p_user_id uuid)
+returns setof public.badges language plpgsql security definer set search_path = public as $$
+declare v_prof public.profiles; v_slugs text[] := '{}';
+begin
+    if auth.uid() is null then raise exception 'Not authenticated'; end if;
+    select * into v_prof from public.profiles where id = p_user_id;
+    if not found then return; end if;
+
+    if public.is_profile_complete(v_prof) and public._try_award(p_user_id, 'complete-profile') then
+        v_slugs := v_slugs || 'complete-profile';
+    end if;
+    if (select count(distinct connected_user_id) from public.connections where user_id = p_user_id) >= 10
+       and public._try_award(p_user_id, 'connector') then
+        v_slugs := v_slugs || 'connector';
+    end if;
+    if (select count(*) from public.profile_tags where profile_id = p_user_id) >= 2
+       and public._try_award(p_user_id, 'multi-talented') then
+        v_slugs := v_slugs || 'multi-talented';
+    end if;
+    if coalesce(v_prof.bio, '') <> '' and coalesce(v_prof.bio_bm, '') <> ''
+       and public._try_award(p_user_id, 'local-voice') then
+        v_slugs := v_slugs || 'local-voice';
+    end if;
+    if (select count(*) from public.profiles r where r.referred_by = p_user_id and public.is_profile_complete(r)) >= 5
+       and public._try_award(p_user_id, 'ambassador') then
+        v_slugs := v_slugs || 'ambassador';
+    end if;
+
+    return query select * from public.badges where slug = any(v_slugs);
+end; $$;
+grant execute on function public.check_and_award_badges(uuid) to authenticated;
+
+create or replace function public.resolve_referrer(p_username text)
+returns uuid language sql stable security definer set search_path = public as $$
+    select id from public.profiles where lower(username) = lower(p_username) and status = 'active';
+$$;
+grant execute on function public.resolve_referrer(text) to anon, authenticated;
+
+create or replace function public.admin_mark_verified(p_user_id uuid)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+    if not (select public.is_admin()) then raise exception 'Not authorized'; end if;
+    update public.profiles set verified = true, verified_at = now() where id = p_user_id;
+    perform public._try_award(p_user_id, 'verified-talent');
+end; $$;
+grant execute on function public.admin_mark_verified(uuid) to authenticated;
+
+-- ============================================================================
 --  Done. Next: create some invites, e.g.
 --    insert into public.invites (code, note) values ('SARAWAK-001', 'first batch');
 --  and make yourself admin (see SETUP.md).

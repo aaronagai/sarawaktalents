@@ -571,8 +571,6 @@
         document.getElementById('pf-location').value = p.location || '';
         setIndustry(p.industry || '');
         document.getElementById('pf-bio').value = p.bio || '';
-        var bioBmEl = document.getElementById('pf-bio-bm');
-        if (bioBmEl) bioBmEl.value = p.bio_bm || '';
         if (LIVE) {
             sb.from('profile_tags').select('tag').eq('profile_id', p.id).then(function (res) {
                 if (res.data) { selectedTags = res.data.map(function (r) { return r.tag; }); renderTagPicker(); }
@@ -636,7 +634,6 @@
             industry: currentIndustry() || null,
             background: null,
             bio: document.getElementById('pf-bio').value.trim() || null,
-            bio_bm: (document.getElementById('pf-bio-bm').value || '').trim() || null,
             links: links,
             education: collectEducation(),
             org_photos: selectedBadges.slice(0, maxBadges),

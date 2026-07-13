@@ -61,37 +61,25 @@
 
     // ── Industry (free text) + live profile-line preview ────────────────
     var industryEl = document.getElementById('pf-industry');
-    var previewEl = document.getElementById('pf-preview');
-    var roleOrgPreviewEl = document.getElementById('pf-role-org-preview');
+    var previewEl = document.getElementById('pf-role-org-preview');
 
     function currentIndustry() {
         return industryEl ? industryEl.value.trim() : '';
     }
     function setIndustry(val) {
         if (industryEl) industryEl.value = (val || '').trim();
-        updatePreview();
     }
 
     // Grammar-proof profile line — mirrors the renderer in profile.js.
     function leadArticle(word) { return /^[aeiou]/i.test((word || '').trim()) ? 'an' : 'a'; }
-    function buildLead(name, role, industry) {
+    function buildLead(name, role, org) {
         var first = (name || '').trim().split(/\s+/)[0] || 'You';
         role = (role || '').trim();
-        industry = (industry || '').trim();
-        var same = role && industry && role.toLowerCase() === industry.toLowerCase();
-        if (role && industry && !same) return first + ' is ' + leadArticle(role) + ' ' + role + ' in ' + industry + '.';
-        if (same || (industry && !role)) return first + ' works in ' + industry + '.';
+        org = (org || '').trim();
+        if (role && org) return first + ' is ' + leadArticle(role) + ' ' + role + ' at ' + org + '.';
         if (role) return first + ' is ' + leadArticle(role) + ' ' + role + '.';
+        if (org) return first + ' is at ' + org + '.';
         return '';
-    }
-    function updatePreview() {
-        if (!previewEl) return;
-        var nameEl = document.getElementById('pf-name');
-        var roleEl = document.getElementById('pf-role');
-        var line = buildLead(nameEl ? nameEl.value : '', roleEl ? roleEl.value : '', currentIndustry());
-        if (line) { previewEl.textContent = 'Preview: ' + line; previewEl.hidden = false; }
-        else { previewEl.hidden = true; }
-        updateRoleOrgPreview();
     }
     function badgeOrgName(src) {
         var map = {
@@ -116,21 +104,16 @@
         }
         return '';
     }
-    function updateRoleOrgPreview() {
-        if (!roleOrgPreviewEl) return;
+    function updatePreview() {
+        if (!previewEl) return;
+        var nameEl = document.getElementById('pf-name');
         var roleEl = document.getElementById('pf-role');
-        var role = roleEl ? roleEl.value.trim() : '';
-        var org = currentOrgName();
-        var line = (role && org) ? role + ' at ' + org : (role || org || '');
-        if (line) {
-            roleOrgPreviewEl.textContent = 'Card line: ' + line;
-            roleOrgPreviewEl.hidden = false;
-        } else {
-            roleOrgPreviewEl.hidden = true;
-        }
+        var line = buildLead(nameEl ? nameEl.value : '', roleEl ? roleEl.value : '', currentOrgName());
+        if (line) { previewEl.textContent = 'Preview: ' + line; previewEl.hidden = false; }
+        else { previewEl.hidden = true; }
     }
 
-    ['pf-name', 'pf-role', 'pf-organisation', 'pf-industry'].forEach(function (id) {
+    ['pf-name', 'pf-role', 'pf-organisation'].forEach(function (id) {
         var e = document.getElementById(id);
         if (e) e.addEventListener('input', updatePreview);
     });
@@ -479,7 +462,7 @@
         else if (selectedBadges.length < maxBadges) selectedBadges.push(src);
         else selectedBadges = selectedBadges.slice(0, maxBadges - 1).concat(src);  // at cap → replace last
         renderBadgePicker();
-        updateRoleOrgPreview();
+        updatePreview();
     }
 
     renderBadgePicker();

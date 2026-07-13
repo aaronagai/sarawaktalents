@@ -206,18 +206,21 @@
             oi.hidden = false;
         }
 
-        // Lead line — grammar-proof for any combination of title / industry.
+        // Lead line — "Name is a/an Role at Organisation."
         var first = escapeHtml((p.name || '').split(/\s+/)[0]);
         var role = (p.role || '').trim();
-        var industry = (p.industry || '').trim();
-        var sameRI = role && industry && role.toLowerCase() === industry.toLowerCase();
+        var org = String(p.organisation || p.company || p.organization || p.org || '').trim();
+        if (!org) {
+            var orgPhotos = (p.org_photos && p.org_photos.length) ? p.org_photos : (p.org_photo ? [p.org_photo] : []);
+            if (orgPhotos.length) org = BADGE_ORGS[orgPhotos[0]] || '';
+        }
         var lead;
-        if (role && industry && !sameRI) {
-            lead = first + ' is ' + articleBefore(role) + ' <b>' + escapeHtml(role) + '</b> in ' + escapeHtml(industry) + '.';
-        } else if (sameRI || (industry && !role)) {
-            lead = first + ' works in <b>' + escapeHtml(industry) + '</b>.';
+        if (role && org) {
+            lead = first + ' is ' + articleBefore(role) + ' <b>' + escapeHtml(role) + '</b> at ' + escapeHtml(org) + '.';
         } else if (role) {
             lead = first + ' is ' + articleBefore(role) + ' <b>' + escapeHtml(role) + '</b>.';
+        } else if (org) {
+            lead = first + ' is at <b>' + escapeHtml(org) + '</b>.';
         } else {
             lead = first + '.';
         }

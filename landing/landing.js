@@ -124,12 +124,15 @@
         var avatar = p.avatar_url
             ? '<img src="' + encodeURI(p.avatar_url) + '" alt="" class="w-full h-full object-cover transition-opacity duration-300 opacity-0" loading="lazy" decoding="async" onload="this.classList.remove(\'opacity-0\')" onerror="this.style.display=\'none\'">'
             : '';
+        var badge = p.avatar_url
+            ? '<re-icon icon="verified" size="18" weight="filled" class="talent-verified-icon shrink-0" aria-hidden="true"></re-icon>'
+            : '';
         div.innerHTML =
             '<div class="shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden bg-gray-100">' + avatar + '</div>' +
             '<div class="min-w-0 flex-1">' +
                 '<div class="flex items-center gap-1.5 min-w-0">' +
                     '<p class="font-semibold text-gray-900 text-sm sm:text-base leading-tight truncate">' + escapeHtml(p.name) + '</p>' +
-                    '<re-icon icon="verified" size="18" weight="filled" class="talent-verified-icon shrink-0" aria-hidden="true"></re-icon>' +
+                    badge +
                 '</div>' +
                 '<p class="talent-sub text-xs sm:text-sm text-gray-500 mt-0.5 truncate">' + escapeHtml(p.role || '') + '</p>' +
             '</div>';

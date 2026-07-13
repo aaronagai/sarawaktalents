@@ -134,6 +134,8 @@
         }
 
         el('pf-name').textContent = p.name || '';
+        var verifiedEl = document.querySelector('.pf-verified');
+        if (verifiedEl) verifiedEl.hidden = !p.avatar_url;
         el('pf-loc').textContent = p.location ? p.location + ', Sarawak' : 'Sarawak';
 
         var roleOrgLine = roleAtOrgLine(p);
@@ -319,10 +321,12 @@
     }
 
     // ── Save / share the Sarawak Talents QR as a portrait image ─────────────────
-    // Branded card: QR + name + "[Role] at [Organisation]" (falls back to @handle).
-    function loadImage(src) {
+    // Wallpaper-friendly card: grey field, top safe area for iOS clock, white
+    // card with QR + avatar overlay, name, and role/org line.
+    function loadImage(src, opts) {
         return new Promise(function (res, rej) {
             var im = new Image();
+            if (opts && opts.cors) im.crossOrigin = 'anonymous';
             im.onload = function () { res(im); };
             im.onerror = rej;
             im.src = src;
@@ -336,6 +340,21 @@
         ctx.arcTo(x, y + h, x, y, r);
         ctx.arcTo(x, y, x + w, y, r);
         ctx.closePath();
+    }
+    function drawAvatarOnQR(ctx, img, cx, cy, r, border) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, r + border, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.clip();
+        var side = Math.min(img.width, img.height);
+        var sx = (img.width - side) / 2;
+        var sy = (img.height - side) / 2;
+        ctx.drawImage(img, sx, sy, side, side, cx - r, cy - r, r * 2, r * 2);
+        ctx.restore();
     }
     function qrDataUrl(text) {
         var qr = qrcode(0, 'M');
@@ -351,52 +370,59 @@
         var F = "-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif";
         ctx.textAlign = 'center';
 
-        // Background gradient (deep teal → near-black).
-        var g = ctx.createLinearGradient(0, 0, 0, H);
-        g.addColorStop(0, '#0b3b39');
-        g.addColorStop(1, '#0d1117');
-        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+        // Neutral grey field — leaves room at the top for the iOS lock-screen clock.
+        ctx.fillStyle = '#b3b3b3';
+        ctx.fillRect(0, 0, W, H);
 
-        // Header wordmark + tagline.
+        var topSafe = 540;
+        var cardW = 880, cardX = (W - cardW) / 2, cardY = topSafe;
+        var cardPad = 64, cardR = 56;
+        var qrSize = cardW - cardPad * 2;
+        var qrX = cardX + cardPad, qrY = cardY + cardPad;
+        var nameSize = 58, roleSize = 40;
+        var roleOrg = roleAtOrgLine(p);
+        var nameY = qrY + qrSize + 88;
+        var roleY = nameY + (roleOrg ? 62 : 0);
+        var cardH = (roleOrg ? roleY : nameY) + cardPad + 24 - cardY;
+
+        roundRect(ctx, cardX, cardY, cardW, cardH, cardR);
         ctx.fillStyle = '#ffffff';
-        ctx.font = '700 58px ' + F;
-        ctx.fillText('Sarawak Talents', W / 2, 200);
-        ctx.fillStyle = 'rgba(255,255,255,0.6)';
-        ctx.font = '400 34px ' + F;
-        ctx.fillText('Where top Sarawakian talents gather', W / 2, 258);
-
-        // White card holding the QR + name.
-        var cardW = 820, cardX = (W - cardW) / 2, cardY = 360, cardH = 1120;
-        roundRect(ctx, cardX, cardY, cardW, cardH, 56);
-        ctx.fillStyle = '#ffffff'; ctx.fill();
+        ctx.fill();
 
         var qrImg = await loadImage(qrDataUrl(profileUrl));
-        var qrSize = 640, qrX = (W - qrSize) / 2, qrY = cardY + 80;
         ctx.imageSmoothingEnabled = false;
         ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
         ctx.imageSmoothingEnabled = true;
 
-        ctx.fillStyle = '#111827';
-        ctx.font = '700 62px ' + F;
-        ctx.fillText(p.name || '', W / 2, qrY + qrSize + 130);
-        var roleOrg = roleAtOrgLine(p);
-        if (roleOrg) {
-            ctx.fillStyle = '#7c3aed';
-            ctx.font = '600 42px ' + F;
-            ctx.fillText(roleOrg, W / 2, qrY + qrSize + 196);
-        } else {
-            ctx.fillStyle = '#6b7280';
-            ctx.font = '400 42px ' + F;
-            ctx.fillText('@' + (p.username || ''), W / 2, qrY + qrSize + 196);
+        if (p.avatar_url) {
+            try {
+                var avatarImg = await loadImage(p.avatar_url, { cors: true });
+                var avatarR = Math.round(qrSize * 0.13);
+                drawAvatarOnQR(ctx, avatarImg, qrX + qrSize / 2, qrY + qrSize / 2, avatarR, 8);
+            } catch (e) { /* optional — card still exports without photo */ }
         }
 
-        // Footer call-to-action.
-        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.fillStyle = '#1a1a1b';
+        ctx.font = '700 ' + nameSize + 'px ' + F;
+        ctx.fillText(p.name || '', W / 2, nameY);
+
+        if (roleOrg) {
+            ctx.fillStyle = '#7e57c2';
+            ctx.font = '600 ' + roleSize + 'px ' + F;
+            ctx.fillText(roleOrg, W / 2, roleY);
+        } else if (p.username) {
+            ctx.fillStyle = '#7e57c2';
+            ctx.font = '600 ' + roleSize + 'px ' + F;
+            ctx.fillText('@' + p.username, W / 2, roleY || nameY + 62);
+        }
+
+        ctx.fillStyle = '#ffffff';
         ctx.font = '600 44px ' + F;
-        ctx.fillText('Scan to connect', W / 2, cardY + cardH + 140);
-        ctx.fillStyle = 'rgba(255,255,255,0.5)';
-        ctx.font = '400 36px ' + F;
-        ctx.fillText('sarawaktalents.com', W / 2, cardY + cardH + 200);
+        ctx.fillText('Scan to connect', W / 2, cardY + cardH + 96);
+
+        ctx.fillStyle = '#000000';
+        ctx.font = '500 36px ' + F;
+        ctx.fillText('sarawaktalents.com', W / 2, H - 96);
 
         return new Promise(function (res) { canvas.toBlob(res, 'image/png'); });
     }

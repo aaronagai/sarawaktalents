@@ -52,6 +52,7 @@ html.dark .pf-logo-pill img { filter: brightness(0) invert(1); }
     font-size: 1.5rem; font-weight: 500; letter-spacing: -0.01em; line-height: 1.2;
 }
 .pf-verified { color: #6b7280; flex-shrink: 0; }
+.pf-verified[hidden] { display: none; }
 html.dark .pf-verified { color: #a0a0a0; }
 .pf-org-inline { display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; vertical-align: middle; }
 /* Organisation badge tooltip — hover (desktop) / tap-focus (mobile). */

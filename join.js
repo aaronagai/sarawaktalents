@@ -546,6 +546,8 @@
             var el = document.getElementById('pf-link-' + k);
             if (el) el.value = stripLinkInput(k, links[k] || '');
         });
+        refreshSocialTabCount();
+        if (filledSocialCount() > 0) setSocialAccordionOpen(true);
         if (p.avatar_url) {
             avatarImg.src = p.avatar_url;
             avatarImg.hidden = false;
@@ -609,6 +611,52 @@
         if (key === 'linkedin') return 'https://www.linkedin.com/in/' + slug;
         return String(raw || '').trim();
     }
+
+    // Socials accordion — collapsed by default; opens on click / when editing filled links.
+    var socialTab = document.getElementById('social-tab');
+    var socialPanel = document.getElementById('social-panel');
+    var socialTabCount = document.getElementById('social-tab-count');
+    var socialAccordion = document.getElementById('social-accordion');
+
+    function filledSocialCount() {
+        var n = 0;
+        LINK_KEYS.forEach(function (k) {
+            var el = document.getElementById('pf-link-' + k);
+            if (el && el.value.trim()) n += 1;
+        });
+        return n;
+    }
+
+    function refreshSocialTabCount() {
+        if (!socialTabCount) return;
+        var n = filledSocialCount();
+        if (n > 0) {
+            socialTabCount.hidden = false;
+            socialTabCount.textContent = n + (n === 1 ? ' added' : ' added');
+        } else {
+            socialTabCount.hidden = true;
+            socialTabCount.textContent = '';
+        }
+    }
+
+    function setSocialAccordionOpen(open) {
+        if (!socialTab || !socialPanel || !socialAccordion) return;
+        socialTab.setAttribute('aria-expanded', open ? 'true' : 'false');
+        socialPanel.hidden = !open;
+        socialAccordion.classList.toggle('is-open', !!open);
+    }
+
+    if (socialTab) {
+        socialTab.addEventListener('click', function () {
+            var open = socialTab.getAttribute('aria-expanded') !== 'true';
+            setSocialAccordionOpen(open);
+        });
+    }
+    LINK_KEYS.forEach(function (k) {
+        var el = document.getElementById('pf-link-' + k);
+        if (el) el.addEventListener('input', refreshSocialTabCount);
+    });
+    refreshSocialTabCount();
 
     function collectProfile(uid) {
         var links = {};

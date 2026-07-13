@@ -19,7 +19,7 @@
     <script src="https://unpkg.com/reicon@latest/cdn/reicon.min.js"></script>
     <link rel="stylesheet" href="../tailwind.css">
     <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="../join.css?v=20260714-affixsize">
+    <link rel="stylesheet" href="../join.css?v=20260714-socialtab">
     <link rel="stylesheet" href="../badge-toast.css">
     <link rel="manifest" href="../manifest.json">
     <meta name="theme-color" content="#0d9488">
@@ -224,46 +224,57 @@
                             <input id="pf-edu-school" type="text" class="join-input" placeholder="e.g. UNIMAS"></label>
                     </div>
 
-                    <div class="join-field">
-                        <span class="join-label">Socials &amp; links <span class="join-optional">(optional — used for your QR card)</span></span>
-                    </div>
-                    <div class="join-grid-2 join-socials">
-                        <label class="join-field"><span class="join-label">Website</span>
-                            <input id="pf-link-website" type="text" class="join-input" placeholder="yoursite.com"></label>
-                        <label class="join-field"><span class="join-label">Instagram</span>
-                            <div class="join-affix-wrap">
-                                <span class="join-affix" aria-hidden="true">@</span>
-                                <input id="pf-link-instagram" type="text" class="join-input"
-                                       placeholder="handle" autocomplete="off" spellcheck="false"></div></label>
-                        <label class="join-field"><span class="join-label">X (Twitter)</span>
-                            <div class="join-affix-wrap">
-                                <span class="join-affix" aria-hidden="true">@</span>
-                                <input id="pf-link-x" type="text" class="join-input"
-                                       placeholder="handle" autocomplete="off" spellcheck="false"></div></label>
-                        <label class="join-field join-field--wide"><span class="join-label">LinkedIn</span>
-                            <div class="join-affix-wrap">
-                                <span class="join-affix join-affix--long" aria-hidden="true">www.linkedin.com/in/</span>
-                                <input id="pf-link-linkedin" type="text" class="join-input"
-                                       placeholder="your-name" autocomplete="off" spellcheck="false"></div></label>
-                        <label class="join-field join-field--wide"><span class="join-label">Facebook</span>
-                            <div class="join-affix-wrap">
-                                <span class="join-affix join-affix--long" aria-hidden="true">facebook.com/</span>
-                                <input id="pf-link-facebook" type="text" class="join-input"
-                                       placeholder="your.page" autocomplete="off" spellcheck="false"></div></label>
-                        <label class="join-field"><span class="join-label">TikTok</span>
-                            <div class="join-affix-wrap">
-                                <span class="join-affix" aria-hidden="true">@</span>
-                                <input id="pf-link-tiktok" type="text" class="join-input"
-                                       placeholder="handle" autocomplete="off" spellcheck="false"></div></label>
-                        <label class="join-field"><span class="join-label">GitHub</span>
-                            <div class="join-affix-wrap">
-                                <span class="join-affix" aria-hidden="true">@</span>
-                                <input id="pf-link-github" type="text" class="join-input"
-                                       placeholder="handle" autocomplete="off" spellcheck="false"></div></label>
-                        <label class="join-field"><span class="join-label">WhatsApp</span>
-                            <input id="pf-link-whatsapp" type="tel" class="join-input" placeholder="60123456789"></label>
-                        <label class="join-field"><span class="join-label">Email</span>
-                            <input id="pf-link-email" type="email" class="join-input" placeholder="you@email.com"></label>
+                    <div class="join-social-accordion" id="social-accordion">
+                        <button type="button" class="join-social-tab" id="social-tab" aria-expanded="false" aria-controls="social-panel">
+                            <span class="join-social-tab-copy">
+                                <span class="join-social-tab-title">Socials &amp; links</span>
+                                <span class="join-social-tab-hint">optional — used for your QR card</span>
+                            </span>
+                            <span class="join-social-tab-meta">
+                                <span class="join-social-tab-count" id="social-tab-count" hidden></span>
+                                <span class="join-social-tab-chevron" aria-hidden="true">▾</span>
+                            </span>
+                        </button>
+                        <div class="join-social-panel" id="social-panel" hidden>
+                            <div class="join-grid-2 join-socials">
+                                <label class="join-field"><span class="join-label">Website</span>
+                                    <input id="pf-link-website" type="text" class="join-input" placeholder="yoursite.com"></label>
+                                <label class="join-field"><span class="join-label">Instagram</span>
+                                    <div class="join-affix-wrap">
+                                        <span class="join-affix" aria-hidden="true">@</span>
+                                        <input id="pf-link-instagram" type="text" class="join-input"
+                                               placeholder="handle" autocomplete="off" spellcheck="false"></div></label>
+                                <label class="join-field"><span class="join-label">X (Twitter)</span>
+                                    <div class="join-affix-wrap">
+                                        <span class="join-affix" aria-hidden="true">@</span>
+                                        <input id="pf-link-x" type="text" class="join-input"
+                                               placeholder="handle" autocomplete="off" spellcheck="false"></div></label>
+                                <label class="join-field join-field--wide"><span class="join-label">LinkedIn</span>
+                                    <div class="join-affix-wrap">
+                                        <span class="join-affix join-affix--long" aria-hidden="true">www.linkedin.com/in/</span>
+                                        <input id="pf-link-linkedin" type="text" class="join-input"
+                                               placeholder="your-name" autocomplete="off" spellcheck="false"></div></label>
+                                <label class="join-field join-field--wide"><span class="join-label">Facebook</span>
+                                    <div class="join-affix-wrap">
+                                        <span class="join-affix join-affix--long" aria-hidden="true">facebook.com/</span>
+                                        <input id="pf-link-facebook" type="text" class="join-input"
+                                               placeholder="your.page" autocomplete="off" spellcheck="false"></div></label>
+                                <label class="join-field"><span class="join-label">TikTok</span>
+                                    <div class="join-affix-wrap">
+                                        <span class="join-affix" aria-hidden="true">@</span>
+                                        <input id="pf-link-tiktok" type="text" class="join-input"
+                                               placeholder="handle" autocomplete="off" spellcheck="false"></div></label>
+                                <label class="join-field"><span class="join-label">GitHub</span>
+                                    <div class="join-affix-wrap">
+                                        <span class="join-affix" aria-hidden="true">@</span>
+                                        <input id="pf-link-github" type="text" class="join-input"
+                                               placeholder="handle" autocomplete="off" spellcheck="false"></div></label>
+                                <label class="join-field"><span class="join-label">WhatsApp</span>
+                                    <input id="pf-link-whatsapp" type="tel" class="join-input" placeholder="60123456789"></label>
+                                <label class="join-field"><span class="join-label">Email</span>
+                                    <input id="pf-link-email" type="email" class="join-input" placeholder="you@email.com"></label>
+                            </div>
+                        </div>
                     </div>
 
                     <p id="profile-error" class="join-error" hidden></p>
@@ -397,6 +408,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase-client.js"></script>
     <script src="../badge-toast.js"></script>
-    <script src="../join.js?v=20260714-nopunct"></script>
+    <script src="../join.js?v=20260714-socialtab"></script>
 </body>
 </html>

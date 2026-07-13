@@ -426,6 +426,94 @@ html.dark .join-affix-wrap .join-input { background: transparent; }
 /* Long URL prefixes need the full row in the two-column socials grid */
 .join-socials > .join-field--wide { grid-column: 1 / -1; }
 
+/* Socials accordion — collapsed by default, expands on tap */
+.join-social-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.join-social-tab {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.875rem;
+    background: #fff;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.15s, background 0.15s;
+}
+.join-social-tab:hover { border-color: #d1d5db; background: #fafafa; }
+.join-social-tab[aria-expanded="true"] {
+    border-color: #ddd6fe;
+    background: #faf5ff;
+}
+html.dark .join-social-tab {
+    background: #141414;
+    border-color: #2a2a2a;
+}
+html.dark .join-social-tab:hover { background: #1a1a1a; border-color: #3a3a3a; }
+html.dark .join-social-tab[aria-expanded="true"] {
+    background: #1a1025;
+    border-color: #3b0764;
+}
+.join-social-tab-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 0;
+}
+.join-social-tab-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #111827;
+}
+html.dark .join-social-tab-title { color: #f3f4f6; }
+.join-social-tab-hint {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: #9ca3af;
+}
+.join-social-tab-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+.join-social-tab-count {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #7c3aed;
+    background: #f5f3ff;
+    border-radius: 999px;
+    padding: 0.125rem 0.5rem;
+}
+html.dark .join-social-tab-count {
+    color: #c4b5fd;
+    background: #2e1065;
+}
+.join-social-tab-chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #9ca3af;
+    font-size: 0.875rem;
+    transition: transform 0.18s ease;
+}
+.join-social-tab[aria-expanded="true"] .join-social-tab-chevron {
+    transform: rotate(180deg);
+    color: #7c3aed;
+}
+html.dark .join-social-tab[aria-expanded="true"] .join-social-tab-chevron { color: #a78bfa; }
+.join-social-panel {
+    padding-top: 0.125rem;
+}
+
 /* Avatar upload */
 .join-avatar-row { display: flex; align-items: flex-start; gap: 1rem; }
 .join-avatar-upload-col { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; }

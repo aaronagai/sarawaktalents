@@ -2,13 +2,10 @@ name = "sarawaktalents-directory-cache"
 main = "workers/directory-cache.js"
 compatibility_date = "2024-08-01"
 
-# Serves the edge-cached public directory at /api/directory on the live domain.
+# Serves the edge-cached public directory at /api/directory on the app subdomain
+# (the directory lives on app.sarawaktalents.com).
 # Deploy:  wrangler deploy -c wrangler.directory.toml
 # Secret:  wrangler secret put SUPABASE_ANON_KEY -c wrangler.directory.toml
 [[routes]]
-pattern = "sarawaktalents.com/api/directory"
-zone_name = "sarawaktalents.com"
-
-[[routes]]
-pattern = "www.sarawaktalents.com/api/directory"
+pattern = "app.sarawaktalents.com/api/directory"
 zone_name = "sarawaktalents.com"

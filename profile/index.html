@@ -9,16 +9,17 @@
     <meta property="og:site_name" content="Sarawak Talents">
     <meta property="og:title" content="Sarawak Talents">
     <meta property="og:description" content="A Sarawak Talents digital name card.">
-    <meta property="og:image" content="https://sarawaktalents.com/photos/linkpreview.jpg">
+    <meta property="og:image" content="https://app.sarawaktalents.com/photos/linkpreview.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="https://sarawaktalents.com/photos/linkpreview.jpg">
+    <meta name="twitter:image" content="https://app.sarawaktalents.com/photos/linkpreview.jpg">
     <script src="https://unpkg.com/reicon@latest/cdn/reicon.min.js"></script>
     <link rel="stylesheet" href="../tailwind.css">
     <link rel="stylesheet" href="../transitions/index.css">
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="../profile.css">
+    <link rel="stylesheet" href="../badge-toast.css">
     <link rel="icon" href="../sslogo.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="../icon-192.png">
     <script>
@@ -73,6 +74,12 @@
             <!-- Tags -->
             <div class="pf-tags" id="pf-tags"></div>
 
+            <!-- Achievement badges -->
+            <div class="pf-badges-section" id="pf-badges-section" hidden>
+                <h2 class="pf-section-title">Badges</h2>
+                <div class="pf-badges-grid" id="pf-badges-grid"></div>
+            </div>
+
             <!-- Interactive QR — tap a card, the code retargets; tap again to open -->
             <div class="pf-qr-live">
                 <div class="qr-cols">
@@ -92,6 +99,8 @@
             <div class="pf-actions">
                 <button type="button" id="pf-vcard-btn" class="pf-btn pf-btn--dark">Save contact</button>
                 <button type="button" id="pf-copy-btn" class="pf-btn pf-btn--ghost">Copy link</button>
+                <button type="button" id="pf-connect-btn" class="pf-btn pf-btn--ghost" hidden>Connect</button>
+                <button type="button" id="pf-refer-btn" class="pf-btn pf-btn--ghost" hidden>Copy referral link</button>
             </div>
 
             <hr class="pf-rule">
@@ -110,6 +119,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
     <script src="../supabase-client.js"></script>
+    <script src="../badge-toast.js"></script>
     <script src="../profile.js"></script>
     <script>Theme.init();</script>
 </body>

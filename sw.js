@@ -1,11 +1,10 @@
-const CACHE = 'sarawaktalents-v60';
+const CACHE = 'sarawaktalents-v62';
 // Relative paths so the app works both at the domain root (sarawaktalents.com)
 // and under the /sarawaktalents/ project path.
 const ASSETS = [
   './',
   './index.html',
   './site-paths.js',
-  './hero-dots.js',
   './profile/',
   './profile/index.html',
   './join/',
@@ -43,22 +42,12 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Fetch: cache-first for assets, network-first for photos
+// Fetch: network-first everywhere, so deploys show up immediately.
+// Cache is only a fallback for when the network is unavailable.
 self.addEventListener('fetch', e => {
-  const url = new URL(e.request.url);
-
-  // Photos: network first, fall back to cache
-  if (url.pathname.includes('/photos/')) {
-    e.respondWith(
-      fetch(e.request)
-        .then(r => { caches.open(CACHE).then(c => c.put(e.request, r.clone())); return r; })
-        .catch(() => caches.match(e.request))
-    );
-    return;
-  }
-
-  // Everything else: cache first
   e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request))
+    fetch(e.request)
+      .then(r => { caches.open(CACHE).then(c => c.put(e.request, r.clone())); return r; })
+      .catch(() => caches.match(e.request))
   );
 });

@@ -103,16 +103,26 @@
 
     var profileUrl = ST_SITE.profile(handle, true);
     var loaded = null;
+    var currentUser = null;   // signed-in viewer's id, or null
+
+    function isOwnProfile(p) {
+        return !!(currentUser && p && p.id === currentUser);
+    }
 
     // ── boot ──────────────────────────────────────────────────────────────────
     if (!handle) { showState('pf-notfound'); return; }
     if (!sb) { showState('pf-notfound'); return; }
 
-    sb.from('profiles').select('*').eq('username', handle).eq('status', 'active').maybeSingle()
-        .then(function (res) {
-            if (res.error || !res.data) { showState('pf-notfound'); return; }
-            render(res.data);
-        });
+    Promise.all([
+        sb.from('profiles').select('*').eq('username', handle).eq('status', 'active').maybeSingle(),
+        sb.auth.getSession()
+    ]).then(function (results) {
+        var res = results[0];
+        var session = results[1].data && results[1].data.session;
+        currentUser = session ? session.user.id : null;
+        if (res.error || !res.data) { showState('pf-notfound'); return; }
+        render(res.data);
+    });
 
     // ── render ────────────────────────────────────────────────────────────────
     function render(p) {
@@ -128,6 +138,8 @@
         }
 
         el('pf-name').textContent = p.name || '';
+        var verifiedEl = document.querySelector('.pf-verified');
+        if (verifiedEl) verifiedEl.hidden = !p.avatar_url;
         el('pf-loc').textContent = p.location ? p.location + ', Sarawak' : 'Sarawak';
 
         var roleOrgLine = roleAtOrgLine(p);
@@ -229,13 +241,96 @@
             });
         });
 
+        wireAchievements(p);
+    }
+
+    // ── achievements: view log, Connect, referral link, badge list ──────────────
+    function wireAchievements(p) {
+        var isOwn = !!currentUser && currentUser === p.id;
+
+        // View log — feeds Explorer (zone coverage) and Rising Star (monthly
+        // counts), both scheduled checks, not real-time. Skipped for the
+        // owner viewing their own profile so those can't be self-farmed.
+        // viewer_id is null for anonymous visitors, which the RLS policy allows.
+        if (!isOwn) {
+            sb.from('profile_views').insert({ viewer_id: currentUser, viewed_profile_id: p.id });
+        }
+
+        var connectBtn = el('pf-connect-btn');
+        if (currentUser && !isOwn) {
+            connectBtn.hidden = false;
+            sb.from('connections').select('id').eq('user_id', currentUser).eq('connected_user_id', p.id).maybeSingle()
+                .then(function (r) {
+                    if (r.data) { connectBtn.textContent = 'Connected'; connectBtn.disabled = true; }
+                });
+            connectBtn.addEventListener('click', function () {
+                connectBtn.disabled = true;
+                sb.from('connections').insert({ user_id: currentUser, connected_user_id: p.id }).then(function (r) {
+                    if (r.error) { connectBtn.disabled = false; return; }
+                    connectBtn.textContent = 'Connected';
+                    sb.rpc('check_and_award_badges', { p_user_id: currentUser }).then(function (br) {
+                        if (br.data && br.data.length && window.BadgeToast) BadgeToast.show(br.data);
+                    });
+                });
+            });
+        }
+
+        var referBtn = el('pf-refer-btn');
+        if (isOwn && p.username) {
+            referBtn.hidden = false;
+            referBtn.addEventListener('click', function () {
+                var link = location.origin + ST_SITE.join('ref=' + encodeURIComponent(p.username));
+                navigator.clipboard.writeText(link).then(function () {
+                    var t = referBtn.textContent;
+                    referBtn.textContent = 'Copied!';
+                    setTimeout(function () { referBtn.textContent = t; }, 1400);
+                });
+            });
+        }
+
+        renderBadgesSection(p, isOwn);
+    }
+
+    // Own profile: every catalog badge, earned first then greyed-out locked
+    // ones with a hover/tap "how to earn" hint (the badge's own description).
+    // Public view: earned badges only, no locked placeholders.
+    function renderBadgesSection(p, isOwn) {
+        var section = el('pf-badges-section');
+        var grid = el('pf-badges-grid');
+
+        var earnedQuery = sb.from('user_badges').select('badge_id, badges(slug, name, description, icon)').eq('user_id', p.id);
+        var allQuery = isOwn ? sb.from('badges').select('*') : Promise.resolve({ data: null });
+
+        Promise.all([earnedQuery, allQuery]).then(function (results) {
+            var earnedRows = (results[0].data || []).map(function (r) { return r.badges; }).filter(Boolean);
+            var earnedSlugs = {};
+            earnedRows.forEach(function (b) { earnedSlugs[b.slug] = true; });
+
+            var html = earnedRows.map(function (b) { return badgeTileHtml(b, false); }).join('');
+            if (isOwn) {
+                var locked = (results[1].data || []).filter(function (b) { return !earnedSlugs[b.slug]; });
+                html += locked.map(function (b) { return badgeTileHtml(b, true); }).join('');
+            }
+
+            if (html) { grid.innerHTML = html; section.hidden = false; }
+        });
+    }
+
+    function badgeTileHtml(b, locked) {
+        var tip = escapeHtml(b.description || '');
+        return '<span class="pf-achv-badge' + (locked ? ' is-locked' : '') + '" tabindex="0" role="img" aria-label="' + escapeHtml(b.name) + ': ' + tip + '">' +
+               '<span class="pf-achv-badge-icon" aria-hidden="true">' + (b.icon || '🏅') + '</span>' +
+               escapeHtml(b.name) +
+               '<span class="pf-achv-tip">' + tip + '</span></span>';
     }
 
     // ── Save / share the Sarawak Talents QR as a portrait image ─────────────────
-    // Branded card: QR + name + "[Role] at [Organisation]" (falls back to @handle).
-    function loadImage(src) {
+    // Wallpaper-friendly card: grey field, top safe area for iOS clock, white
+    // card with QR + avatar overlay, name, and role/org line.
+    function loadImage(src, opts) {
         return new Promise(function (res, rej) {
             var im = new Image();
+            if (opts && opts.cors) im.crossOrigin = 'anonymous';
             im.onload = function () { res(im); };
             im.onerror = rej;
             im.src = src;
@@ -249,6 +344,21 @@
         ctx.arcTo(x, y + h, x, y, r);
         ctx.arcTo(x, y, x + w, y, r);
         ctx.closePath();
+    }
+    function drawAvatarOnQR(ctx, img, cx, cy, r, border) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, r + border, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.clip();
+        var side = Math.min(img.width, img.height);
+        var sx = (img.width - side) / 2;
+        var sy = (img.height - side) / 2;
+        ctx.drawImage(img, sx, sy, side, side, cx - r, cy - r, r * 2, r * 2);
+        ctx.restore();
     }
     function qrDataUrl(text) {
         var qr = qrcode(0, 'M');
@@ -264,56 +374,73 @@
         var F = "-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif";
         ctx.textAlign = 'center';
 
-        // Background gradient (deep teal → near-black).
-        var g = ctx.createLinearGradient(0, 0, 0, H);
-        g.addColorStop(0, '#0b3b39');
-        g.addColorStop(1, '#0d1117');
-        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+        // Layout tuned for iPhone lock-screen wallpaper: large clock + widget row
+        // at the top, flashlight/camera near the bottom.
+        var topSafe = 800;
+        var cardW = 620;
+        var cardPad = 40;
+        var cardR = 48;
+        var qrSize = 520;
+        var nameSize = 46;
+        var roleSize = 32;
+        var roleOrg = roleAtOrgLine(p);
+        var cardH = 650;
+        var cardX = (W - cardW) / 2;
+        var cardY = topSafe;
+        var qrX = cardX + (cardW - qrSize) / 2;
+        var qrY = cardY + cardPad;
+        var nameY = qrY + qrSize + 48;
+        var roleY = nameY + 42;
 
-        // Header wordmark + tagline.
+        ctx.fillStyle = '#b3b3b3';
+        ctx.fillRect(0, 0, W, H);
+
+        roundRect(ctx, cardX, cardY, cardW, cardH, cardR);
         ctx.fillStyle = '#ffffff';
-        ctx.font = '700 58px ' + F;
-        ctx.fillText('Sarawak Talents', W / 2, 200);
-        ctx.fillStyle = 'rgba(255,255,255,0.6)';
-        ctx.font = '400 34px ' + F;
-        ctx.fillText('Where top Sarawakian talents gather', W / 2, 258);
-
-        // White card holding the QR + name.
-        var cardW = 820, cardX = (W - cardW) / 2, cardY = 360, cardH = 1120;
-        roundRect(ctx, cardX, cardY, cardW, cardH, 56);
-        ctx.fillStyle = '#ffffff'; ctx.fill();
+        ctx.fill();
 
         var qrImg = await loadImage(qrDataUrl(profileUrl));
-        var qrSize = 640, qrX = (W - qrSize) / 2, qrY = cardY + 80;
         ctx.imageSmoothingEnabled = false;
         ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
         ctx.imageSmoothingEnabled = true;
 
-        ctx.fillStyle = '#111827';
-        ctx.font = '700 62px ' + F;
-        ctx.fillText(p.name || '', W / 2, qrY + qrSize + 130);
-        var roleOrg = roleAtOrgLine(p);
-        if (roleOrg) {
-            ctx.fillStyle = '#7c3aed';
-            ctx.font = '600 42px ' + F;
-            ctx.fillText(roleOrg, W / 2, qrY + qrSize + 196);
-        } else {
-            ctx.fillStyle = '#6b7280';
-            ctx.font = '400 42px ' + F;
-            ctx.fillText('@' + (p.username || ''), W / 2, qrY + qrSize + 196);
+        if (p.avatar_url) {
+            try {
+                var avatarImg = await loadImage(p.avatar_url, { cors: true });
+                var avatarR = Math.round(qrSize * 0.12);
+                drawAvatarOnQR(ctx, avatarImg, qrX + qrSize / 2, qrY + qrSize / 2, avatarR, 7);
+            } catch (e) { /* optional — card still exports without photo */ }
         }
 
-        // Footer call-to-action.
-        ctx.fillStyle = 'rgba(255,255,255,0.9)';
-        ctx.font = '600 44px ' + F;
-        ctx.fillText('Scan to connect', W / 2, cardY + cardH + 140);
-        ctx.fillStyle = 'rgba(255,255,255,0.5)';
-        ctx.font = '400 36px ' + F;
-        ctx.fillText('sarawaktalents.com', W / 2, cardY + cardH + 200);
+        ctx.fillStyle = '#1a1a1b';
+        ctx.font = '700 ' + nameSize + 'px ' + F;
+        ctx.fillText(p.name || '', W / 2, nameY);
+
+        if (roleOrg) {
+            ctx.fillStyle = '#7e57c2';
+            ctx.font = '600 ' + roleSize + 'px ' + F;
+            ctx.fillText(roleOrg, W / 2, roleY);
+        } else if (p.username) {
+            ctx.fillStyle = '#7e57c2';
+            ctx.font = '600 ' + roleSize + 'px ' + F;
+            ctx.fillText('@' + p.username, W / 2, roleY);
+        }
+
+        var scanY = 1510;
+        var urlY = 1585;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '600 40px ' + F;
+        ctx.fillText('Scan to connect', W / 2, scanY);
+
+        ctx.fillStyle = '#000000';
+        ctx.font = '500 34px ' + F;
+        ctx.fillText('sarawaktalents.com', W / 2, urlY);
 
         return new Promise(function (res) { canvas.toBlob(res, 'image/png'); });
     }
     async function exportProfileCard(p) {
+        if (!isOwnProfile(p)) return;
         var btn = el('pf-saveqr-btn');
         var label = btn ? btn.textContent : '';
         if (btn) { btn.textContent = 'Preparing…'; btn.disabled = true; }
@@ -364,19 +491,32 @@
         function updateOpenRow() {
             if (!openRow) return;
             openRow.innerHTML = '';
-            // Sarawak Talents card selected → Save the QR (same slot the socials use to Open).
+            // Sarawak Talents card selected → owners can save their wallpaper QR.
             if (active === PROFILE_KEY) {
-                var s = document.createElement('button');
-                s.type = 'button';
-                s.className = 'qr-open-btn';
-                s.id = 'pf-saveqr-btn';
-                s.innerHTML = 'Save QR <span aria-hidden="true">↓</span>';
-                s.addEventListener('click', function () { exportProfileCard(p); });
-                openRow.appendChild(s);
-                var hint = document.createElement('p');
-                hint.className = 'qr-open-hint';
-                hint.textContent = 'Save your card image, or tap an icon to open its link.';
-                openRow.appendChild(hint);
+                if (isOwnProfile(p)) {
+                    var s = document.createElement('button');
+                    s.type = 'button';
+                    s.className = 'qr-open-btn';
+                    s.id = 'pf-saveqr-btn';
+                    s.innerHTML = 'Save QR <span aria-hidden="true">↓</span>';
+                    s.addEventListener('click', function () { exportProfileCard(p); });
+                    openRow.appendChild(s);
+                    var hint = document.createElement('p');
+                    hint.className = 'qr-open-hint';
+                    hint.textContent = 'Save your card image, or tap an icon to open its link.';
+                    openRow.appendChild(hint);
+                } else {
+                    var b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'qr-open-btn';
+                    b.innerHTML = 'Open Sarawak Talents <span aria-hidden="true">↗</span>';
+                    b.addEventListener('click', function () { openTarget(PROFILE_KEY); });
+                    openRow.appendChild(b);
+                    var hintGuest = document.createElement('p');
+                    hintGuest.className = 'qr-open-hint';
+                    hintGuest.textContent = 'Tap an icon to open its link.';
+                    openRow.appendChild(hintGuest);
+                }
                 return;
             }
             var meta = metaFor(active);

@@ -8,6 +8,7 @@
     var sb = window.stSupabase;                 // null in preview mode
     var LIVE = !!sb;
     var PENDING_KEY = 'st_pending_invite';
+    var PENDING_REF_KEY = 'st_pending_ref';      // referrer's @username, for the Ambassador badge
 
     var steps = Array.prototype.slice.call(document.querySelectorAll('.join-step'));
     var dots = Array.prototype.slice.call(document.querySelectorAll('.join-progress-dot'));
@@ -20,6 +21,12 @@
     var avatarFile = null;
     var editMode = params.get('mode') === 'edit';
     var currentUsername = null;      // the signed-in user's existing handle (edit mode)
+
+    // Persist a referral (?ref=<username>) across the Google OAuth round-trip,
+    // same idea as PENDING_KEY for invite codes. Only meaningful for a brand
+    // new signup — never touched again once a profile exists.
+    var refParam = params.get('ref');
+    if (refParam && !editMode) localStorage.setItem(PENDING_REF_KEY, refParam.trim().toLowerCase());
 
     if (!LIVE && banner) banner.hidden = false;
 
@@ -488,6 +495,40 @@
 
     renderBadgePicker();
 
+    // ── achievement tags ("Also skilled in...") — separate from the primary
+    // Field/Industry selects above, purely for the Multi-Talented badge. Uses
+    // the same source list as Industry (window.ST_INDUSTRIES) so it reads
+    // against a familiar vocabulary, but never touches category/industry
+    // themselves — those stay single-value scalars the directory's filter/
+    // sort/search relies on. ─────────────────────────────────────────────────
+    var ACHV_TAG_MAX = 6;
+    var selectedTags = [];
+    var tagPicker = document.getElementById('tag-picker');
+
+    function renderTagPicker() {
+        if (!tagPicker || !window.ST_INDUSTRIES) return;
+        tagPicker.innerHTML = '';
+        window.ST_INDUSTRIES.forEach(function (name) {
+            var sel = selectedTags.indexOf(name) >= 0;
+            var chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'join-tag-chip' + (sel ? ' is-selected' : '');
+            chip.textContent = name;
+            chip.addEventListener('click', function () { toggleTag(name); });
+            tagPicker.appendChild(chip);
+        });
+    }
+
+    function toggleTag(name) {
+        var i = selectedTags.indexOf(name);
+        if (i >= 0) selectedTags.splice(i, 1);
+        else if (selectedTags.length < ACHV_TAG_MAX) selectedTags.push(name);
+        else selectedTags = selectedTags.slice(0, ACHV_TAG_MAX - 1).concat(name);
+        renderTagPicker();
+    }
+
+    renderTagPicker();
+
     // Pre-fill the form from an existing profile (edit mode)
     function prefillProfile(p) {
         currentUsername = p.username || null;
@@ -500,6 +541,13 @@
         document.getElementById('pf-location').value = p.location || '';
         setIndustry(p.industry || '');
         document.getElementById('pf-bio').value = p.bio || '';
+        var bioBmEl = document.getElementById('pf-bio-bm');
+        if (bioBmEl) bioBmEl.value = p.bio_bm || '';
+        if (LIVE) {
+            sb.from('profile_tags').select('tag').eq('profile_id', p.id).then(function (res) {
+                if (res.data) { selectedTags = res.data.map(function (r) { return r.tag; }); renderTagPicker(); }
+            });
+        }
         var links = p.links || {};
         LINK_KEYS.forEach(function (k) {
             var el = document.getElementById('pf-link-' + k);
@@ -558,6 +606,7 @@
             industry: currentIndustry() || null,
             background: null,
             bio: document.getElementById('pf-bio').value.trim() || null,
+            bio_bm: (document.getElementById('pf-bio-bm').value || '').trim() || null,
             links: links,
             education: collectEducation(),
             org_photos: selectedBadges.slice(0, maxBadges),
@@ -606,15 +655,27 @@
             // Only the avatar is uploaded now; badges are chosen from our set.
             // Photo is optional — a failed upload must not block profile creation.
             var avatarUploadFailed = false;
-            uploadImage(avatarFile, user.id, 'avatar')
-                .catch(function (err) {
+            // referred_by is only ever set at first creation (edit mode never
+            // touches it — the DB also enforces this via a lock trigger).
+            var refUsername = (!editMode && localStorage.getItem(PENDING_REF_KEY)) || null;
+            var referredByPromise = refUsername
+                ? sb.rpc('resolve_referrer', { p_username: refUsername })
+                    .then(function (r) { return r.data || null; })
+                    .catch(function () { return null; })
+                : Promise.resolve(null);
+
+            Promise.all([
+                uploadImage(avatarFile, user.id, 'avatar').catch(function (err) {
                     avatarUploadFailed = true;
                     console.warn('[join] avatar upload failed:', err);
                     return null;
-                })
-                .then(function (avatarUrl) {
+                }),
+                referredByPromise
+            ]).then(function (results) {
+                var avatarUrl = results[0], referredBy = results[1];
                 var payload = collectProfile(user.id);   // includes org_photos / org_photo
                 if (avatarUrl) payload.avatar_url = avatarUrl;   // don't wipe existing on edit
+                if (referredBy && referredBy !== user.id) payload.referred_by = referredBy;
                 return sb.from('profiles').upsert(payload).select().single();
             }).then(function (res) {
                 submitBtn.disabled = false;
@@ -629,9 +690,11 @@
                     return;
                 }
                 localStorage.removeItem(PENDING_KEY);
+                localStorage.removeItem(PENDING_REF_KEY);
                 if (avatarUploadFailed) {
                     setError(profileError, 'Profile saved — your photo didn\'t upload. You can add one from Edit profile.');
                 }
+                syncAchievementBadges(res.data);   // fire-and-forget: tags + badge check(s)
                 finish();
             }).catch(function (ex) {
                 submitBtn.disabled = false;
@@ -640,6 +703,29 @@
                     msg = 'That photo couldn\'t be uploaded. Try a JPG or PNG, or submit without a photo.';
                 }
                 setError(profileError, msg);
+            });
+        });
+    }
+
+    // Replaces this profile's achievement tags with the current picker
+    // selection, then re-checks real-time badges for this user AND (if this
+    // profile was referred by someone) for the referrer — a referred
+    // profile becoming complete is what makes Ambassador progress, and that
+    // save happens in the REFERRED person's session, not the referrer's.
+    // Doesn't block the "You're in" screen; the toast can land a beat later.
+    function syncAchievementBadges(profile) {
+        var uid = profile.id;
+        sb.from('profile_tags').delete().eq('profile_id', uid).then(function () {
+            var insert = selectedTags.length
+                ? sb.from('profile_tags').insert(selectedTags.map(function (t) { return { profile_id: uid, tag: t }; }))
+                : Promise.resolve(null);
+            insert.then(function () {
+                sb.rpc('check_and_award_badges', { p_user_id: uid }).then(function (r) {
+                    if (r.data && r.data.length && window.BadgeToast) BadgeToast.show(r.data);
+                });
+                if (profile.referred_by) {
+                    sb.rpc('check_and_award_badges', { p_user_id: profile.referred_by });
+                }
             });
         });
     }

@@ -2,11 +2,8 @@ name = "sarawaktalents-profile-og"
 main = "workers/profile-og.js"
 compatibility_date = "2024-08-01"
 
-# Route requires sarawaktalents.com on Cloudflare (orange-cloud proxy enabled).
+# Profiles now live on the app subdomain. Route requires sarawaktalents.com on
+# Cloudflare (orange-cloud proxy enabled) with app.sarawaktalents.com in the zone.
 [[routes]]
-pattern = "*sarawaktalents.com/profile*"
-zone_name = "sarawaktalents.com"
-
-[[routes]]
-pattern = "*www.sarawaktalents.com/profile*"
+pattern = "*app.sarawaktalents.com/profile*"
 zone_name = "sarawaktalents.com"

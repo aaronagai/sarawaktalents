@@ -9,17 +9,18 @@
     <meta property="og:site_name" content="Sarawak Talents">
     <meta property="og:title" content="Join Sarawak Talents">
     <meta property="og:description" content="Invite-only network for top Sarawakian talents.">
-    <meta property="og:url" content="https://sarawaktalents.com/join/">
-    <meta property="og:image" content="https://sarawaktalents.com/photos/linkpreview.jpg">
+    <meta property="og:url" content="https://app.sarawaktalents.com/join/">
+    <meta property="og:image" content="https://app.sarawaktalents.com/photos/linkpreview.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="https://sarawaktalents.com/photos/linkpreview.jpg">
+    <meta name="twitter:image" content="https://app.sarawaktalents.com/photos/linkpreview.jpg">
 
     <script src="https://unpkg.com/reicon@latest/cdn/reicon.min.js"></script>
     <link rel="stylesheet" href="../tailwind.css">
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="../join.css">
+    <link rel="stylesheet" href="../badge-toast.css">
     <link rel="manifest" href="../manifest.json">
     <meta name="theme-color" content="#0d9488">
     <link rel="icon" href="../sslogo.svg" type="image/svg+xml">
@@ -102,10 +103,13 @@
                             <span id="avatar-initials">?</span>
                             <img id="avatar-img" alt="" hidden>
                         </div>
-                        <label class="join-avatar-upload">
-                            <span class="join-btn join-btn--ghost">Upload photo</span>
-                            <input id="avatar-input" type="file" accept="image/*" hidden>
-                        </label>
+                        <div class="join-avatar-upload-col">
+                            <label class="join-avatar-upload">
+                                <span class="join-btn join-btn--ghost">Upload photo</span>
+                                <input id="avatar-input" type="file" accept="image/*" hidden>
+                            </label>
+                            <p class="join-avatar-hint">Add a profile photo to earn your verified checkmark in the directory.</p>
+                        </div>
                     </div>
 
                     <label class="join-field">
@@ -222,10 +226,21 @@
                     <!-- Live preview of the profile line so people catch awkward combos before saving -->
                     <p id="pf-preview" class="join-preview" aria-live="polite" hidden></p>
 
+                    <div class="join-field">
+                        <span class="join-label">Also skilled in <span class="join-optional">(optional — pick a couple more)</span></span>
+                        <div class="join-tag-picker" id="tag-picker"></div>
+                    </div>
+
                     <label class="join-field">
                         <span class="join-label">Short bio <span class="join-optional">(optional)</span></span>
                         <textarea id="pf-bio" class="join-input join-textarea" rows="3" maxlength="240"
                                   placeholder="One or two lines about what you do and what you're looking for."></textarea>
+                    </label>
+
+                    <label class="join-field">
+                        <span class="join-label">Bio (Bahasa Malaysia) <span class="join-optional">(optional)</span></span>
+                        <textarea id="pf-bio-bm" class="join-input join-textarea" rows="3" maxlength="240"
+                                  placeholder="Bio ringkas dalam Bahasa Malaysia."></textarea>
                     </label>
 
                     <div class="join-grid-2">
@@ -301,7 +316,7 @@
                         <div class="onboarding-card-mock">
                             <img src="../photos/user1.png" alt="" class="onboarding-card-avatar">
                             <div class="onboarding-card-info">
-                                <strong>Aaron Nagai</strong>
+                                <strong>Aaron Nagai <re-icon icon="verified" size="14" weight="filled" class="onboarding-verified" aria-hidden="true"></re-icon></strong>
                                 <span>Software Engineer · Kuching</span>
                             </div>
                             <span class="onboarding-card-qr" aria-hidden="true">
@@ -314,7 +329,7 @@
                     </div>
                     <p class="onboarding-eyebrow">1 of 3</p>
                     <h2 class="onboarding-title">Your digital name card</h2>
-                    <p class="onboarding-desc">Build your profile once — name, role, industry, socials — and it becomes a shareable card that's always up to date. No more re-typing your info.</p>
+                    <p class="onboarding-desc">Build your profile once — name, role, industry, socials — and it becomes a shareable card that's always up to date. <strong>Upload a photo</strong> to get your verified checkmark next to your name in the directory.</p>
                 </section>
 
                 <section class="onboarding-slide" data-slide="2" hidden>
@@ -389,6 +404,7 @@
     <script src="../config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase-client.js"></script>
+    <script src="../badge-toast.js"></script>
     <script src="../join.js"></script>
 </body>
 </html>

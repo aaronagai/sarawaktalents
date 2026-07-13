@@ -292,7 +292,7 @@
         wireAchievements(p);
     }
 
-    // ── achievements: view log, Connect, badge list ─────────────────────────────
+    // ── achievements: view log, badge list ─────────────────────────────────────
     function wireAchievements(p) {
         var isOwn = !!currentUser && currentUser === p.id;
 
@@ -302,25 +302,6 @@
         // viewer_id is null for anonymous visitors, which the RLS policy allows.
         if (!isOwn) {
             sb.from('profile_views').insert({ viewer_id: currentUser, viewed_profile_id: p.id });
-        }
-
-        var connectBtn = el('pf-connect-btn');
-        if (currentUser && !isOwn) {
-            connectBtn.hidden = false;
-            sb.from('connections').select('id').eq('user_id', currentUser).eq('connected_user_id', p.id).maybeSingle()
-                .then(function (r) {
-                    if (r.data) { connectBtn.textContent = 'Connected'; connectBtn.disabled = true; }
-                });
-            connectBtn.addEventListener('click', function () {
-                connectBtn.disabled = true;
-                sb.from('connections').insert({ user_id: currentUser, connected_user_id: p.id }).then(function (r) {
-                    if (r.error) { connectBtn.disabled = false; return; }
-                    connectBtn.textContent = 'Connected';
-                    sb.rpc('check_and_award_badges', { p_user_id: currentUser }).then(function (br) {
-                        if (br.data && br.data.length && window.BadgeToast) BadgeToast.show(br.data);
-                    });
-                });
-            });
         }
 
         renderBadgesSection(p, isOwn);

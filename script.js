@@ -669,13 +669,7 @@ async function loadAchievementBadges() {
 }
 
 // Signed-in members: "Log In" → "Edit profile", "Get Started" → "Profile".
-async function reflectAuthState() {
-  if (!window.ST_CONFIGURED || !window.stSupabase) return;
-  const { data: { session } } = await window.stSupabase.auth.getSession();
-  if (!session) return;
-  const { data: prof } = await window.stSupabase
-    .from('profiles').select('id, username').eq('id', session.user.id).maybeSingle();
-  if (!prof) return;
+function applySignedInNav(prof) {
   loginTarget = ST_SITE.join('mode=edit');
   document.querySelectorAll('.hero-nav-btn--login').forEach(btn => {
     btn.setAttribute('data-i18n', 'editProfile');
@@ -688,6 +682,46 @@ async function reflectAuthState() {
       btn.textContent = (translations[currentLang] || translations.en).profile;
     });
   }
+}
+
+function resetSignedOutNav() {
+  loginTarget = ST_SITE.join('mode=login');
+  getStartedTarget = ST_SITE.join();
+  document.querySelectorAll('.hero-nav-btn--login').forEach(btn => {
+    btn.setAttribute('data-i18n', 'logIn');
+    btn.textContent = (translations[currentLang] || translations.en).logIn;
+  });
+  document.querySelectorAll('.hero-nav-btn--get-started').forEach(btn => {
+    btn.setAttribute('data-i18n', 'getStarted');
+    btn.textContent = (translations[currentLang] || translations.en).getStarted;
+  });
+}
+
+async function reflectAuthState() {
+  if (!window.ST_CONFIGURED || !window.stSupabase) return;
+  var sb = window.stSupabase;
+  var navBooted = false;
+
+  async function applyFromSession(session) {
+    if (!session) { resetSignedOutNav(); return; }
+    const { data: prof } = await sb
+      .from('profiles').select('id, username').eq('id', session.user.id).maybeSingle();
+    if (!prof) { resetSignedOutNav(); return; }
+    applySignedInNav(prof);
+  }
+
+  function bootNav(session) {
+    if (navBooted) return;
+    navBooted = true;
+    applyFromSession(session);
+  }
+
+  sb.auth.onAuthStateChange(function (event, session) {
+    if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') bootNav(session);
+    if (event === 'SIGNED_OUT') applyFromSession(null);
+  });
+  const { data: { session } } = await sb.auth.getSession();
+  bootNav(session);
 }
 
 loadProfiles();

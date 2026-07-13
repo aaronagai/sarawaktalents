@@ -19,8 +19,32 @@
     var params = new URLSearchParams(location.search);
 
     var avatarFile = null;
-    var editMode = params.get('mode') === 'edit';
+    var JOIN_MODE_KEY = 'st_join_mode';
     var currentUsername = null;      // the signed-in user's existing handle (edit mode)
+
+    // mode=edit can be lost across the Google OAuth round-trip (redirectTo used to
+    // drop the query string). Persist it so returning members still land in edit.
+    function joinMode() {
+        var m = params.get('mode');
+        if (m) return m;
+        try { return sessionStorage.getItem(JOIN_MODE_KEY) || ''; } catch (e) { return ''; }
+    }
+    function isEditMode() { return joinMode() === 'edit'; }
+    function persistJoinMode() {
+        var m = params.get('mode');
+        if (m === 'edit' || m === 'login') {
+            try { sessionStorage.setItem(JOIN_MODE_KEY, m); } catch (e) {}
+        }
+    }
+    function clearJoinMode() {
+        try { sessionStorage.removeItem(JOIN_MODE_KEY); } catch (e) {}
+    }
+    function oauthRedirectTo() {
+        return location.origin + location.pathname + (location.search || '');
+    }
+
+    var editMode = isEditMode();
+    persistJoinMode();
 
     // Persist a referral (?ref=<username>) across the Google OAuth round-trip,
     // same idea as PENDING_KEY for invite codes. Only meaningful for a brand
@@ -299,9 +323,10 @@
             return;
         }
         googleBtn.disabled = true;
+        persistJoinMode();
         sb.auth.signInWithOAuth({
             provider: 'google',
-            options: { redirectTo: location.origin + location.pathname }
+            options: { redirectTo: oauthRedirectTo() }
         });
     });
 
@@ -753,22 +778,25 @@
     }
 
     // ── returning from Google OAuth (live mode) ────────────────────────────────
-    function resumeFromSession() {
+    function resumeFromSession(session) {
         if (!LIVE) return;
-        sb.auth.getSession().then(function (res) {
-            var session = res.data && res.data.session;
-            if (!session) {                            // not signed in yet
-                var m = params.get('mode');
-                if (m === 'login' || m === 'edit') showStep(1);
+        var mode = joinMode();
+        var editing = mode === 'edit';
+
+        function proceed(sess) {
+            if (!sess) {
+                if (mode === 'login' || mode === 'edit') showStep(1);
+                else showStep(0);
                 return;
             }
-            var uid = session.user.id;
+            clearJoinMode();
+            var uid = sess.user.id;
             sb.from('profiles').select('*').eq('id', uid).maybeSingle().then(function (p) {
                 if (p.data) {
-                    if (editMode) { applyEditChrome(); prefillProfile(p.data); showStep(2); return; }
+                    if (editing) { applyEditChrome(); prefillProfile(p.data); showStep(2); return; }
                     location.href = ST_SITE.home(); return;  // already a member → directory
                 }
-                if (editMode) { showStep(0); return; }  // nothing to edit yet
+                if (editing) { showStep(0); return; }  // nothing to edit yet
                 var code = localStorage.getItem(PENDING_KEY);
                 if (!code) { showStep(0); return; }    // need an invite
                 sb.rpc('claim_invite', { p_code: code }).then(function (c) {
@@ -776,6 +804,14 @@
                     showStep(2); syncInitials();
                 });
             });
+        }
+
+        if (session !== undefined) {
+            proceed(session);
+            return;
+        }
+        sb.auth.getSession().then(function (res) {
+            proceed(res.data && res.data.session);
         });
     }
 
@@ -836,10 +872,21 @@
     })();
 
     // ── init ──────────────────────────────────────────────────────────────────
+    // Wait for Supabase to finish restoring the session from storage / OAuth URL
+    // before routing — getSession() alone can return null on the first tick.
     if (LIVE) {
-        resumeFromSession();
-        var m0 = params.get('mode');
-        if (m0 !== 'login' && m0 !== 'edit') showStep(0);
+        var authBooted = false;
+        function bootAuth(session) {
+            if (authBooted) return;
+            authBooted = true;
+            resumeFromSession(session);
+        }
+        sb.auth.onAuthStateChange(function (event, session) {
+            if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') bootAuth(session);
+        });
+        sb.auth.getSession().then(function (res) {
+            bootAuth(res.data && res.data.session);
+        });
     } else {
         if (editMode) { applyEditChrome(); showStep(2); }
         else showStep(params.get('mode') === 'login' ? 1 : 0);

@@ -141,7 +141,7 @@ function applyLang(lang) {
 
 const candidates = [
   { id: 1, dun_no: "T01", name: "Aaron Nagai",     dun: "Software Engineer", party: "Tech",     zone: "Kuching", parliamentary: "Software Development",    orgPhoto: "photos/badges/sarawak-energy-icon.svg" },
-  { id: 2, dun_no: "T02", name: "Raden Hollywood", dun: "Musician",          party: "Arts",     zone: "Miri",    parliamentary: "Performing Arts",         orgPhoto: "photos/badges/air-borneo-icon.svg" },
+  { id: 2, dun_no: "T02", name: "Raden Hollywood", dun: "Musician",          party: "Arts",     zone: "Miri",    parliamentary: "Performing Arts" },
   { id: 3, dun_no: "T03", name: "Andrea Livlo",    dun: "Entrepreneur",      party: "Business", zone: "Sibu",    parliamentary: "Startups & Commerce",     orgPhoto: "photos/badges/petros-icon.svg" },
   { id: 4, dun_no: "T04", name: "Aniq Ashwin",     dun: "Researcher",        party: "Science",  zone: "Bintulu", parliamentary: "Research & Innovation",   orgPhoto: "photos/badges/sarawakmetro-icon.svg" },
 ];

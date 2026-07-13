@@ -104,24 +104,64 @@
     var profileUrl = ST_SITE.profile(handle, true);
     var loaded = null;
     var currentUser = null;   // signed-in viewer's id, or null
+    var viewerProfile = null; // signed-in viewer's profile row, if any
+    var refreshQrOpenRow = null;
 
     function isOwnProfile(p) {
-        return !!(currentUser && p && p.id === currentUser);
+        if (!p || !currentUser) return false;
+        if (String(p.id) === String(currentUser)) return true;
+        if (viewerProfile && p.username && viewerProfile.username === p.username) return true;
+        return !!(viewerProfile && handle && p.username === handle && viewerProfile.username === handle);
+    }
+
+    function setViewer(user) {
+        currentUser = user ? user.id : null;
+        if (!currentUser) {
+            viewerProfile = null;
+            return Promise.resolve();
+        }
+        return sb.from('profiles').select('id, username').eq('id', currentUser).maybeSingle()
+            .then(function (r) { viewerProfile = r.data || null; });
+    }
+
+    function updateSaveQrUI(p) {
+        var actionBtn = el('pf-save-wallpaper-btn');
+        if (!actionBtn) return;
+        if (isOwnProfile(p)) {
+            actionBtn.hidden = false;
+            actionBtn.onclick = function () { exportProfileCard(p); };
+        } else {
+            actionBtn.hidden = true;
+        }
+        if (refreshQrOpenRow) refreshQrOpenRow();
     }
 
     // ── boot ──────────────────────────────────────────────────────────────────
     if (!handle) { showState('pf-notfound'); return; }
     if (!sb) { showState('pf-notfound'); return; }
 
+    function startProfile(p) {
+        if (!p) { showState('pf-notfound'); return; }
+        render(p);
+        updateSaveQrUI(p);
+    }
+
     Promise.all([
         sb.from('profiles').select('*').eq('username', handle).eq('status', 'active').maybeSingle(),
-        sb.auth.getSession()
+        sb.auth.getUser()
     ]).then(function (results) {
         var res = results[0];
-        var session = results[1].data && results[1].data.session;
-        currentUser = session ? session.user.id : null;
-        if (res.error || !res.data) { showState('pf-notfound'); return; }
-        render(res.data);
+        var user = results[1].data && results[1].data.user;
+        return setViewer(user).then(function () {
+            if (res.error || !res.data) { showState('pf-notfound'); return; }
+            startProfile(res.data);
+        });
+    });
+
+    sb.auth.onAuthStateChange(function (_event, session) {
+        setViewer(session && session.user).then(function () {
+            if (loaded) updateSaveQrUI(loaded);
+        });
     });
 
     // ── render ────────────────────────────────────────────────────────────────
@@ -443,7 +483,7 @@
     }
     async function exportProfileCard(p) {
         if (!isOwnProfile(p)) return;
-        var btn = el('pf-saveqr-btn');
+        var btn = el('pf-saveqr-btn') || el('pf-save-wallpaper-btn');
         var label = btn ? btn.textContent : '';
         if (btn) { btn.textContent = 'Preparing…'; btn.disabled = true; }
         try {
@@ -505,7 +545,7 @@
                     openRow.appendChild(s);
                     var hint = document.createElement('p');
                     hint.className = 'qr-open-hint';
-                    hint.textContent = 'Save your card image, or tap an icon to open its link.';
+                    hint.textContent = 'Save your wallpaper, or tap an icon to open its link.';
                     openRow.appendChild(hint);
                 } else {
                     var b = document.createElement('button');
@@ -563,6 +603,7 @@
         soon.textContent = 'More coming soon';
         buttons.appendChild(soon);
 
+        refreshQrOpenRow = updateOpenRow;
         refresh();
     }
 

@@ -635,20 +635,41 @@
         keys.forEach(function (key) {
             var meta = SOCIAL_META[key] || { label: key };
             var li = document.createElement('li');
-            li.className = 'join-social-item';
-            li.innerHTML =
-                '<div class="join-social-item-meta">' +
-                    '<span class="join-social-item-label"></span>' +
-                    '<span class="join-social-item-value"></span>' +
-                '</div>' +
-                '<button type="button" class="join-social-remove">Remove</button>';
-            li.querySelector('.join-social-item-label').textContent = meta.label;
-            li.querySelector('.join-social-item-value').textContent = displayLinkValue(key, selectedLinks[key]);
-            li.querySelector('.join-social-remove').addEventListener('click', function () {
+            li.className = 'join-social-chip';
+
+            var text = document.createElement('span');
+            text.className = 'join-social-chip-text';
+
+            var label = document.createElement('span');
+            label.className = 'join-social-chip-label';
+            label.textContent = meta.label;
+
+            var sep = document.createElement('span');
+            sep.className = 'join-social-chip-sep';
+            sep.setAttribute('aria-hidden', 'true');
+            sep.textContent = '·';
+
+            var value = document.createElement('span');
+            value.className = 'join-social-chip-value';
+            value.textContent = displayLinkValue(key, selectedLinks[key]);
+
+            text.appendChild(label);
+            text.appendChild(sep);
+            text.appendChild(value);
+
+            var remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'join-social-chip-x';
+            remove.setAttribute('aria-label', 'Remove ' + meta.label);
+            remove.textContent = '×';
+            remove.addEventListener('click', function () {
                 delete selectedLinks[key];
                 renderSocialList();
                 refreshSocialPlatformOptions();
             });
+
+            li.appendChild(text);
+            li.appendChild(remove);
             socialListEl.appendChild(li);
         });
         refreshSocialPlatformOptions();

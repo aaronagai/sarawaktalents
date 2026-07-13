@@ -59,45 +59,16 @@
 
     if (!LIVE && banner) banner.hidden = false;
 
-    // ── Industry dropdown + live profile-line preview ───────────────────
-    var industrySelect = document.getElementById('pf-industry-select');
-    var industryOther = document.getElementById('pf-industry'); // holds the "Other" value
+    // ── Industry (free text) + live profile-line preview ────────────────
+    var industryEl = document.getElementById('pf-industry');
     var previewEl = document.getElementById('pf-preview');
     var roleOrgPreviewEl = document.getElementById('pf-role-org-preview');
 
-    (function populateIndustryOptions() {
-        if (!industrySelect || !window.ST_INDUSTRIES) return;
-        var otherOpt = industrySelect.querySelector('option[value="__other"]');
-        window.ST_INDUSTRIES.forEach(function (name) {
-            var opt = document.createElement('option');
-            opt.value = name;
-            opt.textContent = name;
-            industrySelect.insertBefore(opt, otherOpt);
-        });
-    })();
-
-    // The single source of truth for the chosen industry (dropdown or "Other").
     function currentIndustry() {
-        if (!industrySelect) return industryOther ? industryOther.value.trim() : '';
-        if (industrySelect.value === '__other') return industryOther ? industryOther.value.trim() : '';
-        return industrySelect.value || '';
+        return industryEl ? industryEl.value.trim() : '';
     }
     function setIndustry(val) {
-        val = (val || '').trim();
-        if (!industrySelect) { if (industryOther) industryOther.value = val; return; }
-        var opt = Array.prototype.filter.call(industrySelect.options, function (o) {
-            return o.value !== '__other' && o.value.toLowerCase() === val.toLowerCase();
-        })[0];
-        if (val && opt) {
-            industrySelect.value = opt.value;
-            if (industryOther) { industryOther.hidden = true; industryOther.value = ''; industryOther.required = false; }
-        } else if (val) {
-            industrySelect.value = '__other';
-            if (industryOther) { industryOther.hidden = false; industryOther.value = val; industryOther.required = true; }
-        } else {
-            industrySelect.selectedIndex = 0;
-            if (industryOther) { industryOther.hidden = true; industryOther.value = ''; industryOther.required = false; }
-        }
+        if (industryEl) industryEl.value = (val || '').trim();
         updatePreview();
     }
 
@@ -159,22 +130,10 @@
         }
     }
 
-    if (industrySelect) {
-        industrySelect.addEventListener('change', function () {
-            var other = industrySelect.value === '__other';
-            if (industryOther) {
-                industryOther.hidden = !other;
-                industryOther.required = other;
-                if (other) industryOther.focus(); else industryOther.value = '';
-            }
-            updatePreview();
-        });
-    }
-    ['pf-name', 'pf-role', 'pf-organisation'].forEach(function (id) {
+    ['pf-name', 'pf-role', 'pf-organisation', 'pf-industry'].forEach(function (id) {
         var e = document.getElementById(id);
         if (e) e.addEventListener('input', updatePreview);
     });
-    if (industryOther) industryOther.addEventListener('input', updatePreview);
 
     // ── navigation: steps "fly" directionally + the tray height morphs ───────
     function stepEl(step) { return document.querySelector('.join-step[data-step="' + step + '"]'); }
@@ -525,40 +484,6 @@
 
     renderBadgePicker();
 
-    // ── achievement tags ("Also skilled in...") — separate from the primary
-    // Field/Industry selects above, purely for the Multi-Talented badge. Uses
-    // the same source list as Industry (window.ST_INDUSTRIES) so it reads
-    // against a familiar vocabulary, but never touches category/industry
-    // themselves — those stay single-value scalars the directory's filter/
-    // sort/search relies on. ─────────────────────────────────────────────────
-    var ACHV_TAG_MAX = 6;
-    var selectedTags = [];
-    var tagPicker = document.getElementById('tag-picker');
-
-    function renderTagPicker() {
-        if (!tagPicker || !window.ST_INDUSTRIES) return;
-        tagPicker.innerHTML = '';
-        window.ST_INDUSTRIES.forEach(function (name) {
-            var sel = selectedTags.indexOf(name) >= 0;
-            var chip = document.createElement('button');
-            chip.type = 'button';
-            chip.className = 'join-tag-chip' + (sel ? ' is-selected' : '');
-            chip.textContent = name;
-            chip.addEventListener('click', function () { toggleTag(name); });
-            tagPicker.appendChild(chip);
-        });
-    }
-
-    function toggleTag(name) {
-        var i = selectedTags.indexOf(name);
-        if (i >= 0) selectedTags.splice(i, 1);
-        else if (selectedTags.length < ACHV_TAG_MAX) selectedTags.push(name);
-        else selectedTags = selectedTags.slice(0, ACHV_TAG_MAX - 1).concat(name);
-        renderTagPicker();
-    }
-
-    renderTagPicker();
-
     // Pre-fill the form from an existing profile (edit mode)
     function prefillProfile(p) {
         currentUsername = p.username || null;
@@ -571,11 +496,6 @@
         document.getElementById('pf-location').value = p.location || '';
         setIndustry(p.industry || '');
         document.getElementById('pf-bio').value = p.bio || '';
-        if (LIVE) {
-            sb.from('profile_tags').select('tag').eq('profile_id', p.id).then(function (res) {
-                if (res.data) { selectedTags = res.data.map(function (r) { return r.tag; }); renderTagPicker(); }
-            });
-        }
         var links = p.links || {};
         LINK_KEYS.forEach(function (k) {
             var el = document.getElementById('pf-link-' + k);
@@ -734,27 +654,17 @@
         });
     }
 
-    // Replaces this profile's achievement tags with the current picker
-    // selection, then re-checks real-time badges for this user AND (if this
-    // profile was referred by someone) for the referrer — a referred
-    // profile becoming complete is what makes Ambassador progress, and that
-    // save happens in the REFERRED person's session, not the referrer's.
-    // Doesn't block the "You're in" screen; the toast can land a beat later.
+    // Re-checks real-time badges after a profile save. Doesn't block the
+    // "You're in" screen; the toast can land a beat later. If this profile was
+    // referred by someone, also re-check the referrer (Ambassador progress).
     function syncAchievementBadges(profile) {
         var uid = profile.id;
-        sb.from('profile_tags').delete().eq('profile_id', uid).then(function () {
-            var insert = selectedTags.length
-                ? sb.from('profile_tags').insert(selectedTags.map(function (t) { return { profile_id: uid, tag: t }; }))
-                : Promise.resolve(null);
-            insert.then(function () {
-                sb.rpc('check_and_award_badges', { p_user_id: uid }).then(function (r) {
-                    if (r.data && r.data.length && window.BadgeToast) BadgeToast.show(r.data);
-                });
-                if (profile.referred_by) {
-                    sb.rpc('check_and_award_badges', { p_user_id: profile.referred_by });
-                }
-            });
+        sb.rpc('check_and_award_badges', { p_user_id: uid }).then(function (r) {
+            if (r.data && r.data.length && window.BadgeToast) BadgeToast.show(r.data);
         });
+        if (profile.referred_by) {
+            sb.rpc('check_and_award_badges', { p_user_id: profile.referred_by });
+        }
     }
 
     function uploadImage(file, uid, key) {

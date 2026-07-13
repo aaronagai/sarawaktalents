@@ -374,23 +374,24 @@
         var F = "-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif";
         ctx.textAlign = 'center';
 
-        // Layout tuned for iPhone lock-screen wallpaper: large clock + widget row
-        // at the top, flashlight/camera near the bottom.
-        var topSafe = 800;
-        var cardW = 620;
-        var cardPad = 40;
-        var cardR = 48;
-        var qrSize = 520;
-        var nameSize = 46;
-        var roleSize = 32;
+        // Layout tuned for iPhone lock-screen wallpaper. Percent-based so it
+        // survives iOS crop/zoom — clock + widget row need ~52% of the height.
+        var topSafe = Math.round(H * 0.52);
+        var bottomSafe = Math.round(H * 0.15);
+        var cardW = 560;
+        var cardPad = 32;
+        var cardR = 44;
+        var qrSize = 440;
+        var nameSize = 42;
+        var roleSize = 30;
         var roleOrg = roleAtOrgLine(p);
-        var cardH = 650;
+        var cardH = cardPad + qrSize + 44 + (roleOrg ? 38 : 0) + cardPad + 12;
         var cardX = (W - cardW) / 2;
         var cardY = topSafe;
         var qrX = cardX + (cardW - qrSize) / 2;
         var qrY = cardY + cardPad;
-        var nameY = qrY + qrSize + 48;
-        var roleY = nameY + 42;
+        var nameY = qrY + qrSize + 44;
+        var roleY = nameY + 36;
 
         ctx.fillStyle = '#b3b3b3';
         ctx.fillRect(0, 0, W, H);
@@ -426,15 +427,16 @@
             ctx.fillText('@' + p.username, W / 2, roleY);
         }
 
-        var scanY = 1510;
-        var urlY = 1585;
+        var cardBottom = cardY + cardH;
+        var scanY = cardBottom + 56;
+        var urlY = Math.min(scanY + 54, H - Math.round(H * 0.07));
 
         ctx.fillStyle = '#ffffff';
-        ctx.font = '600 40px ' + F;
+        ctx.font = '600 38px ' + F;
         ctx.fillText('Scan to connect', W / 2, scanY);
 
         ctx.fillStyle = '#000000';
-        ctx.font = '500 34px ' + F;
+        ctx.font = '500 32px ' + F;
         ctx.fillText('sarawaktalents.com', W / 2, urlY);
 
         return new Promise(function (res) { canvas.toBlob(res, 'image/png'); });

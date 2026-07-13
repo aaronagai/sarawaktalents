@@ -103,16 +103,22 @@
 
     var profileUrl = ST_SITE.profile(handle, true);
     var loaded = null;
+    var currentUser = null;   // signed-in viewer's id, or null
 
     // ── boot ──────────────────────────────────────────────────────────────────
     if (!handle) { showState('pf-notfound'); return; }
     if (!sb) { showState('pf-notfound'); return; }
 
-    sb.from('profiles').select('*').eq('username', handle).eq('status', 'active').maybeSingle()
-        .then(function (res) {
-            if (res.error || !res.data) { showState('pf-notfound'); return; }
-            render(res.data);
-        });
+    Promise.all([
+        sb.from('profiles').select('*').eq('username', handle).eq('status', 'active').maybeSingle(),
+        sb.auth.getSession()
+    ]).then(function (results) {
+        var res = results[0];
+        var session = results[1].data && results[1].data.session;
+        currentUser = session ? session.user.id : null;
+        if (res.error || !res.data) { showState('pf-notfound'); return; }
+        render(res.data);
+    });
 
     // ── render ────────────────────────────────────────────────────────────────
     function render(p) {
@@ -229,6 +235,87 @@
             });
         });
 
+        wireAchievements(p);
+    }
+
+    // ── achievements: view log, Connect, referral link, badge list ──────────────
+    function wireAchievements(p) {
+        var isOwn = !!currentUser && currentUser === p.id;
+
+        // View log — feeds Explorer (zone coverage) and Rising Star (monthly
+        // counts), both scheduled checks, not real-time. Skipped for the
+        // owner viewing their own profile so those can't be self-farmed.
+        // viewer_id is null for anonymous visitors, which the RLS policy allows.
+        if (!isOwn) {
+            sb.from('profile_views').insert({ viewer_id: currentUser, viewed_profile_id: p.id });
+        }
+
+        var connectBtn = el('pf-connect-btn');
+        if (currentUser && !isOwn) {
+            connectBtn.hidden = false;
+            sb.from('connections').select('id').eq('user_id', currentUser).eq('connected_user_id', p.id).maybeSingle()
+                .then(function (r) {
+                    if (r.data) { connectBtn.textContent = 'Connected'; connectBtn.disabled = true; }
+                });
+            connectBtn.addEventListener('click', function () {
+                connectBtn.disabled = true;
+                sb.from('connections').insert({ user_id: currentUser, connected_user_id: p.id }).then(function (r) {
+                    if (r.error) { connectBtn.disabled = false; return; }
+                    connectBtn.textContent = 'Connected';
+                    sb.rpc('check_and_award_badges', { p_user_id: currentUser }).then(function (br) {
+                        if (br.data && br.data.length && window.BadgeToast) BadgeToast.show(br.data);
+                    });
+                });
+            });
+        }
+
+        var referBtn = el('pf-refer-btn');
+        if (isOwn && p.username) {
+            referBtn.hidden = false;
+            referBtn.addEventListener('click', function () {
+                var link = location.origin + ST_SITE.join('ref=' + encodeURIComponent(p.username));
+                navigator.clipboard.writeText(link).then(function () {
+                    var t = referBtn.textContent;
+                    referBtn.textContent = 'Copied!';
+                    setTimeout(function () { referBtn.textContent = t; }, 1400);
+                });
+            });
+        }
+
+        renderBadgesSection(p, isOwn);
+    }
+
+    // Own profile: every catalog badge, earned first then greyed-out locked
+    // ones with a hover/tap "how to earn" hint (the badge's own description).
+    // Public view: earned badges only, no locked placeholders.
+    function renderBadgesSection(p, isOwn) {
+        var section = el('pf-badges-section');
+        var grid = el('pf-badges-grid');
+
+        var earnedQuery = sb.from('user_badges').select('badge_id, badges(slug, name, description, icon)').eq('user_id', p.id);
+        var allQuery = isOwn ? sb.from('badges').select('*') : Promise.resolve({ data: null });
+
+        Promise.all([earnedQuery, allQuery]).then(function (results) {
+            var earnedRows = (results[0].data || []).map(function (r) { return r.badges; }).filter(Boolean);
+            var earnedSlugs = {};
+            earnedRows.forEach(function (b) { earnedSlugs[b.slug] = true; });
+
+            var html = earnedRows.map(function (b) { return badgeTileHtml(b, false); }).join('');
+            if (isOwn) {
+                var locked = (results[1].data || []).filter(function (b) { return !earnedSlugs[b.slug]; });
+                html += locked.map(function (b) { return badgeTileHtml(b, true); }).join('');
+            }
+
+            if (html) { grid.innerHTML = html; section.hidden = false; }
+        });
+    }
+
+    function badgeTileHtml(b, locked) {
+        var tip = escapeHtml(b.description || '');
+        return '<span class="pf-achv-badge' + (locked ? ' is-locked' : '') + '" tabindex="0" role="img" aria-label="' + escapeHtml(b.name) + ': ' + tip + '">' +
+               '<span class="pf-achv-badge-icon" aria-hidden="true">' + (b.icon || '🏅') + '</span>' +
+               escapeHtml(b.name) +
+               '<span class="pf-achv-tip">' + tip + '</span></span>';
     }
 
     // ── Save / share the Sarawak Talents QR as a portrait image ─────────────────

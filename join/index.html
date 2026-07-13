@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="../tailwind.css">
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="../join.css">
+    <link rel="stylesheet" href="../badge-toast.css">
     <link rel="manifest" href="../manifest.json">
     <meta name="theme-color" content="#0d9488">
     <link rel="icon" href="../sslogo.svg" type="image/svg+xml">
@@ -222,10 +223,21 @@
                     <!-- Live preview of the profile line so people catch awkward combos before saving -->
                     <p id="pf-preview" class="join-preview" aria-live="polite" hidden></p>
 
+                    <div class="join-field">
+                        <span class="join-label">Also skilled in <span class="join-optional">(optional — pick a couple more)</span></span>
+                        <div class="join-tag-picker" id="tag-picker"></div>
+                    </div>
+
                     <label class="join-field">
                         <span class="join-label">Short bio <span class="join-optional">(optional)</span></span>
                         <textarea id="pf-bio" class="join-input join-textarea" rows="3" maxlength="240"
                                   placeholder="One or two lines about what you do and what you're looking for."></textarea>
+                    </label>
+
+                    <label class="join-field">
+                        <span class="join-label">Bio (Bahasa Malaysia) <span class="join-optional">(optional)</span></span>
+                        <textarea id="pf-bio-bm" class="join-input join-textarea" rows="3" maxlength="240"
+                                  placeholder="Bio ringkas dalam Bahasa Malaysia."></textarea>
                     </label>
 
                     <div class="join-grid-2">
@@ -389,6 +401,7 @@
     <script src="../config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase-client.js"></script>
+    <script src="../badge-toast.js"></script>
     <script src="../join.js"></script>
 </body>
 </html>

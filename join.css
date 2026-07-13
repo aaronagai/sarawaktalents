@@ -470,6 +470,27 @@ html.dark .join-badge-tile { background: #0f0f0f; border-color: #333; }
 html.dark .join-badge-tile:hover { border-color: #6d28d9; }
 html.dark .join-badge-tile.is-selected { border-color: #a78bfa; box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.18); }
 
+/* Skill tag picker (achievement tags — distinct from org badge tiles above:
+   pill chips, not square image tiles, and teal to match the achievement
+   system's accent rather than the org-badge purple) */
+.join-tag-picker { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.join-tag-chip {
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    border: 1.5px solid #e5e7eb;
+    background: #fff;
+    color: #374151;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.join-tag-chip:hover { border-color: #5eead4; }
+.join-tag-chip.is-selected { border-color: #0d9488; background: #f0fdfa; color: #0d9488; }
+html.dark .join-tag-chip { background: #0f0f0f; border-color: #333; color: #d4d4d4; }
+html.dark .join-tag-chip:hover { border-color: #14b8a6; }
+html.dark .join-tag-chip.is-selected { border-color: #2dd4bf; background: rgba(45, 212, 191, 0.14); color: #5eead4; }
+
 /* Done */
 .join-done { text-align: center; padding: 1rem 0; }
 .join-done-check {

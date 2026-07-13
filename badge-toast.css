@@ -1,0 +1,71 @@
+/* ── Achievement badge toast ─────────────────────────────────────────── */
+.badge-toast-stack {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.6rem;
+    max-width: calc(100vw - 2rem);
+    pointer-events: none;
+}
+.badge-toast {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 20rem;
+    max-width: 100%;
+    padding: 0.75rem 0.85rem;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    box-shadow: 0 20px 45px -14px rgba(17, 24, 39, 0.22);
+    opacity: 0;
+    transform: translateY(0.5rem) scale(0.97);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+}
+.badge-toast.is-in { opacity: 1; transform: translateY(0) scale(1); }
+.badge-toast.is-out { opacity: 0; transform: translateY(0.35rem) scale(0.97); }
+
+.badge-toast-icon {
+    flex-shrink: 0;
+    width: 2.5rem; height: 2.5rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.35rem;
+    border-radius: 0.7rem;
+    background: #f0fdfa;
+}
+.badge-toast-body { display: flex; flex-direction: column; min-width: 0; }
+.badge-toast-eyebrow {
+    font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
+    color: #0d9488;
+}
+.badge-toast-name {
+    font-size: 0.875rem; font-weight: 600; color: #111827;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.badge-toast-close {
+    flex-shrink: 0;
+    margin-left: auto;
+    width: 1.5rem; height: 1.5rem;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    color: #9ca3af;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+.badge-toast-close:hover { background: #f3f4f6; color: #4b5563; }
+
+html.dark .badge-toast { background: #171717; border-color: #2e2e2e; box-shadow: 0 20px 45px -14px rgba(0, 0, 0, 0.55); }
+html.dark .badge-toast-icon { background: rgba(45, 212, 191, 0.14); }
+html.dark .badge-toast-eyebrow { color: #5eead4; }
+html.dark .badge-toast-name { color: #f4f4f5; }
+html.dark .badge-toast-close:hover { background: #262626; color: #d4d4d4; }
+
+@media (max-width: 480px) {
+    .badge-toast-stack { left: 1rem; right: 1rem; align-items: stretch; }
+    .badge-toast { width: 100%; }
+}

@@ -416,6 +416,10 @@ function render() {
   });
 
   filtered.sort((a, b) => {
+    // Verified (photo-uploaded) talents always float to the top.
+    const aVerified = showVerifiedBadge(a) ? 0 : 1;
+    const bVerified = showVerifiedBadge(b) ? 0 : 1;
+    if (aVerified !== bVerified) return aVerified - bVerified;
     if (currentSort === 'name')  return a.name.localeCompare(b.name);
     if (currentSort === 'party') return (partyOrder[a.party] ?? 99) - (partyOrder[b.party] ?? 99) || seqOf(a) - seqOf(b);
     if (currentSort === 'zone')  return a.zone.localeCompare(b.zone) || seqOf(a) - seqOf(b);

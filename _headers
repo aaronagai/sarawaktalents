@@ -1,0 +1,6 @@
+# Bust stale JS after deploys — Safari was serving cached profile.js (old green QR export).
+/*.js
+  Cache-Control: no-cache, must-revalidate
+
+/sw.js
+  Cache-Control: no-cache, must-revalidate

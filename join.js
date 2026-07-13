@@ -23,16 +23,122 @@
 
     if (!LIVE && banner) banner.hidden = false;
 
-    // ── Industry suggestions ────────────────────────────────────────────
+    // ── Industry dropdown + live profile-line preview ───────────────────
+    var industrySelect = document.getElementById('pf-industry-select');
+    var industryOther = document.getElementById('pf-industry'); // holds the "Other" value
+    var previewEl = document.getElementById('pf-preview');
+    var roleOrgPreviewEl = document.getElementById('pf-role-org-preview');
+
     (function populateIndustryOptions() {
-        var list = document.getElementById('pf-industry-options');
-        if (!list || !window.ST_INDUSTRIES) return;
+        if (!industrySelect || !window.ST_INDUSTRIES) return;
+        var otherOpt = industrySelect.querySelector('option[value="__other"]');
         window.ST_INDUSTRIES.forEach(function (name) {
             var opt = document.createElement('option');
             opt.value = name;
-            list.appendChild(opt);
+            opt.textContent = name;
+            industrySelect.insertBefore(opt, otherOpt);
         });
     })();
+
+    // The single source of truth for the chosen industry (dropdown or "Other").
+    function currentIndustry() {
+        if (!industrySelect) return industryOther ? industryOther.value.trim() : '';
+        if (industrySelect.value === '__other') return industryOther ? industryOther.value.trim() : '';
+        return industrySelect.value || '';
+    }
+    function setIndustry(val) {
+        val = (val || '').trim();
+        if (!industrySelect) { if (industryOther) industryOther.value = val; return; }
+        var opt = Array.prototype.filter.call(industrySelect.options, function (o) {
+            return o.value !== '__other' && o.value.toLowerCase() === val.toLowerCase();
+        })[0];
+        if (val && opt) {
+            industrySelect.value = opt.value;
+            if (industryOther) { industryOther.hidden = true; industryOther.value = ''; industryOther.required = false; }
+        } else if (val) {
+            industrySelect.value = '__other';
+            if (industryOther) { industryOther.hidden = false; industryOther.value = val; industryOther.required = true; }
+        } else {
+            industrySelect.selectedIndex = 0;
+            if (industryOther) { industryOther.hidden = true; industryOther.value = ''; industryOther.required = false; }
+        }
+        updatePreview();
+    }
+
+    // Grammar-proof profile line — mirrors the renderer in profile.js.
+    function leadArticle(word) { return /^[aeiou]/i.test((word || '').trim()) ? 'an' : 'a'; }
+    function buildLead(name, role, industry) {
+        var first = (name || '').trim().split(/\s+/)[0] || 'You';
+        role = (role || '').trim();
+        industry = (industry || '').trim();
+        var same = role && industry && role.toLowerCase() === industry.toLowerCase();
+        if (role && industry && !same) return first + ' is ' + leadArticle(role) + ' ' + role + ' in ' + industry + '.';
+        if (same || (industry && !role)) return first + ' works in ' + industry + '.';
+        if (role) return first + ' is ' + leadArticle(role) + ' ' + role + '.';
+        return '';
+    }
+    function updatePreview() {
+        if (!previewEl) return;
+        var nameEl = document.getElementById('pf-name');
+        var roleEl = document.getElementById('pf-role');
+        var line = buildLead(nameEl ? nameEl.value : '', roleEl ? roleEl.value : '', currentIndustry());
+        if (line) { previewEl.textContent = 'Preview: ' + line; previewEl.hidden = false; }
+        else { previewEl.hidden = true; }
+        updateRoleOrgPreview();
+    }
+    function badgeOrgName(src) {
+        var map = {
+            'photos/badges/sarawak-talents.svg': 'Sarawak Talents',
+            'photos/badges/sarawak-energy-icon.svg': 'Sarawak Energy',
+            'photos/badges/petros-icon.svg': 'Petros',
+            'photos/badges/air-borneo-icon.svg': 'AirBorneo',
+            'photos/badges/sarawakmetro-icon.svg': 'Sarawak Metro',
+            'photos/badges/sswff-icon.svg': 'Sarawak Future Fund',
+            'photos/badges/petrolprice-icon.svg': 'PetrolPrice',
+            'photos/badges/timogah-icon.svg': 'Timogah'
+        };
+        return map[src] || '';
+    }
+    function currentOrgName() {
+        var textEl = document.getElementById('pf-organisation');
+        var textOrg = textEl ? textEl.value.trim() : '';
+        if (textOrg) return textOrg;
+        for (var i = 0; i < selectedBadges.length; i++) {
+            var name = badgeOrgName(selectedBadges[i]);
+            if (name) return name;
+        }
+        return '';
+    }
+    function updateRoleOrgPreview() {
+        if (!roleOrgPreviewEl) return;
+        var roleEl = document.getElementById('pf-role');
+        var role = roleEl ? roleEl.value.trim() : '';
+        var org = currentOrgName();
+        var line = (role && org) ? role + ' at ' + org : (role || org || '');
+        if (line) {
+            roleOrgPreviewEl.textContent = 'Card line: ' + line;
+            roleOrgPreviewEl.hidden = false;
+        } else {
+            roleOrgPreviewEl.hidden = true;
+        }
+    }
+
+    if (industrySelect) {
+        industrySelect.addEventListener('change', function () {
+            var other = industrySelect.value === '__other';
+            if (industryOther) {
+                industryOther.hidden = !other;
+                industryOther.required = other;
+                if (other) industryOther.focus(); else industryOther.value = '';
+            }
+            updatePreview();
+        });
+    }
+    ['pf-name', 'pf-role', 'pf-organisation'].forEach(function (id) {
+        var e = document.getElementById(id);
+        if (e) e.addEventListener('input', updatePreview);
+    });
+    if (industryOther) industryOther.addEventListener('input', updatePreview);
 
     // ── navigation: steps "fly" directionally + the tray height morphs ───────
     function stepEl(step) { return document.querySelector('.join-step[data-step="' + step + '"]'); }
@@ -295,6 +401,13 @@
     avatarInput.addEventListener('change', function () {
         var f = avatarInput.files && avatarInput.files[0];
         if (!f) return;
+        if (!f.size) {
+            avatarFile = null;
+            avatarInput.value = '';
+            setError(profileError, 'That photo couldn\'t be read. Try a JPG or PNG, or skip the photo for now.');
+            return;
+        }
+        setError(profileError, '');
         avatarFile = f;
         var reader = new FileReader();
         reader.onload = function (ev) {
@@ -370,6 +483,7 @@
         else if (selectedBadges.length < maxBadges) selectedBadges.push(src);
         else selectedBadges = selectedBadges.slice(0, maxBadges - 1).concat(src);  // at cap → replace last
         renderBadgePicker();
+        updateRoleOrgPreview();
     }
 
     renderBadgePicker();
@@ -380,9 +494,11 @@
         nameEl.value = p.name || '';
         usernameEl.value = p.username || '';
         document.getElementById('pf-role').value = p.role || '';
+        var orgEl = document.getElementById('pf-organisation');
+        if (orgEl) orgEl.value = p.organisation || '';
         document.getElementById('pf-category').value = p.category || '';
         document.getElementById('pf-location').value = p.location || '';
-        document.getElementById('pf-industry').value = p.industry || '';
+        setIndustry(p.industry || '');
         document.getElementById('pf-bio').value = p.bio || '';
         var links = p.links || {};
         LINK_KEYS.forEach(function (k) {
@@ -409,6 +525,7 @@
         usernameOk = true;
         setUserStatus('is-ok', 'Your current handle');
         syncInitials();
+        updatePreview();
     }
 
     // Retitle the profile step for editing
@@ -435,9 +552,10 @@
             username: usernameEl.value.trim().toLowerCase(),
             name: nameEl.value.trim(),
             role: document.getElementById('pf-role').value.trim(),
+            organisation: (document.getElementById('pf-organisation').value || '').trim() || null,
             category: document.getElementById('pf-category').value,
             location: document.getElementById('pf-location').value,
-            industry: document.getElementById('pf-industry').value.trim() || null,
+            industry: currentIndustry() || null,
             background: null,
             bio: document.getElementById('pf-bio').value.trim() || null,
             links: links,
@@ -486,7 +604,15 @@
             var user = u.data && u.data.user;
             if (!user) { submitBtn.disabled = false; setError(profileError, 'Session expired — please sign in again.'); showStep(1); return; }
             // Only the avatar is uploaded now; badges are chosen from our set.
-            uploadImage(avatarFile, user.id, 'avatar').then(function (avatarUrl) {
+            // Photo is optional — a failed upload must not block profile creation.
+            var avatarUploadFailed = false;
+            uploadImage(avatarFile, user.id, 'avatar')
+                .catch(function (err) {
+                    avatarUploadFailed = true;
+                    console.warn('[join] avatar upload failed:', err);
+                    return null;
+                })
+                .then(function (avatarUrl) {
                 var payload = collectProfile(user.id);   // includes org_photos / org_photo
                 if (avatarUrl) payload.avatar_url = avatarUrl;   // don't wipe existing on edit
                 return sb.from('profiles').upsert(payload).select().single();
@@ -503,19 +629,28 @@
                     return;
                 }
                 localStorage.removeItem(PENDING_KEY);
+                if (avatarUploadFailed) {
+                    setError(profileError, 'Profile saved — your photo didn\'t upload. You can add one from Edit profile.');
+                }
                 finish();
             }).catch(function (ex) {
                 submitBtn.disabled = false;
-                setError(profileError, (ex && ex.message) || 'Something went wrong.');
+                var msg = (ex && ex.message) || 'Something went wrong.';
+                if (/no content provided/i.test(msg)) {
+                    msg = 'That photo couldn\'t be uploaded. Try a JPG or PNG, or submit without a photo.';
+                }
+                setError(profileError, msg);
             });
         });
     }
 
     function uploadImage(file, uid, key) {
-        if (!file) return Promise.resolve(null);
+        if (!file || !file.size) return Promise.resolve(null);
         var ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
         var path = uid + '/' + key + '.' + ext;
-        return sb.storage.from('avatars').upload(path, file, { upsert: true })
+        var opts = { upsert: true };
+        if (file.type) opts.contentType = file.type;
+        return sb.storage.from('avatars').upload(path, file, opts)
             .then(function (res) {
                 if (res.error) throw res.error;
                 // cache-bust so a re-upload shows immediately

@@ -1,4 +1,6 @@
-export const SITE_ORIGIN = 'https://sarawaktalents.com'
+// The app (directory + profiles) lives on the app subdomain; the apex is the
+// marketing landing. Share cards / profile links point at the app.
+export const SITE_ORIGIN = 'https://app.sarawaktalents.com'
 
 export const CARD_WIDTH = 1200
 export const CARD_HEIGHT = 630

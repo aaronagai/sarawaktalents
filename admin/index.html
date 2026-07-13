@@ -9,6 +9,18 @@
     <link rel="stylesheet" href="../join.css">
     <link rel="stylesheet" href="../admin.css">
     <link rel="icon" href="../sslogo.svg" type="image/svg+xml">
+    <script>
+        (function () {
+            var mode = localStorage.getItem('theme-mode');
+            if (!mode) {
+                var legacy = localStorage.getItem('theme');
+                if (legacy === 'dark' || legacy === 'light') mode = legacy;
+                else mode = 'system';
+            }
+            var dark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (dark) document.documentElement.classList.add('dark');
+        })();
+    </script>
 </head>
 <body class="join-body">
 
@@ -67,8 +79,5 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase-client.js"></script>
     <script src="../admin.js"></script>
-    <script>
-        (function () { if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark'); })();
-    </script>
 </body>
 </html>

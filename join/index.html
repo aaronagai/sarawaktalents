@@ -9,12 +9,12 @@
     <meta property="og:site_name" content="Sarawak Talents">
     <meta property="og:title" content="Join Sarawak Talents">
     <meta property="og:description" content="Invite-only network for top Sarawakian talents.">
-    <meta property="og:url" content="https://sarawaktalents.com/join/">
-    <meta property="og:image" content="https://sarawaktalents.com/photos/linkpreview.jpg">
+    <meta property="og:url" content="https://app.sarawaktalents.com/join/">
+    <meta property="og:image" content="https://app.sarawaktalents.com/photos/linkpreview.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="https://sarawaktalents.com/photos/linkpreview.jpg">
+    <meta name="twitter:image" content="https://app.sarawaktalents.com/photos/linkpreview.jpg">
 
     <script src="https://unpkg.com/reicon@latest/cdn/reicon.min.js"></script>
     <link rel="stylesheet" href="../tailwind.css">
@@ -24,6 +24,18 @@
     <meta name="theme-color" content="#0d9488">
     <link rel="icon" href="../sslogo.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="../icon-192.png">
+    <script>
+        (function () {
+            var mode = localStorage.getItem('theme-mode');
+            if (!mode) {
+                var legacy = localStorage.getItem('theme');
+                if (legacy === 'dark' || legacy === 'light') mode = legacy;
+                else mode = 'system';
+            }
+            var dark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (dark) document.documentElement.classList.add('dark');
+        })();
+    </script>
 </head>
 <body class="join-body">
 
@@ -96,8 +108,13 @@
                         </label>
                     </div>
 
+                    <label class="join-field">
+                        <span class="join-label">Organisation <span class="join-optional">(optional)</span></span>
+                        <input id="pf-organisation" type="text" class="join-input" placeholder="e.g. Sarawak Energy, UNIMAS, Self-employed">
+                    </label>
+
                     <div class="join-field">
-                        <span class="join-label">Organisation <span class="join-optional">(optional — pick one)</span></span>
+                        <span class="join-label">Organisation badge <span class="join-optional">(optional — pick one)</span></span>
                         <div class="join-badge-picker" id="badge-picker"></div>
                         <span class="join-optional" id="badge-hint" style="font-size:0.75rem;">Select from the official badges. The first shows next to your name in the directory.</span>
                     </div>
@@ -119,9 +136,11 @@
                     </label>
 
                     <label class="join-field">
-                        <span class="join-label">Role / headline <em>*</em></span>
-                        <input id="pf-role" type="text" class="join-input" required placeholder="e.g. Software Engineer">
+                        <span class="join-label">Job title <em>*</em> <span class="join-optional">what you do — a person, not a field</span></span>
+                        <input id="pf-role" type="text" class="join-input" required placeholder="e.g. Lawyer, Software Engineer, Student, Founder">
                     </label>
+
+                    <p id="pf-role-org-preview" class="join-preview join-preview--org" aria-live="polite" hidden></p>
 
                     <div class="join-grid-2">
                         <label class="join-field">
@@ -191,10 +210,17 @@
                     </div>
 
                     <label class="join-field">
-                        <span class="join-label">Industry <span class="join-optional">(pick a suggestion or type your own)</span></span>
-                        <input id="pf-industry" type="text" class="join-input" list="pf-industry-options" placeholder="e.g. Software Development" autocomplete="off">
-                        <datalist id="pf-industry-options"></datalist>
+                        <span class="join-label">Industry <em>*</em></span>
+                        <select id="pf-industry-select" class="join-input" required>
+                            <option value="" disabled selected>Choose your industry</option>
+                            <!-- industry options injected from ST_INDUSTRIES in join.js -->
+                            <option value="__other">Other (type your own)</option>
+                        </select>
+                        <input id="pf-industry" type="text" class="join-input join-industry-other" placeholder="Your industry" autocomplete="off" hidden>
                     </label>
+
+                    <!-- Live preview of the profile line so people catch awkward combos before saving -->
+                    <p id="pf-preview" class="join-preview" aria-live="polite" hidden></p>
 
                     <label class="join-field">
                         <span class="join-label">Short bio <span class="join-optional">(optional)</span></span>
@@ -364,11 +390,5 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../supabase-client.js"></script>
     <script src="../join.js"></script>
-    <script>
-        (function () {
-            var t = localStorage.getItem('theme');
-            if (t === 'dark') document.documentElement.classList.add('dark');
-        })();
-    </script>
 </body>
 </html>

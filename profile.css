@@ -101,6 +101,8 @@ html.dark .pf-org-tip::after { border-top-color: #d1d5db; }
 html.dark .pf-badge { background: #141414; border-color: #2a2a2a; }
 .pf-loc { font-size: 0.9375rem; color: #6b7280; margin-top: 0.15rem; }
 html.dark .pf-loc { color: #888; }
+.pf-role-org { font-size: 0.9375rem; font-weight: 500; color: #7c3aed; margin-top: 0.2rem; }
+html.dark .pf-role-org { color: #a78bfa; }
 
 /* Organisation logos */
 .pf-orgs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
@@ -169,7 +171,16 @@ html.dark .pf-btn--ghost { background: #1c1c1c; color: #d4d4d4; }
 html.dark .pf-rule { border-color: #222; }
 .pf-footnote { font-size: 0.8125rem; color: #9ca3af; }
 
-.pf-footer { text-align: center; padding: 2rem; font-size: 0.8125rem; color: #9ca3af; }
+.pf-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
+    padding: 2rem;
+    font-size: 0.8125rem;
+    color: #9ca3af;
+}
 
 /* ── Interactive QR (ring of socials) ────────────────────────────── */
 .pf-qr-live { text-align: center; margin: 0.5rem 0 2rem; }
@@ -267,6 +278,26 @@ html.dark .qr-social-btn .qr-arrow { color: #a78bfa; }
 .qr-social-btn--soon { color: #9ca3af; border-style: dashed; cursor: default; justify-content: center; }
 .qr-social-btn--soon:hover { border-color: #e5e7eb; }
 html.dark .qr-social-btn--soon { color: #666; }
+
+/* Open row under the QR: a hint by default, a clear "Open <platform>" button
+   once a social is selected — so opening the link no longer needs a hidden gesture. */
+.qr-open-row { margin-top: 0.5rem; min-height: 2.75rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; }
+.qr-open-hint { margin: 0; font-size: 0.8125rem; line-height: 1.35; color: #6b7280; text-align: center; max-width: 22rem; }
+.qr-open-hint b { color: #7c3aed; font-weight: 600; }
+html.dark .qr-open-hint { color: #9ca3af; }
+html.dark .qr-open-hint b { color: #a78bfa; }
+.qr-open-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.7rem 1.4rem;
+    font-size: 0.9375rem; font-weight: 600;
+    color: #fff; background: #111827; border: none; border-radius: 9999px;
+    cursor: pointer; min-height: var(--touch-min, 2.75rem);
+    transition: transform 0.12s ease, background 0.15s ease;
+}
+.qr-open-btn:hover { background: #1f2937; }
+.qr-open-btn:active { transform: scale(0.97); }
+html.dark .qr-open-btn { background: #7c3aed; }
+html.dark .qr-open-btn:hover { background: #8b5cf6; }
 
 /* Phone: socials collapse to a centred grid of circular icons (5 per row).
    Tap selects (QR retargets); tap again opens. */

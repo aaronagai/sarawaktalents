@@ -163,22 +163,6 @@ html.dark .site-header.is-scrolled {
     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-/* ── App home (directory) — no marketing hero, so the header is a solid
-   sticky bar that occupies layout space instead of floating transparently
-   over a photo. Scoped to .directory-page so the landing's hero overlay
-   (transparent fixed header) is unaffected. ── */
-body.directory-page .site-header {
-    position: sticky;
-    background: rgba(255, 255, 255, 0.82);
-    -webkit-backdrop-filter: saturate(1.4) blur(14px);
-    backdrop-filter: saturate(1.4) blur(14px);
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
-}
-html.dark body.directory-page .site-header {
-    background: rgba(17, 17, 17, 0.72);
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
 .hero-nav {
     display: flex;
     align-items: center;
@@ -1599,16 +1583,6 @@ html.dark .talent-org-badge {
 html.dark [data-id] .bg-gray-100 {
     background-color: #262626;
 }
-
-/* Directory talent cards — the card face is a hardcoded bg-white utility, so it
-   stays white in dark mode without these overrides. Match the feature/pride
-   cards' dark surface + border, and lift the name/subtitle text off it. */
-html.dark .talent-card {
-    background-color: var(--dm-surface);
-    border-color: var(--dm-border);
-}
-html.dark .talent-card .text-gray-900 { color: var(--dm-text); }
-html.dark .talent-card .talent-sub { color: var(--dm-text-muted); }
 
 html.dark #empty-state h3,
 html.dark #empty-state .text-gray-900 {

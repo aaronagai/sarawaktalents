@@ -9,17 +9,30 @@
     <meta property="og:site_name" content="Sarawak Talents">
     <meta property="og:title" content="Sarawak Talents">
     <meta property="og:description" content="A Sarawak Talents digital name card.">
-    <meta property="og:image" content="https://sarawaktalents.com/photos/linkpreview.jpg">
+    <meta property="og:image" content="https://app.sarawaktalents.com/photos/linkpreview.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="https://sarawaktalents.com/photos/linkpreview.jpg">
+    <meta name="twitter:image" content="https://app.sarawaktalents.com/photos/linkpreview.jpg">
     <script src="https://unpkg.com/reicon@latest/cdn/reicon.min.js"></script>
     <link rel="stylesheet" href="../tailwind.css">
+    <link rel="stylesheet" href="../transitions/index.css">
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="../profile.css">
     <link rel="icon" href="../sslogo.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="../icon-192.png">
+    <script>
+        (function () {
+            var mode = localStorage.getItem('theme-mode');
+            if (!mode) {
+                var legacy = localStorage.getItem('theme');
+                if (legacy === 'dark' || legacy === 'light') mode = legacy;
+                else mode = 'system';
+            }
+            var dark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (dark) document.documentElement.classList.add('dark');
+        })();
+    </script>
 </head>
 <body class="pf-body">
 
@@ -49,6 +62,7 @@
                         <span class="pf-org-inline" id="pf-org-inline" hidden></span>
                     </h1>
                     <p class="pf-loc" id="pf-loc"></p>
+                    <p class="pf-role-org" id="pf-role-org" hidden></p>
                 </div>
             </div>
 
@@ -65,6 +79,7 @@
                     <div class="qr-card-box"><img class="qr-live-img" alt="QR code"></div>
                     <div class="qr-buttons" id="qr-buttons"></div>
                 </div>
+                <div class="qr-open-row" id="qr-open-row"></div>
             </div>
 
             <!-- Education -->
@@ -88,14 +103,14 @@
         <span>© <span id="pf-year"></span> Sarawak Talents</span>
     </footer>
 
+    <script src="../transitions.js"></script>
+    <script src="../theme.js"></script>
     <script src="../site-paths.js"></script>
     <script src="../config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
     <script src="../supabase-client.js"></script>
     <script src="../profile.js"></script>
-    <script>
-        (function () { if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark'); })();
-    </script>
+    <script>Theme.init();</script>
 </body>
 </html>

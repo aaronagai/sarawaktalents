@@ -1,0 +1,45 @@
+/* ── Landing-only additions (marketing apex) ──────────────────────────
+   The landing reuses the app's style.css/tailwind.css copies; anything
+   specific to the marketing page lives here so those stay a clean snapshot.
+   -------------------------------------------------------------------- */
+
+.talents-preview-section {
+    padding-block: 1rem 3.5rem;
+}
+
+.talents-preview-heading {
+    margin-bottom: 1.5rem;
+}
+
+/* Person cards are a teaser — not individually clickable (the full,
+   explorable directory lives behind onboarding). */
+#talent-preview-grid .talent-card {
+    cursor: default;
+}
+
+.talent-preview-empty {
+    min-height: 4rem;
+}
+
+/* The last cell is the CTA card → onboarding. Styled like the primary
+   "Get Started" button since it leads to the same place. */
+#talent-preview-grid .talent-card--cta {
+    cursor: pointer;
+    background: #111827;
+    border-color: #111827;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    min-height: 4.75rem;
+    transition: opacity 0.15s ease, transform 0.2s ease;
+}
+#talent-preview-grid .talent-card--cta:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+html.dark #talent-preview-grid .talent-card--cta {
+    background: #f4f4f0;
+    border-color: #f4f4f0;
+    color: #111827;
+}

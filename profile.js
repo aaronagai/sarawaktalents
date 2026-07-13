@@ -65,6 +65,25 @@
         if (/^h[aeiou]/.test(w)) return 'an';              // hour, honest, heir…
         return /^[aeiou]/.test(w) ? 'an' : 'a';
     }
+    function profileRoleLabel(p) {
+        return String(p.role || p.dun || p.title || '').trim() || '';
+    }
+    function profileOrgName(p) {
+        var textOrg = String(p.organisation || p.company || p.organization || p.org || '').trim();
+        if (textOrg) return textOrg;
+        var orgs = (p.org_photos && p.org_photos.length) ? p.org_photos : (p.org_photo ? [p.org_photo] : []);
+        for (var i = 0; i < orgs.length; i++) {
+            var name = BADGE_ORGS[orgs[i]];
+            if (name) return name;
+        }
+        return '';
+    }
+    function roleAtOrgLine(p) {
+        var role = profileRoleLabel(p);
+        var org = profileOrgName(p);
+        if (role && org) return role + ' at ' + org;
+        return role || org || '';
+    }
 
     function isUrl(v) { return /^https?:\/\//i.test(v); }
     function urlify(v) { return isUrl(v) ? v : 'https://' + v.replace(/^\/+/, ''); }
@@ -111,6 +130,15 @@
         el('pf-name').textContent = p.name || '';
         el('pf-loc').textContent = p.location ? p.location + ', Sarawak' : 'Sarawak';
 
+        var roleOrgLine = roleAtOrgLine(p);
+        var roleOrgEl = el('pf-role-org');
+        if (roleOrgLine && roleOrgEl) {
+            roleOrgEl.textContent = roleOrgLine;
+            roleOrgEl.hidden = false;
+        } else if (roleOrgEl) {
+            roleOrgEl.hidden = true;
+        }
+
         // Organisation marks (inline, next to the name) — one or more badges.
         // Hover (desktop) or tap (mobile) reveals an "affiliate of" tooltip.
         var orgs = (p.org_photos && p.org_photos.length) ? p.org_photos : (p.org_photo ? [p.org_photo] : []);
@@ -127,18 +155,33 @@
             oi.hidden = false;
         }
 
-        // Lead line
-        var first = (p.name || '').split(/\s+/)[0];
-        var lead = escapeHtml(first) + ' is';
-        if (p.role) lead += ' ' + articleBefore(p.role) + ' <b>' + escapeHtml(p.role) + '</b>';
-        if (p.industry) lead += ' in ' + escapeHtml(p.industry);
-        lead += '.';
+        // Lead line — grammar-proof for any combination of title / industry.
+        var first = escapeHtml((p.name || '').split(/\s+/)[0]);
+        var role = (p.role || '').trim();
+        var industry = (p.industry || '').trim();
+        var sameRI = role && industry && role.toLowerCase() === industry.toLowerCase();
+        var lead;
+        if (role && industry && !sameRI) {
+            lead = first + ' is ' + articleBefore(role) + ' <b>' + escapeHtml(role) + '</b> in ' + escapeHtml(industry) + '.';
+        } else if (sameRI || (industry && !role)) {
+            lead = first + ' works in <b>' + escapeHtml(industry) + '</b>.';
+        } else if (role) {
+            lead = first + ' is ' + articleBefore(role) + ' <b>' + escapeHtml(role) + '</b>.';
+        } else {
+            lead = first + '.';
+        }
         el('pf-lead').innerHTML = lead;
 
         if (p.bio) { el('pf-bio').textContent = p.bio; el('pf-bio').hidden = false; }
 
-        // Tags
-        var tags = [p.category, p.industry].filter(Boolean);
+        // Tags (dedupe case-insensitively so category/industry don't repeat).
+        var seenTag = {};
+        var tags = [p.category, p.industry].filter(function (t) {
+            if (!t) return false;
+            var k = String(t).toLowerCase();
+            if (seenTag[k]) return false;
+            seenTag[k] = 1; return true;
+        });
         el('pf-tags').innerHTML = tags.map(function (t) {
             return '<span class="pf-tag">' + escapeHtml(t) + '</span>';
         }).join('');
@@ -185,6 +228,112 @@
                 setTimeout(function () { btn.textContent = t; }, 1400);
             });
         });
+
+    }
+
+    // ── Save / share the Sarawak Talents QR as a portrait image ─────────────────
+    // Branded card: QR + name + "[Role] at [Organisation]" (falls back to @handle).
+    function loadImage(src) {
+        return new Promise(function (res, rej) {
+            var im = new Image();
+            im.onload = function () { res(im); };
+            im.onerror = rej;
+            im.src = src;
+        });
+    }
+    function roundRect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+    }
+    function qrDataUrl(text) {
+        var qr = qrcode(0, 'M');
+        qr.addData(text);
+        qr.make();
+        return qr.createDataURL(12, 12);
+    }
+    async function drawProfileCard(p) {
+        var W = 1080, H = 1920;
+        var canvas = document.createElement('canvas');
+        canvas.width = W; canvas.height = H;
+        var ctx = canvas.getContext('2d');
+        var F = "-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif";
+        ctx.textAlign = 'center';
+
+        // Background gradient (deep teal → near-black).
+        var g = ctx.createLinearGradient(0, 0, 0, H);
+        g.addColorStop(0, '#0b3b39');
+        g.addColorStop(1, '#0d1117');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+        // Header wordmark + tagline.
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '700 58px ' + F;
+        ctx.fillText('Sarawak Talents', W / 2, 200);
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.font = '400 34px ' + F;
+        ctx.fillText('Where top Sarawakian talents gather', W / 2, 258);
+
+        // White card holding the QR + name.
+        var cardW = 820, cardX = (W - cardW) / 2, cardY = 360, cardH = 1120;
+        roundRect(ctx, cardX, cardY, cardW, cardH, 56);
+        ctx.fillStyle = '#ffffff'; ctx.fill();
+
+        var qrImg = await loadImage(qrDataUrl(profileUrl));
+        var qrSize = 640, qrX = (W - qrSize) / 2, qrY = cardY + 80;
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+        ctx.imageSmoothingEnabled = true;
+
+        ctx.fillStyle = '#111827';
+        ctx.font = '700 62px ' + F;
+        ctx.fillText(p.name || '', W / 2, qrY + qrSize + 130);
+        var roleOrg = roleAtOrgLine(p);
+        if (roleOrg) {
+            ctx.fillStyle = '#7c3aed';
+            ctx.font = '600 42px ' + F;
+            ctx.fillText(roleOrg, W / 2, qrY + qrSize + 196);
+        } else {
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '400 42px ' + F;
+            ctx.fillText('@' + (p.username || ''), W / 2, qrY + qrSize + 196);
+        }
+
+        // Footer call-to-action.
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.font = '600 44px ' + F;
+        ctx.fillText('Scan to connect', W / 2, cardY + cardH + 140);
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.font = '400 36px ' + F;
+        ctx.fillText('sarawaktalents.com', W / 2, cardY + cardH + 200);
+
+        return new Promise(function (res) { canvas.toBlob(res, 'image/png'); });
+    }
+    async function exportProfileCard(p) {
+        var btn = el('pf-saveqr-btn');
+        var label = btn ? btn.textContent : '';
+        if (btn) { btn.textContent = 'Preparing…'; btn.disabled = true; }
+        try {
+            var blob = await drawProfileCard(p);
+            var file = new File([blob], (p.username || 'sarawaktalents') + '-qr.png', { type: 'image/png' });
+            // Mobile: native share sheet → Save Image / post to IG story / etc.
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({ files: [file], title: (p.name || 'Sarawak Talents') + ' · Sarawak Talents' });
+            } else {
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = file.name;
+                a.click();
+                setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+            }
+        } catch (e) {
+            // Share cancelled or unsupported — ignore.
+        }
+        if (btn) { btn.textContent = label; btn.disabled = false; }
     }
 
     // Interactive QR: a ring of the person's socials around a live QR. Tap a
@@ -194,6 +343,7 @@
         var links = p.links || {};
         var connected = SOCIAL_ORDER.filter(function (k) { return links[k]; });
         var buttons = el('qr-buttons');
+        var openRow = el('qr-open-row');
         var imgs = document.querySelectorAll('.qr-live-img');
         var active = PROFILE_KEY;   // default → the member's own Sarawak Talents card
 
@@ -209,6 +359,35 @@
         // card opens its destination — so no separate "Open" button is needed.
         function activateOrOpen(k) { if (active === k) openTarget(k); else setActive(k); }
 
+        // Explicit "Open" affordance under the QR, so visiting a link is obvious
+        // instead of relying on the hidden "tap the icon again" gesture.
+        function updateOpenRow() {
+            if (!openRow) return;
+            openRow.innerHTML = '';
+            // Sarawak Talents card selected → Save the QR (same slot the socials use to Open).
+            if (active === PROFILE_KEY) {
+                var s = document.createElement('button');
+                s.type = 'button';
+                s.className = 'qr-open-btn';
+                s.id = 'pf-saveqr-btn';
+                s.innerHTML = 'Save QR <span aria-hidden="true">↓</span>';
+                s.addEventListener('click', function () { exportProfileCard(p); });
+                openRow.appendChild(s);
+                var hint = document.createElement('p');
+                hint.className = 'qr-open-hint';
+                hint.textContent = 'Save your card image, or tap an icon to open its link.';
+                openRow.appendChild(hint);
+                return;
+            }
+            var meta = metaFor(active);
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'qr-open-btn';
+            b.innerHTML = 'Open ' + escapeHtml(meta.label) + ' <span aria-hidden="true">↗</span>';
+            b.addEventListener('click', function () { openTarget(active); });
+            openRow.appendChild(b);
+        }
+
         function refresh() {
             var qr = qrcode(0, 'M');
             qr.addData(targetHref());
@@ -218,6 +397,7 @@
             Array.prototype.forEach.call(document.querySelectorAll('.pf-qr-live [data-key]'), function (c) {
                 c.classList.toggle('is-active', c.dataset.key === active);
             });
+            updateOpenRow();
         }
 
         // Sarawak Talents card first, then connected socials + "more soon".
@@ -247,7 +427,9 @@
     function buildVCard(p) {
         var L = ['BEGIN:VCARD', 'VERSION:3.0', 'FN:' + (p.name || '')];
         if (p.role) L.push('TITLE:' + p.role);
-        if (p.category) L.push('ORG:' + p.category);
+        var org = profileOrgName(p);
+        if (org) L.push('ORG:' + org);
+        else if (p.category) L.push('ORG:' + p.category);
         L.push('URL:' + profileUrl);
         var links = p.links || {};
         if (links.email) L.push('EMAIL:' + links.email);

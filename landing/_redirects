@@ -1,0 +1,9 @@
+# Apex is the marketing landing. Any legacy app path hit here (old bookmarks,
+# already-shared profile links, crawler caches) forwards to the app subdomain.
+# Cloudflare Pages preserves the query string (e.g. ?u=username) automatically.
+/profile/*   https://app.sarawaktalents.com/profile/:splat   301
+/profile     https://app.sarawaktalents.com/profile          301
+/join/*      https://app.sarawaktalents.com/join/:splat       301
+/join        https://app.sarawaktalents.com/join              301
+/admin/*     https://app.sarawaktalents.com/admin/:splat      301
+/admin       https://app.sarawaktalents.com/admin             301

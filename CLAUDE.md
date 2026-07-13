@@ -33,11 +33,14 @@ changes live when the user explicitly says something like "ship it", "ship to
 production", "push to main", or "go live". Until then, `main` and
 `sarawaktalents.com` must not change.
 
-When the user does say to ship, do it by merging `staging` into `main`:
+`main` is a protected branch: direct pushes are blocked and a Pull Request with
+one approval is required. So when the user says to ship, open a PR from `staging`
+to `main` rather than pushing:
 
 ```
-git checkout main && git pull && git merge staging && git push
-git checkout staging      # then return to staging to keep working
+gh pr create --base main --head staging --fill
 ```
 
-After shipping, confirm to the user that it's live on sarawaktalents.com.
+Then the other teammate reviews and merges it (don't approve/merge your own PR to
+production). After it's merged, confirm to the user it's live on
+sarawaktalents.com.
